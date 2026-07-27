@@ -1,0 +1,37 @@
+{
+  "industry_id": "cloud-economy",
+  "label": {"en": "Cloud / API cost", "ru": "Облако / стоимость API"},
+  "track_priors": {"ops": 0.5, "product": 0.4, "promotion": 0.2},
+  "sane_patterns": [
+    "Third-party API unit cost should be a weekly line item",
+    "Expert/local path for high-volume low-judgment work",
+    "Keep paid APIs for high-judgment steps"
+  ],
+  "insane_patterns": [
+    "Move everything off cloud in week one",
+    "Ignore quality band when cutting tokens"
+  ],
+  "business_variants": [
+    {
+      "id": "creative_founder_api",
+      "name": "Creative founder burning LLM APIs",
+      "signals": ["openai", "anthropic", "token", "creative", "founder"],
+      "typical_leaks": ["token swarm", "no unit cost table"],
+      "sane_primary": "ops"
+    },
+    {
+      "id": "finops_consultancy",
+      "name": "Cloud FinOps consultancy",
+      "signals": ["finops", "aws", "gcp", "reserved", "egress"],
+      "typical_leaks": ["idle GPU", "wrong region"],
+      "sane_primary": "product"
+    }
+  ],
+  "module_map_for_change_owner": [
+    "M1 API inventory",
+    "M2 Unit cost table",
+    "M3 Route high-volume to Expert path",
+    "M4 Quality band SLA",
+    "M5 Review event + sales pointer"
+  ]
+}

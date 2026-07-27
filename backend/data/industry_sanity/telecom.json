@@ -1,0 +1,28 @@
+{
+  "industry_id": "telecom",
+  "label": {"en": "Telecom", "ru": "Телеком"},
+  "track_priors": {"ops": 0.4, "product": 0.4, "promotion": 0.3},
+  "sane_patterns": [
+    "SLA language must map to sellable SKUs",
+    "ARPU/churn without owner is spreadsheet fog",
+    "MVNO/SME packs need intent-signal care"
+  ],
+  "insane_patterns": [
+    "Ignore churn while buying more acquisition"
+  ],
+  "business_variants": [
+    {
+      "id": "mvno_sme",
+      "name": "MVNO / SME plans",
+      "signals": ["mvno", "sme", "arpu", "churn", "sla"],
+      "typical_leaks": ["opaque tariffs", "care cost"],
+      "sane_primary": "product"
+    }
+  ],
+  "module_map_for_change_owner": [
+    "M1 ARPU/churn board",
+    "M2 SLA-native SKU",
+    "M3 Intent signal weave",
+    "M4 Partner hunt pack"
+  ]
+}

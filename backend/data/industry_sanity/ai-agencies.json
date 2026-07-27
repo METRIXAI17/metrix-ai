@@ -1,0 +1,47 @@
+{
+  "industry_id": "ai-agencies",
+  "label": {"en": "AI agencies", "ru": "ИИ-агентства"},
+  "track_priors": {"ops": 0.55, "product": 0.35, "promotion": 0.25},
+  "sane_patterns": [
+    "Free discovery without a paid gate burns margin",
+    "Rework >15% usually means packaging/acceptance is weak",
+    "Retainers without acceptance items dilute delivery",
+    "Utilization <60% with tight margin is packaging/sales, not only hiring"
+  ],
+  "insane_patterns": [
+    "Promise guaranteed ROI from a chatbot",
+    "Recommend multi-agent swarm as first ops fix",
+    "Ignore rework when utilization is low"
+  ],
+  "business_variants": [
+    {
+      "id": "boutique_ops_agents",
+      "name": "Boutique custom agents for mid-market ops",
+      "signals": ["mid-market", "ops teams", "custom agents", "retainer"],
+      "typical_leaks": ["free discovery", "scope explosion", "rework"],
+      "sane_primary": "ops"
+    },
+    {
+      "id": "content_ai_shop",
+      "name": "AI content / creative production shop",
+      "signals": ["content", "creative", "posts", "reels"],
+      "typical_leaks": ["token burn", "revision loops", "unclear SKUs"],
+      "sane_primary": "product"
+    },
+    {
+      "id": "automation_integrator",
+      "name": "Workflow / iPaaS automation agency",
+      "signals": ["automation", "workflow", "zapier", "n8n", "ipaas"],
+      "typical_leaks": ["unscoped integrations", "support sink"],
+      "sane_primary": "ops"
+    }
+  ],
+  "module_map_for_change_owner": [
+    "M1 Brief lock",
+    "M2 Metric scoreboard",
+    "M3 Kill free discovery gate",
+    "M4 Paid orientation SKU",
+    "M5 Teammate attach on one lane",
+    "M6 Buyer fin-model one-pager"
+  ]
+}

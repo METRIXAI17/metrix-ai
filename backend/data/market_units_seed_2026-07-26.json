@@ -1,0 +1,22 @@
+{
+  "seed_id": "market_units_2026-07-26",
+  "version": "1.1.0",
+  "loaded_by": "release_memo_convert",
+  "package_consult_techwrite_usd": 1290,
+  "notes": [
+    "AI agencies: ops efficiency + Terminal Teammate + buyer fin models",
+    "Cloud: third-party API cost cut + Expert + review event promo",
+    "Cost eng: $290 waste map + Void Scanner product",
+    "Chipmaking: 3 simple offers ops/product/promo",
+    "Telecom: 3 simple offers ops/product/promo",
+    "Memo Convert replaces pure idea-DB path"
+  ],
+  "primary_products": {
+    "ai-agencies": "Terminal Teammate",
+    "cloud-economy": "Expert",
+    "cost-engineering": "Parameter Void Scanner",
+    "chipmaking": "Yield Geometry Twin",
+    "telecom": "SLA-native SKU Builder",
+    "device-assembly": "Config product workflow"
+  }
+}

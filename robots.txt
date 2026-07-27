@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# After you have a custom domain, add:
+# Sitemap: https://your-domain.com/sitemap.xml

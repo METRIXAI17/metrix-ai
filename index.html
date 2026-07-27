@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Metrix AI — free business orientation. Ops, product, promotion. Pilot after consult."
+    />
+    <meta name="theme-color" content="#070a0f" />
+    <title>Metrix AI — Free consult · Pilot</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235eead4'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' font-family='sans-serif' font-weight='700' fill='%23041016'%3EM%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <nav class="nav" aria-label="Main">
+      <div class="nav-inner">
+        <a href="#top" class="logo" id="logo-home">
+          <span class="logo-mark">M</span>
+          <span class="logo-text">Metrix <span>AI</span></span>
+        </a>
+
+        <div class="mode-switch" role="tablist" aria-label="Interface mode">
+          <button type="button" class="active" data-mode="marketplace" role="tab" aria-selected="true">
+            Products
+          </button>
+          <button type="button" data-mode="request" role="tab" aria-selected="false">
+            Free consult
+          </button>
+        </div>
+
+        <div class="nav-links">
+          <a href="#products">Flagships</a>
+          <a href="#how">How it works</a>
+          <a href="#pricing">Pricing</a>
+          <a href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">@karimmetrix</a>
+        </div>
+      </div>
+    </nav>
+
+    <main id="top">
+      <header class="hero wrap">
+        <div class="hero-badge">Free consult · then pilot</div>
+        <h1>Orient your business.<br /><em>Pick a solution.</em><br />Ship the rest.</h1>
+        <p class="hero-lead">
+          Free orientation from a short business description. We rank
+          <strong>ops · product · promotion</strong> and propose a pilot.
+        </p>
+        <div class="hero-actions">
+          <button type="button" class="btn btn-primary" data-mode-jump="request">Get a consultation</button>
+          <button type="button" class="btn btn-ghost" data-mode-jump="marketplace">See products</button>
+        </div>
+        <div class="industry-strip" id="industry-strip" aria-label="Industries"></div>
+      </header>
+
+      <!-- PRODUCTS -->
+      <section class="section wrap mode-panel active" id="mode-marketplace" data-panel="marketplace">
+        <div class="section-head" id="products">
+          <div>
+            <div class="eyebrow">Flagships</div>
+            <h2>What you can start with</h2>
+            <p id="home-catalog-note">Click a card for the essence.</p>
+          </div>
+        </div>
+        <div class="grid grid-flagship" id="program-grid"></div>
+      </section>
+
+      <!-- HOW IT WORKS — excited product story -->
+      <section class="section wrap" id="how">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">The ride</div>
+            <h2 id="how-it-works-title">How Metrix AI works</h2>
+            <p id="how-it-works-lead" class="how-lead"></p>
+          </div>
+        </div>
+        <div class="how-grid" id="how-it-works-body"></div>
+      </section>
+
+      <!-- FREE CONSULT -->
+      <section class="section wrap mode-panel" id="mode-request" data-panel="request" hidden>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Free consult + free tech write</div>
+            <h2>Describe your business</h2>
+            <p>
+              5–20 sentences. Industry required. You get free orientation and free technical writing (tech TZ).
+            </p>
+          </div>
+        </div>
+
+        <form class="form-card" id="request-form" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="req-industry">Industry <span class="req">*</span></label>
+              <select id="req-industry" name="industry" required>
+                <option value="">Select…</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="req-track">Preferred track</label>
+              <select id="req-track" name="track">
+                <option value="">All three</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="req-name">Name</label>
+              <input id="req-name" name="name" type="text" autocomplete="name" placeholder="Alex" />
+            </div>
+            <div class="field">
+              <label for="req-email">Email or X</label>
+              <input id="req-email" name="contact" type="text" placeholder="@handle" />
+            </div>
+            <div class="field">
+              <label for="req-business">Your business <span class="req">*</span></label>
+              <textarea
+                id="req-business"
+                name="business"
+                required
+                placeholder="Who you serve, how you make money, where it hurts, any numbers you have."
+              ></textarea>
+            </div>
+            <p class="form-error" id="form-error" role="alert"></p>
+            <p class="form-success" id="form-success" role="status"></p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.6rem">
+              <button type="submit" class="btn btn-primary">Get a consultation</button>
+              <button type="button" class="btn btn-ghost" id="btn-tech-write">Get free tech write</button>
+              <a class="btn btn-ghost" href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">DM on X</a>
+            </div>
+            <p class="hint" id="contact-note" hidden></p>
+          </div>
+        </form>
+      </section>
+
+      <!-- PRICING (separate block) -->
+      <section class="section wrap" id="pricing">
+        <div class="package-banner package-banner-slim">
+          <div>
+            <div class="eyebrow" style="margin-bottom: 0.35rem">Pricing</div>
+            <h3 id="pkg-title">Pricing</h3>
+            <p id="pkg-why"></p>
+          </div>
+          <div class="pricing-actions">
+            <button type="button" class="btn btn-primary" data-mode-jump="request">Get a consultation</button>
+            <button type="button" class="btn btn-gold" data-mode-jump="techwrite">Get free tech write</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer-inner">
+        <div>
+          <strong style="color: var(--text)">Metrix AI</strong>
+          <span> · Free consult · pilot-first</span>
+        </div>
+        <div>
+          <a href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">@karimmetrix</a>
+          ·
+          <a href="#top">Top</a>
+        </div>
+      </div>
+    </footer>
+
+    <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal">
+        <header>
+          <div>
+            <div class="card-meta" id="modal-tags" style="margin-bottom: 0.5rem"></div>
+            <h3 id="modal-title"></h3>
+          </div>
+          <button type="button" class="modal-close" id="modal-close" aria-label="Close">✕</button>
+        </header>
+        <div id="modal-body"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-primary" id="modal-request">Get a consultation</button>
+          <button type="button" class="btn btn-ghost" id="modal-close-2">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "industry_id": "device-assembly",
+  "label": {"en": "Device assembly", "ru": "Сборка устройств"},
+  "track_priors": {"ops": 0.5, "product": 0.35, "promotion": 0.2},
+  "sane_patterns": [
+    "Station rework timers beat generic training decks",
+    "Config SKU matrix scales better than ad-hoc setup"
+  ],
+  "insane_patterns": [
+    "Add stations without fixing rework loops"
+  ],
+  "business_variants": [
+    {
+      "id": "config_product",
+      "name": "Assembly + guided config product",
+      "signals": ["station", "assembly", "config", "setup", "rework"],
+      "typical_leaks": ["tribal knowledge", "rework loops"],
+      "sane_primary": "ops"
+    }
+  ],
+  "module_map_for_change_owner": [
+    "M1 Station map",
+    "M2 Rework timer",
+    "M3 Config SKU matrix",
+    "M4 One-station demo",
+    "M5 Instruction recursion"
+  ]
+}

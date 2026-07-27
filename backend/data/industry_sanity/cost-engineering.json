@@ -1,0 +1,29 @@
+{
+  "industry_id": "cost-engineering",
+  "label": {"en": "Cost engineering", "ru": "Кост-инжиниринг"},
+  "track_priors": {"ops": 0.45, "product": 0.4, "promotion": 0.2},
+  "sane_patterns": [
+    "Cut waste parameters without cutting capability metrics",
+    "One-page waste map is a valid entry offer",
+    "Resellable SKU beats one-off consulting hours"
+  ],
+  "insane_patterns": [
+    "Cut cost without a capability metric held constant"
+  ],
+  "business_variants": [
+    {
+      "id": "industrial_param",
+      "name": "Industrial parameter cost consulting",
+      "signals": ["parameter", "tolerance", "rework", "industrial"],
+      "typical_leaks": ["fat specs", "gold plating"],
+      "sane_primary": "ops"
+    }
+  ],
+  "module_map_for_change_owner": [
+    "M1 Parameter inventory",
+    "M2 Waste map $",
+    "M3 Capability preserve check",
+    "M4 Void Scanner SKU pack",
+    "M5 Case card for buyers"
+  ]
+}

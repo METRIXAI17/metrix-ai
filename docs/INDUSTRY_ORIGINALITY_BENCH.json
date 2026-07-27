@@ -1,0 +1,157 @@
+{
+  "cases": [
+    {
+      "tag": "A1",
+      "industry": "ai-agencies",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "ops",
+      "chars": 8496,
+      "core_chars": 3600,
+      "has_ru": true
+    },
+    {
+      "tag": "A2",
+      "industry": "ai-agencies",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "ops",
+      "chars": 6906,
+      "core_chars": 2400,
+      "has_ru": true
+    },
+    {
+      "tag": "A3",
+      "industry": "ai-agencies",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "product",
+      "chars": 7789,
+      "core_chars": 3007,
+      "has_ru": true
+    },
+    {
+      "tag": "C1",
+      "industry": "cloud-economy",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "ops",
+      "chars": 7335,
+      "core_chars": 2730,
+      "has_ru": true
+    },
+    {
+      "tag": "C2",
+      "industry": "cloud-economy",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "promotion",
+      "chars": 7189,
+      "core_chars": 2640,
+      "has_ru": true
+    },
+    {
+      "tag": "K1",
+      "industry": "cost-engineering",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "ops",
+      "chars": 6880,
+      "core_chars": 2362,
+      "has_ru": true
+    },
+    {
+      "tag": "K2",
+      "industry": "cost-engineering",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "ops",
+      "chars": 6665,
+      "core_chars": 2221,
+      "has_ru": true
+    },
+    {
+      "tag": "H1",
+      "industry": "chipmaking",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "ops",
+      "chars": 6833,
+      "core_chars": 2377,
+      "has_ru": true
+    },
+    {
+      "tag": "H2",
+      "industry": "chipmaking",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "promotion",
+      "chars": 6747,
+      "core_chars": 2363,
+      "has_ru": true
+    },
+    {
+      "tag": "T1",
+      "industry": "telecom",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "ops",
+      "chars": 6696,
+      "core_chars": 2309,
+      "has_ru": true
+    },
+    {
+      "tag": "T2",
+      "industry": "telecom",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "promotion",
+      "chars": 6819,
+      "core_chars": 2380,
+      "has_ru": true
+    },
+    {
+      "tag": "D1",
+      "industry": "device-assembly",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "ops",
+      "chars": 7061,
+      "core_chars": 2456,
+      "has_ru": true
+    },
+    {
+      "tag": "D2",
+      "industry": "device-assembly",
+      "ok": true,
+      "tangibility": 1.0,
+      "ready": true,
+      "primary_track": "promotion",
+      "chars": 6958,
+      "core_chars": 2427,
+      "has_ru": true
+    }
+  ],
+  "mean_jaccard_overlap": 0.4222,
+  "mean_same_industry_overlap": 0.6183,
+  "originality_pass": true,
+  "all_ready": true,
+  "n": 13,
+  "tracks": [
+    "ops",
+    "product",
+    "promotion"
+  ]
+}

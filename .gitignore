@@ -1,0 +1,23 @@
+.DS_Store
+Thumbs.db
+node_modules/
+.vercel
+*.log
+.env
+.env.*
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Pilot backend — private commercial layer (DO NOT push to public GitHub)
+pilot_private/
+!pilot_private/README.PUBLIC.md
+
+# Local workspace dumps & secrets
+backend/workspace/
+backend/data/requests/
+docs/_probe*
+client-package-latest.html
+client-pack-latest.html
+logs/

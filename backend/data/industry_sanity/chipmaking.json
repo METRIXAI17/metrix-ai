@@ -1,0 +1,29 @@
+{
+  "industry_id": "chipmaking",
+  "label": {"en": "Chipmaking", "ru": "Чипмейкинг"},
+  "track_priors": {"ops": 0.4, "product": 0.45, "promotion": 0.2},
+  "sane_patterns": [
+    "Make design-loop voids explicit before tapeout spend",
+    "Separate NRE from iteration hope",
+    "Clarity over buzzwords for semi buyers"
+  ],
+  "insane_patterns": [
+    "Sell guaranteed yield improvement without process data"
+  ],
+  "business_variants": [
+    {
+      "id": "design_loop_ip",
+      "name": "Design-loop / IP block team",
+      "signals": ["tapeout", "yield", "nre", "dft", "rtl"],
+      "typical_leaks": ["late voids", "unclear gates"],
+      "sane_primary": "product"
+    }
+  ],
+  "module_map_for_change_owner": [
+    "M1 Void index",
+    "M2 Gate criteria",
+    "M3 Yield twin session",
+    "M4 NRE vs iteration board",
+    "M5 Clarity event"
+  ]
+}
