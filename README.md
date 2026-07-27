@@ -49,7 +49,7 @@ Public positioning: [@karimmetrix](https://x.com/karimmetrix)
 - Flagship cards only (6) · no catalog bloat / architecture dump on home  
 - Method: Get a consultation → Pick direction → Ship  
 - Pricing strip: free → pilot → main  
-- Deploy: **`DEPLOY.md`** (Vercel static + optional API)
+
 
 ---
 
