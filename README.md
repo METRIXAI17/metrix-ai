@@ -34,8 +34,7 @@ Public positioning: [@karimmetrix](https://x.com/karimmetrix)
 ### v1.1 Memo Convert · Market Units (2026-07-26)
 
 - **Memo Convert** — unique engine + reader-assembler (no idea-DB): system → coop open-opp → analog function → reverse categories → tech tasks  
-- **Market Units** — application points + simple offers (agencies / API-cost Expert / cost-eng / chip / telecom)  
-- **Consult + Tech Write package = $1290** (MetaReality $890 + SpecsForge $650 − $250)  
+- **Market Units** — application points + simple offers (agencies / API-cost Expert / cost-eng / chip / telecom)   
 - API: `GET /api/v1/analytics/market-units` · `/package-costs` · `POST /memo-convert`  
 - Release notes: `docs/RELEASE_1_1_MEMO_CONVERT_2026-07-26.md`
 
