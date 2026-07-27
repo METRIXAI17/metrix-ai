@@ -43,8 +43,6 @@ Public positioning: [@karimmetrix](https://x.com/karimmetrix)
 - **Public:** free orientation consult (EN+RU result pack), track ranking ops/product/promo, industry sanity packs  
 - **Text usability suite** (dedupe / simplify / dry-math) · multi-industry originality bench  
 - **Pricing:** free → pilot $490–790 → main $2490 only after pilot success  
-- **Private pilot backend:** `pilot_private/` (gitignored) — client + executor portals on port 8790  
-- Deploy / finance: `docs/PILOT_FINANCE_AND_DEPLOY.md` · License Apache-2.0 (`LICENSE`)
 
 ### Lean public frontend (2026-07-27)
 
