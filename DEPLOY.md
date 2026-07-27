@@ -7,8 +7,11 @@ Browser  ──HTTPS──►  Vercel (static)     https://*.vercel.app
                         │
                         │  POST /api/v1/process  (CORS)
                         ▼
-                     Railway (FastAPI)    https://*.up.railway.app
+                     Railway (FastAPI)    https://metrix-ai-production.up.railway.app
 ```
+
+**Live API:** https://metrix-ai-production.up.railway.app  
+**Health:** https://metrix-ai-production.up.railway.app/api/v1/health
 
 | Surface | Host | Repo path | Domain |
 |---------|------|-----------|--------|

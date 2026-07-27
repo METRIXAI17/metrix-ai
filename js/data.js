@@ -187,9 +187,8 @@ window.METRIX_DATA = {
       if (host === "localhost" || host === "127.0.0.1") {
         return "http://127.0.0.1:8787";
       }
-      // Production Railway public URL — filled after Stage Railway deploy.
-      // Example: "https://metrix-ai-production.up.railway.app"
-      var METRIX_API_BASE = "";
+      // Production Railway public URL (fallback if METRIX_RUNTIME not set)
+      var METRIX_API_BASE = "https://metrix-ai-production.up.railway.app";
       return String(METRIX_API_BASE || "").replace(/\/$/, "");
     })(),
     processPath: "/api/v1/process",
