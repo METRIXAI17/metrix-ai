@@ -222,13 +222,6 @@ python scripts/first_test_all_industries.py
 
 Demo idea + breakdown stays free; full implement is quoted after the tour.
 
----
-
-## Docs (Russian)
-
-- [Отчёт о работе](docs/REPORT_RU.md)  
-- [Инструкция: обработка запросов + first test × 6](docs/FIRST_TEST_GUIDE_RU.md)  
-- [Deploy frontend](DEPLOY.md)  
 
 ---
 
