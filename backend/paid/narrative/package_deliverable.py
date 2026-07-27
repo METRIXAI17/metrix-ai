@@ -111,6 +111,38 @@ def _fmt_pct(v: float) -> str:
     return f"{v:.1f}%"
 
 
+def _client_short_label(text: str, fallback: str = "your operating loop", max_len: int = 56) -> str:
+    """Avoid dumping the full brief into titles / product fields."""
+    t = _clean(text)
+    if not t:
+        return fallback
+    low = t.lower()
+    # Brief-like openers → not a product name
+    if any(
+        low.startswith(p)
+        for p in (
+            "we run",
+            "we are",
+            "i run",
+            "our team",
+            "мы ",
+            "я ",
+            "наш ",
+        )
+    ) or len(t) > max_len + 20:
+        # Prefer first meaningful noun phrase under max_len
+        clause = re.split(r"[,;—\-:]", t, maxsplit=1)[0].strip()
+        if len(clause) > max_len:
+            clause = clause[: max_len - 1].rsplit(" ", 1)[0] + "…"
+        # Still brief-like → fallback product
+        if any(clause.lower().startswith(p) for p in ("we run", "we are", "i run", "our ")):
+            return fallback
+        return clause or fallback
+    if len(t) > max_len:
+        return t[: max_len - 1].rsplit(" ", 1)[0] + "…"
+    return t
+
+
 def _human_industry(industry_id: str) -> str:
     return {
         "ai-agencies": "AI agency operations",
@@ -283,7 +315,7 @@ class ConsultationSynthesizer:
             demo_idea=demo_idea or {},
         )
 
-        # Primary oriented spine from demo / OAE — humanized
+        # Primary oriented spine — short, human, never a paste of the full brief
         spine = _clean(
             demo_idea.get("title")
             or idea_title
@@ -301,13 +333,26 @@ class ConsultationSynthesizer:
             )
         ):
             spine = product
-        # Strip internal scaffold prefixes from spine shown to clients
         spine = re.sub(
             r"^(Solution Bridge:\s*convert orientation into 1–3 pickable SKUs for\s*)",
             "",
             spine,
             flags=re.I,
+        )
+        spine = re.sub(
+            r"^(Clear SKUs after orientation\s*[—\-:]\s*)",
+            "",
+            spine,
+            flags=re.I,
+        )
+        spine = re.sub(
+            r"^(Free orientation consult\s*[—\-:]\s*)",
+            "",
+            spine,
+            flags=re.I,
         ).strip() or product
+        # If spine still looks like the client brief, compress to a short label
+        spine = _client_short_label(spine, product, max_len=56)
 
         # Secondary surfaces (portfolio) — unique options, not a SKU dump
         surfaces = self._surfaces(demo_idea, demo_ideas, oae, product)
@@ -401,18 +446,13 @@ class ConsultationSynthesizer:
         consult_p = PACKAGE_PRICING["metareality_consult"]
         tech_p = PACKAGE_PRICING["specsforge_tech_write"]
 
-        # What they got — short evidence list (no 14-day program line)
+        # What they got — short TOC only (details live once in sections 1–5)
         got = [
-            f"Diagnosis from your brief"
-            + (f" ({len(claims)} claims)" if claims else ""),
-            (
-                "Cash/capacity reading: " + econ["pressure_lines"][0]
-                if econ.get("pressure_lines")
-                else "Structure map ready when you add numbers"
-            ),
+            "Diagnosis grounded in your brief",
+            "How work moves today (situation)",
             f"Change mechanism: {mechanism['title']}",
-            f"Product choice: {product}",
-            "Short notes for next steps + recommended pilot",
+            f"Product: {product}",
+            "Pilot notes + DM path on X (no auto-pay)",
         ]
 
         # Category router + industry sanity (judgment check)
@@ -595,8 +635,8 @@ class ConsultationSynthesizer:
             else:
                 title = f"Ops geometry first, then {product} attach"
                 steps = [
-                    f"Map delivery geometry before building more agents: {spine}.",
-                    f"Pick one attach surface for {product} ({product_line}).",
+                    "Map delivery geometry before building more agents — one page, one owner.",
+                    f"Pick one attach surface for {product}: {product_line}.",
                     f"Turn lever «{lever}» with one metric owner — not three parallel initiatives.",
                     "Close one pilot with written acceptance before expanding scope.",
                 ]
@@ -657,8 +697,8 @@ class ConsultationSynthesizer:
             "lever": lever,
             # Client-facing contrast only (no *markdown*, no SKU-catalog lecture)
             "why_this_case": (
-                f"Why this, for your case: the oriented model and the pressure lines "
-                f"point to «{title}» — not to a full catalog tour."
+                "Why this for your case: pressure lines in the brief point here — "
+                "not to a catalog tour of every Metrix surface."
             ),
         }
 
@@ -840,12 +880,17 @@ class ConsultationSynthesizer:
             if mechanism.get("steps")
             else f"Start the first move on «{mechanism.get('title')}»."
         )
+        # Keep notes short — do not re-paste the full mechanism title / brief
+        first = step1
+        if len(first) > 140:
+            first = first[:137].rsplit(" ", 1)[0] + "…"
         notes = [
-            f"Confirm the diagnosis in one short paragraph with your team.",
-            f"Put a simple weekly check on: {', '.join(proof[:3])}.",
-            f"First move: {step1}",
-            f"Attach {product} on one live lane only — not a company-wide rollout.",
-            f"Keep one before/after note on {p0}; then decide pilot go / no-go.",
+            "Confirm the diagnosis in one short paragraph with your team.",
+            f"Weekly scoreboard: {', '.join(proof[:3])}.",
+            f"First move: {first}",
+            f"Attach {product} on one live lane only — not company-wide.",
+            f"One before/after note on {p0}; then pilot go / no-go.",
+            "Questions on format or simplification → DM @karimmetrix on X.",
         ]
         return notes
 
@@ -1072,16 +1117,14 @@ class ConsultationSynthesizer:
         greet = f"{name}," if name != "there" else "Hello,"
         claim_n = len(claims)
         money = econ["derived"][0]["text"] if econ.get("derived") else econ["pressure_lines"][0]
+        # Keep opening short — details live once in sections 1–5 (no triple repeat)
         return (
             f"{greet}\n\n"
-            f"Free orientation for {_human_industry(industry_id)}, "
-            f"built from your brief"
-            f"{f' ({claim_n} claims)' if claim_n else ''} "
-            f"and your numbers.\n\n"
-            f"Headline: {mechanism['title']}.\n\n"
-            f"Cash reading: {money}\n\n"
-            f"Below: diagnosis, how work moves today, the change mechanism, "
-            f"the product choice, short notes for next steps, and a recommended pilot."
+            f"Free orientation for {_human_industry(industry_id)}.\n\n"
+            f"**Focus:** {mechanism['title']}.\n\n"
+            f"**Cash reading:** {money}\n\n"
+            f"What follows is one pass: diagnosis → how work moves → mechanism → "
+            f"product → pilot. No catalog pitch."
         )
 
     def _pick_product(
@@ -1136,18 +1179,33 @@ class ConsultationSynthesizer:
         for keys, name, one in overrides.get(industry_id, []):
             if any(k in text for k in keys):
                 return name, one
-        # Portfolio pick: first non-jargon idea with brief token hit
+        # Portfolio pick: only short product-like titles (never a pasted brief)
         for idea in demo_ideas[:6]:
             title = _clean(idea.get("title") or "")
-            if not title or any(
-                x in title.lower()
-                for x in ("verdictlattice", "pragma", "zoneweave", "solution bridge")
+            if not title or len(title) > 72:
+                continue
+            low = title.lower()
+            if any(
+                x in low
+                for x in (
+                    "verdictlattice",
+                    "pragma",
+                    "zoneweave",
+                    "solution bridge",
+                    "clear skus after orientation",
+                    "free orientation consult",
+                    "we run",
+                    "we are",
+                )
             ):
                 continue
-            toks = set(re.findall(r"[a-z]{4,}", title.lower()))
+            # Prefer known market products / short labels
+            if title in (base, "Terminal Teammate", "Expert", "Yield Geometry Twin"):
+                return title, line
+            toks = set(re.findall(r"[a-z]{4,}", low))
             brief_toks = set(re.findall(r"[a-z]{4,}", text))
-            if len(toks & brief_toks) >= 2:
-                return title[:80], line
+            if len(toks & brief_toks) >= 2 and len(title) <= 48:
+                return title[:48], line
         return base, line
 
     def _module_map_help(
@@ -1386,7 +1444,9 @@ class ConsultationSynthesizer:
             "opening_anti_template",
             "your brief" in opening.lower()
             or "headline" in opening.lower()
-            or "free orientation" in opening.lower(),
+            or "free orientation" in opening.lower()
+            or "focus:" in opening.lower()
+            or "**focus**" in opening.lower(),
             "opening sets uniqueness contract",
         )
 
@@ -1905,8 +1965,9 @@ Metrix AI · free orientation · v{PackageDeliverableWriter.version}
           <h2>5. Recommended pilot</h2>
           <div class="product-name">{_e(pilot.get('title') or doc['product'])}</div>
           <div class="price">${_e(pilot.get('price_usd') or 690)}</div>
-          <p class="muted">Track: {_e(pilot.get('track') or 'ops')}</p>
-          <p><a class="btn-pilot" href="{_e(pilot.get('description_url_hint') or '/app/client-package-latest.html')}">Open description</a></p>
+          <p class="muted">Track: {_e(pilot.get('track') or 'ops')} · showcase pricing (not a checkout)</p>
+          <p><a class="btn-pilot" href="https://x.com/messages/compose?recipient_id=2042689375742373888" target="_blank" rel="noopener">Contact via DM on X →</a></p>
+          <p class="muted">Warm next step: ask how the pilot format works and what we simplify first. No auto-pay.</p>
         </section>
 
         <section class="card">

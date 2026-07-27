@@ -111,10 +111,10 @@ class TangibleExtractor:
 
         # Payment link placeholder (no real PSP yet)
         payment = {
-            "provider": "placeholder",
-            "checkout_url": f"/app/paid-portal.html?tariff={tariff['id']}&pay=1",
-            "status": "link_ready_ui_only",
-            "note": "OPEN: Stripe/YooKassa keys — wire when commercial go-live",
+            "provider": "x_dm",
+            "checkout_url": "https://x.com/messages/compose?recipient_id=2042689375742373888",
+            "status": "contact_dm",
+            "note": "No auto-checkout. Warm clients → DM on X for pilot format.",
         }
 
         artifacts = [

@@ -154,8 +154,9 @@ def render_portal_html(payload: dict[str, Any]) -> str:
       <div class="price">${esc(tariff.get('price_usd'))}</div>
       <p><strong>{esc(tariff.get('name'))}</strong></p>
       <ul>{includes}</ul>
-      <a class="btn" href="{esc(payment.get('checkout_url') or '#')}">Перейти к оплате (demo link)</a>
-      <p class="muted">{esc(payment.get('note'))}</p>
+      <a class="btn" href="https://x.com/messages/compose?recipient_id=2042689375742373888" target="_blank" rel="noopener">Связаться в DM в X →</a>
+      <p class="muted">Не checkout. Напишите в DM: формат пилота, что упрощаем, что входит. Showcase-цены — ориентир.</p>
+      <p class="muted">{esc(payment.get('note') or '')}</p>
     </div>
 
     <div class="card">
