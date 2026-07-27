@@ -30,7 +30,7 @@ from fastapi.staticfiles import StaticFiles
 
 from backend import __brand__, __codename__, __version__
 from backend.api.routes import analytics, fin_models, health, requests, zones
-from backend.config import API_PREFIX, CORS_ORIGINS, DEBUG, HOST, PORT
+from backend.config import API_PREFIX, CORS_ORIGINS, DEBUG, ENV_NAME, HOST, PORT
 
 logging.basicConfig(
     level=logging.DEBUG if DEBUG else logging.INFO,
@@ -45,16 +45,24 @@ app = FastAPI(
         f"Codename: {__codename__}. Orientation → Zones → Fin Models → Monetization."
     ),
     version=__version__,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if DEBUG else "/docs",
+    redoc_url="/redoc" if DEBUG else "/redoc",
 )
+
+# CORS: explicit origins in production. DEBUG may allow "*".
+# credentials + "*" is invalid in browsers — disable credentials when wildcard.
+_cors = list(CORS_ORIGINS)
+if DEBUG and "*" not in _cors:
+    _cors = _cors + ["*"]
+_allow_credentials = "*" not in _cors
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS + ["*"] if DEBUG else CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=_cors if _cors else ["*"],
+    allow_credentials=_allow_credentials,
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    max_age=600,
 )
 
 app.include_router(health.router, prefix=API_PREFIX)
@@ -76,11 +84,26 @@ def root() -> JSONResponse:
             "brand": __brand__,
             "codename": __codename__,
             "version": __version__,
+            "env": ENV_NAME,
             "message": "Metrix AI backend is alive. Process requests at POST /api/v1/process",
             "docs": "/docs",
             "frontend": "/app/",
             "health": f"{API_PREFIX}/health",
             "catalog": f"{API_PREFIX}/catalog",
+        }
+    )
+
+
+@app.get("/health")
+def root_health() -> JSONResponse:
+    """Alias for platform healthchecks that expect /health."""
+    return JSONResponse(
+        {
+            "ok": True,
+            "brand": __brand__,
+            "version": __version__,
+            "env": ENV_NAME,
+            "service": "metrix-ai-backend",
         }
     )
 

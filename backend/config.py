@@ -21,9 +21,12 @@ for _p in (WORKSPACE_ROOT, DATA_DIR, LOGS_DIR):
     _p.mkdir(parents=True, exist_ok=True)
 
 # ── Сервер ────────────────────────────────────────────────────────────────────
+# Railway/Render/Fly inject PORT; local uses METRIX_PORT or 8787.
 HOST = os.getenv("METRIX_HOST", "0.0.0.0")
-PORT = int(os.getenv("METRIX_PORT", "8787"))
-DEBUG = os.getenv("METRIX_DEBUG", "1") == "1"
+PORT = int(os.getenv("PORT") or os.getenv("METRIX_PORT", "8787"))
+# Default off for safe production; set METRIX_DEBUG=1 only for local dev.
+DEBUG = os.getenv("METRIX_DEBUG", "0") == "1"
+ENV_NAME = os.getenv("METRIX_ENV", "development" if DEBUG else "production")
 API_PREFIX = "/api/v1"
 CORS_ORIGINS = [
     o.strip()

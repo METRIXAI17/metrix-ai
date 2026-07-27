@@ -1,0 +1,15 @@
+# Railway — senior production defaults
+# Docs: https://docs.railway.com/reference/config-as-code
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Public health used by Railway edge + your monitors
+healthcheckPath = "/api/v1/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+# Drain in-flight requests on redeploy
+drainingSeconds = 15

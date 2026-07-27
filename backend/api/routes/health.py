@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from backend import __brand__, __codename__, __version__
-from backend.config import INDUSTRIES, MONETIZATION, TRACKS, ZONES
+from backend.config import ENV_NAME, INDUSTRIES, MONETIZATION, TRACKS, ZONES
 from backend.fin_models.registry import get_fin_model_registry
 from backend.zones.registry import get_zone_registry
 
@@ -19,6 +19,7 @@ def health() -> dict:
         "brand": __brand__,
         "codename": __codename__,
         "version": __version__,
+        "env": ENV_NAME,
         "service": "metrix-ai-backend",
     }
 

@@ -182,7 +182,13 @@
       </div>
     </div>
 
+    <!-- Runtime API override (set after Railway public URL exists). Example:
+         window.METRIX_RUNTIME = { apiBaseUrl: "https://YOUR-SERVICE.up.railway.app" }; -->
+    <script>
+      window.METRIX_RUNTIME = window.METRIX_RUNTIME || { apiBaseUrl: null };
+    </script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>
+

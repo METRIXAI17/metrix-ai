@@ -170,8 +170,28 @@ window.METRIX_DATA = {
       "Consult free. Tech TZ free. Pilot priced by track. Main package only after pilot success.",
   },
 
+  /**
+   * API base URL resolution:
+   * 1) window.METRIX_RUNTIME.apiBaseUrl (set in index.html or by deploy)
+   * 2) local host → http://127.0.0.1:8787
+   * 3) production → set METRIX_API_BASE below after Railway public URL is known
+   *
+   * Empty string "" = same-origin (use with Vercel rewrites proxy to Railway).
+   */
   api: {
-    baseUrl: "http://127.0.0.1:8787",
+    baseUrl: (function resolveApiBase() {
+      if (typeof window !== "undefined" && window.METRIX_RUNTIME && window.METRIX_RUNTIME.apiBaseUrl != null) {
+        return String(window.METRIX_RUNTIME.apiBaseUrl).replace(/\/$/, "");
+      }
+      var host = typeof location !== "undefined" ? location.hostname : "";
+      if (host === "localhost" || host === "127.0.0.1") {
+        return "http://127.0.0.1:8787";
+      }
+      // Production Railway public URL — filled after Stage Railway deploy.
+      // Example: "https://metrix-ai-production.up.railway.app"
+      var METRIX_API_BASE = "";
+      return String(METRIX_API_BASE || "").replace(/\/$/, "");
+    })(),
     processPath: "/api/v1/process",
     enabled: true,
   },

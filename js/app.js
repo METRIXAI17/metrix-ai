@@ -357,9 +357,11 @@
       const submitBtn = form.querySelector('button[type="submit"]');
       if (submitBtn) submitBtn.disabled = true;
 
-      if (api.enabled && api.baseUrl) {
+      // baseUrl may be "" (same-origin via Vercel rewrite) — do not treat as falsy disable
+      if (api.enabled) {
         try {
-          const res = await fetch(`${api.baseUrl}${api.processPath || "/api/v1/process"}`, {
+          const base = (api.baseUrl == null ? "" : String(api.baseUrl)).replace(/\/$/, "");
+          const res = await fetch(`${base}${api.processPath || "/api/v1/process"}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
             body: JSON.stringify({
