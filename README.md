@@ -174,7 +174,7 @@ Every new Fin Model must follow the **3-stage template**
 
 ```
 metrix-ai/
-├── index.html, css/, js/     # public marketplace (frontend)
+├── public/                   # Vercel static site (index.html, css/, js/)
 ├── backend/                  # OAS request backend
 │   ├── main.py
 │   ├── core/

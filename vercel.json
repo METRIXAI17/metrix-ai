@@ -20,13 +20,13 @@
       ]
     },
     {
-      "source": "/index.html",
+      "source": "/",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
     },
     {
-      "source": "/",
+      "source": "/index.html",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
@@ -51,6 +51,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/app/(.*)", "destination": "/$1" }
+    { "source": "/app/(.*)", "destination": "/$1" },
+    { "source": "/app", "destination": "/index.html" }
   ]
 }

@@ -71,8 +71,10 @@ app.include_router(fin_models.router, prefix=API_PREFIX)
 app.include_router(zones.router, prefix=API_PREFIX)
 app.include_router(analytics.router, prefix=API_PREFIX)
 
-# Serve existing static frontend if present
-_frontend = _ROOT
+# Serve static frontend (Vercel uses public/; local API mounts same tree at /app)
+_frontend = _ROOT / "public"
+if not (_frontend / "index.html").exists():
+    _frontend = _ROOT  # legacy fallback
 if (_frontend / "index.html").exists():
     app.mount("/app", StaticFiles(directory=str(_frontend), html=True), name="frontend")
 

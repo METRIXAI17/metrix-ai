@@ -15,9 +15,11 @@ Browser  ──HTTPS──►  Vercel (static)     https://*.vercel.app
 
 | Surface | Host | Repo path | Domain |
 |---------|------|-----------|--------|
-| Public site | **Vercel** | `index.html`, `css/`, `js/`, `vercel.json` | `*.vercel.app` |
+| Public site | **Vercel** | **`public/`** (`index.html`, `css/`, `js/`) + `vercel.json` | `*.vercel.app` |
 | API | **Railway** | `backend/`, `Dockerfile`, `railway.toml` | `*.up.railway.app` |
 | Private pilot | **Not public** | `pilot_private/` (gitignored) | private only |
+
+> **Vercel “Other” preset:** static root is the `public/` folder. Root-level `index.html` is ignored if `public/` exists — that caused `404 NOT_FOUND`.
 
 ---
 
@@ -92,7 +94,7 @@ curl -sS https://YOUR.up.railway.app/api/v1/health
 
 After you have the Railway URL, set it in **one** place:
 
-### Option 1 (recommended) — `index.html` runtime
+### Option 1 (recommended) — `public/index.html` runtime
 
 ```html
 <script>
@@ -102,7 +104,7 @@ After you have the Railway URL, set it in **one** place:
 </script>
 ```
 
-### Option 2 — hardcode in `js/data.js`
+### Option 2 — hardcode in `public/js/data.js`
 
 ```js
 var METRIX_API_BASE = "https://YOUR-SERVICE.up.railway.app";
@@ -125,10 +127,11 @@ Commit + push so Vercel rebuilds with the URL.
 | Framework Preset | **Other** |
 | Root Directory | `.` (default) |
 | Build Command | *(empty)* |
-| Output Directory | *(empty / `.`)* |
+| Output Directory | *(empty — Vercel serves `public/`)* |
 | Install Command | *(empty)* |
 
-4. **Deploy**.
+4. **Deploy**.  
+5. Site files live in **`public/index.html`**, `public/css/`, `public/js/` (required for Vercel Other).
 
 ### C2. Vercel URL
 
