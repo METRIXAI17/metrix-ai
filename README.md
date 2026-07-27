@@ -5,7 +5,7 @@
 Public positioning: [@karimmetrix](https://x.com/karimmetrix)
 
 - Dynamic **Orientation** (no massive training dump of the client’s business)
-- Zones: **Infa Sol · Cloud Sol · Structure Fi · Product Sol**
+- Zones: **Infra Sol · Cloud Sol · Structure Fi · Product Sol**
 - Connecting layer: **Superstructure / Product Overlay**
 - **Enhanced Decision Making Core** — full project awareness + mode switch
 - **Main Operational Analytics Engine (OAE)** — constructor form, embedding, ricochet
