@@ -822,6 +822,7 @@ class RequestPipeline:
                     sanity_hints={
                         "track_priors": (load_sanity(industry_id).get("track_priors") or {})
                     },
+                    preferred_track=track,
                 ),
                 "free_consult": True,
                 "public_pricing": {
@@ -834,6 +835,66 @@ class RequestPipeline:
                 },
             },
         )
+
+        # Client-facing free consult card (clean URLs + short copy)
+        from backend.config import public_api_url
+
+        cat = response.meta.get("category_router") or {}
+        pd = (commercial_out or {}).get("package_deliverable") or {}
+        pack_url = pd.get("url") or public_api_url(
+            f"/api/v1/packages/{req.request_id}/result"
+        )
+        consult_url = pd.get("consult_url") or public_api_url(
+            f"/api/v1/packages/{req.request_id}/consult"
+        )
+        narrative_memo = (
+            ((commercial_out or {}).get("narrative_engine") or {}).get("memo") or {}
+        )
+        blurb = (
+            narrative_memo.get("executive_summary")
+            or (demo_idea or {}).get("summary")
+            or (req.business or "")[:220]
+        )
+        if isinstance(blurb, str) and len(blurb) > 280:
+            blurb = blurb[:277].rsplit(" ", 1)[0] + "…"
+        headline = (
+            (demo_idea or {}).get("label")
+            or (demo_idea or {}).get("title")
+            or "Free orientation ready"
+        )
+        if isinstance(headline, str) and len(headline) > 100:
+            headline = headline[:97].rsplit(" ", 1)[0] + "…"
+        response.meta["free_consult_card"] = {
+            "headline": headline,
+            "blurb": blurb,
+            "direction": cat.get("primary") or "ops",
+            "direction_label": cat.get("primary_label")
+            or str(cat.get("primary") or "ops"),
+            "natural_direction": cat.get("natural_primary"),
+            "natural_label": cat.get("natural_label"),
+            "user_track": track,
+            "pack_url": pack_url,
+            "consult_url": consult_url,
+            "reason": next(
+                (
+                    t.get("reason")
+                    for t in (cat.get("tracks") or [])
+                    if t.get("id") == cat.get("primary")
+                ),
+                "",
+            ),
+        }
+        # Rewrite next_steps that still point at dead /app/*.html paths
+        fixed_steps: list[str] = []
+        for step in response.next_steps:
+            s = str(step)
+            if "/app/client-package-latest.html" in s or "result pack" in s.lower():
+                fixed_steps.append(f"Open your result pack: {pack_url}")
+            elif "/app/paid-portal.html" in s:
+                fixed_steps.append(f"Paid portal (preview): {public_api_url(f'/api/v1/packages/{req.request_id}/result')}")
+            else:
+                fixed_steps.append(s)
+        response.next_steps = fixed_steps
 
         self._persist(req, response)
         return response

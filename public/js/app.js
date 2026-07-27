@@ -377,20 +377,48 @@
           if (!data.ok) throw new Error((data.errors || []).join("; ") || "failed");
 
           const idea = data.demo_idea || {};
-          const cat = (data.meta && data.meta.category_router) || {};
-          const primary = cat.primary || "—";
-          const packUrl =
-            (data.meta &&
-              data.meta.paid_product_core &&
-              data.meta.paid_product_core.package_deliverable &&
-              data.meta.paid_product_core.package_deliverable.url) ||
-            "";
+          const meta = data.meta || {};
+          const card = meta.free_consult_card || {};
+          const cat = meta.category_router || {};
+          const dirLabel =
+            card.direction_label ||
+            cat.primary_label ||
+            cat.primary ||
+            "—";
+          const natural =
+            card.natural_label &&
+            card.natural_direction &&
+            card.natural_direction !== (card.direction || cat.primary)
+              ? card.natural_label
+              : "";
+          const headline = (card.headline || idea.label || idea.title || "Orientation ready").slice(0, 120);
+          const blurb = (card.blurb || idea.summary || "").slice(0, 280);
+          const reason = (card.reason || "").slice(0, 160);
+
+          const abs = (u) => {
+            if (!u) return "";
+            if (/^https?:\/\//i.test(u)) return u;
+            return `${base}${u.startsWith("/") ? u : `/${u}`}`;
+          };
+          const packUrl = abs(
+            card.pack_url ||
+              (meta.paid_product_core &&
+                meta.paid_product_core.package_deliverable &&
+                meta.paid_product_core.package_deliverable.url) ||
+              ""
+          );
+          const consultUrl = abs(card.consult_url || "");
 
           ok.innerHTML = `
-            <strong>Consultation + free tech path ready</strong> · ${escapeHtml(payload.industryName)}<br/>
-            Direction: <strong>${escapeHtml(String(primary))}</strong><br/>
-            ${escapeHtml((idea.title || "—").slice(0, 120))}<br/>
-            ${packUrl ? `<a href="${escapeHtml(packUrl)}" target="_blank" rel="noopener">Open result pack (tech write) →</a><br/>` : ""}
+            <strong>Consultation ready</strong> · ${escapeHtml(payload.industryName)}<br/>
+            Direction: <strong>${escapeHtml(String(dirLabel))}</strong>${
+              natural ? ` <span style="opacity:.75">(brief also leans ${escapeHtml(natural)})</span>` : ""
+            }<br/>
+            <em>${escapeHtml(headline)}</em><br/>
+            ${blurb ? `${escapeHtml(blurb)}<br/>` : ""}
+            ${reason ? `<span style="opacity:.8">${escapeHtml(reason)}</span><br/>` : ""}
+            ${packUrl ? `<a href="${escapeHtml(packUrl)}" target="_blank" rel="noopener">Open full result pack →</a><br/>` : ""}
+            ${consultUrl && consultUrl !== packUrl ? `<a href="${escapeHtml(consultUrl)}" target="_blank" rel="noopener">Open consultation only →</a><br/>` : ""}
             <a href="https://x.com/karimmetrix" target="_blank" rel="noopener">Message @karimmetrix →</a>`;
           ok.classList.add("show");
           form.reset();

@@ -85,6 +85,7 @@ def route_categories(
     nums: dict[str, float] | None = None,
     sanity_hints: dict[str, Any] | None = None,
     lang: str = "en",
+    preferred_track: str | None = None,
 ) -> dict[str, Any]:
     nums = nums or {}
     sanity_hints = sanity_hints or {}
@@ -97,10 +98,33 @@ def route_categories(
         if tr in scores:
             scores[tr] = clamp01(0.7 * scores[tr] + 0.3 * safe_float(p))
 
+    # Map form track (product|models|promotion) → router tracks
+    pref_raw = (preferred_track or "").lower().strip()
+    pref_map = {
+        "product": "product",
+        "models": "product",  # teammate / models surface → product lane
+        "promotion": "promotion",
+        "ops": "ops",
+        "all": "",
+    }
+    pref = pref_map.get(pref_raw, "")
+    if pref and pref in scores:
+        scores[pref] = clamp01(scores[pref] + 0.18)
+
     ranked = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
     top, top_s = ranked[0]
     second_s = ranked[1][1]
     conf = top_s - second_s
+    # Natural recommendation before preference bias (for UI honesty)
+    scores_unbiased = {
+        tr: _score_track(business, tr, nums) for tr in ("ops", "product", "promotion")
+    }
+    for tr, p in priors.items():
+        if tr in scores_unbiased:
+            scores_unbiased[tr] = clamp01(
+                0.7 * scores_unbiased[tr] + 0.3 * safe_float(p)
+            )
+    natural = sorted(scores_unbiased.items(), key=lambda kv: kv[1], reverse=True)[0][0]
 
     reasons = {
         "ops": {
@@ -167,6 +191,10 @@ def route_categories(
     return {
         "module": "Category Router",
         "primary": top,
+        "primary_label": TRACK_LABELS[top].get(lang) or TRACK_LABELS[top]["en"],
+        "natural_primary": natural,
+        "natural_label": TRACK_LABELS[natural].get(lang) or TRACK_LABELS[natural]["en"],
+        "user_preferred": pref or None,
         "confidence": round(conf, 4),
         "needs_clarifying": len(questions) > 0,
         "tracks": tracks_out,

@@ -4,23 +4,42 @@ Client request processing endpoints.
 POST /api/v1/process  — главный вход (как форма на сайте)
 POST /api/v1/orient   — только ориентация
 GET  /api/v1/requests/{id} — сохранённый результат
+GET  /api/v1/packages/{id}/result|consult|tech — HTML packs (Railway-hosted)
 """
 
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
-from backend.config import DATA_DIR
+from backend.config import DATA_DIR, WORKSPACE_ROOT
 from backend.core.orientation_engine import OrientationEngine
 from backend.core.request_pipeline import get_pipeline
 from backend.schemas.requests import ClientRequest
 
 router = APIRouter(tags=["requests"])
+
+_REQ_ID_RE = re.compile(r"^[0-9a-fA-F-]{8,64}$")
+
+
+def _safe_request_id(request_id: str) -> str:
+    rid = (request_id or "").strip()
+    if not _REQ_ID_RE.match(rid) or ".." in rid or "/" in rid or "\\" in rid:
+        raise HTTPException(status_code=400, detail="invalid request_id")
+    return rid
+
+
+def _first_existing(paths: list[Path]) -> Path | None:
+    for p in paths:
+        if p.is_file():
+            return p
+    return None
 
 
 class ProcessBody(BaseModel):
@@ -92,7 +111,68 @@ def orient_only(body: OrientBody) -> dict[str, Any]:
 
 @router.get("/requests/{request_id}")
 def get_request(request_id: str) -> dict[str, Any]:
-    path = Path(DATA_DIR) / "requests" / f"{request_id}.json"
+    rid = _safe_request_id(request_id)
+    path = Path(DATA_DIR) / "requests" / f"{rid}.json"
     if not path.exists():
         raise HTTPException(status_code=404, detail="request not found")
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+@router.get("/packages/{request_id}/result", response_class=HTMLResponse)
+def package_result_html(request_id: str) -> HTMLResponse:
+    """Primary client pack (consult + tech write result)."""
+    rid = _safe_request_id(request_id)
+    ws = WORKSPACE_ROOT / rid
+    path = _first_existing(
+        [
+            ws / "12_package_result" / "YOUR_RESULT.html",
+            ws / "12_package_result" / "PACKAGE.html",
+            ws / "10_consult_metareality" / "CONSULTATION.html",
+            ws / "10_client_pack" / "CLIENT_ORIENTATION.html",
+        ]
+    )
+    if path is None:
+        raise HTTPException(
+            status_code=404,
+            detail="package not found — run POST /api/v1/process first; workspace may be ephemeral after redeploy",
+        )
+    return HTMLResponse(
+        content=path.read_text(encoding="utf-8"),
+        headers={"Cache-Control": "private, max-age=60"},
+    )
+
+
+@router.get("/packages/{request_id}/consult", response_class=HTMLResponse)
+def package_consult_html(request_id: str) -> HTMLResponse:
+    rid = _safe_request_id(request_id)
+    ws = WORKSPACE_ROOT / rid
+    path = _first_existing(
+        [
+            ws / "10_consult_metareality" / "CONSULTATION.html",
+            ws / "12_package_result" / "YOUR_RESULT.html",
+        ]
+    )
+    if path is None:
+        raise HTTPException(status_code=404, detail="consultation not found")
+    return HTMLResponse(
+        content=path.read_text(encoding="utf-8"),
+        headers={"Cache-Control": "private, max-age=60"},
+    )
+
+
+@router.get("/packages/{request_id}/tech", response_class=HTMLResponse)
+def package_tech_html(request_id: str) -> HTMLResponse:
+    rid = _safe_request_id(request_id)
+    ws = WORKSPACE_ROOT / rid
+    path = _first_existing(
+        [
+            ws / "11_tech_write_specsforge" / "TECH_SPEC.html",
+            ws / "12_package_result" / "YOUR_RESULT.html",
+        ]
+    )
+    if path is None:
+        raise HTTPException(status_code=404, detail="tech write not found")
+    return HTMLResponse(
+        content=path.read_text(encoding="utf-8"),
+        headers={"Cache-Control": "private, max-age=60"},
+    )

@@ -50,6 +50,7 @@ Browser  ──HTTPS──►  Vercel (static)     https://*.vercel.app
 | `METRIX_DEBUG` | `0` | Production |
 | `METRIX_ENV` | `production` | Shown in `/health` |
 | `METRIX_CORS` | `https://PLACEHOLDER.vercel.app` | Update after Vercel (Stage C) |
+| `METRIX_PUBLIC_URL` | `https://metrix-ai-production.up.railway.app` | Absolute links to result packs |
 | `PORT` | *(leave unset)* | Railway injects automatically |
 
 Temporary while frontend not live yet:

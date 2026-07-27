@@ -10,6 +10,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from backend.config import public_api_url
+
 
 class ClientPackWriter:
     name = "Client Pack Writer"
@@ -91,7 +93,7 @@ class ClientPackWriter:
             "html": str(html_path),
             "json": str(json_path),
             "latest_html": str(root_html),
-            "url": f"/app/client-pack-latest.html?request_id={request_id}",
+            "url": public_api_url(f"/api/v1/packages/{request_id}/result"),
         }
 
     def _markdown(

@@ -22,7 +22,7 @@ OPS_ROLES: list[dict[str, Any]] = [
         "stage": 1,
         "track": "product",
         "label": "MetaReality consultation",
-        "template": "MetaReality consult: lock geometry for {industry} — {hook}",
+        "template": "Free orientation consult — {hook}",
         "covers": ("product", "clarity", "ops"),
     },
     {
@@ -30,7 +30,7 @@ OPS_ROLES: list[dict[str, Any]] = [
         "stage": 1,
         "track": "product",
         "label": "Solution Bridge · Pick a solution",
-        "template": "Solution Bridge: convert orientation into 1–3 pickable SKUs for {hook}",
+        "template": "Clear SKUs after orientation — {hook}",
         "covers": ("product", "clarity", "ops"),
     },
     {
@@ -231,11 +231,13 @@ class IdeaPortfolioEngine:
         candidates.sort(key=lambda c: c["score"], reverse=True)
         selected = self._select(candidates, target_n, gaps, track)
 
-        # Enrich client-facing fields
+        # Enrich client-facing fields — short diagnosis, not raw dump
+        biz_one = re.sub(r"\s+", " ", (business_text or "").strip())
+        if len(biz_one) > 160:
+            biz_one = biz_one[:157].rsplit(" ", 1)[0] + "…"
         summary_biz = (
-            f"Oriented to your geometry: {business_text[:180].strip()}…"
-            if len(business_text) > 180
-            else business_text.strip()
+            f"We read your situation as: {biz_one} "
+            f"Next: lock one track and ship a 14-day pilot metric."
         )
         ideas: list[dict[str, Any]] = []
         for rank, c in enumerate(selected, start=1):
@@ -296,27 +298,27 @@ class IdeaPortfolioEngine:
     # ── internals ────────────────────────────────────────────────────────
 
     def _hook_phrase(self, business: str) -> str:
-        words = re.findall(r"[A-Za-zа-яА-ЯёЁ0-9%]{4,}", business or "")
-        # prefer content words
+        """Short client-readable hook (not a raw word salad)."""
+        raw = (business or "").strip()
+        if not raw:
+            return "your operating geometry"
+        # Prefer first clause under ~72 chars
+        clause = re.split(r"[.!?\n;]", raw, maxsplit=1)[0].strip()
+        clause = re.sub(r"\s+", " ", clause)
+        if 24 <= len(clause) <= 72:
+            return clause[0].lower() + clause[1:] if clause else "your operating geometry"
+        if len(clause) > 72:
+            cut = clause[:72].rsplit(" ", 1)[0]
+            return (cut[0].lower() + cut[1:]) if cut else "your operating geometry"
+        words = re.findall(r"[A-Za-zа-яА-ЯёЁ0-9%]{4,}", raw)
         stop = {
-            "with",
-            "that",
-            "this",
-            "from",
-            "have",
-            "need",
-            "want",
-            "about",
-            "their",
-            "your",
-            "для",
-            "который",
-            "чтобы",
+            "with", "that", "this", "from", "have", "need", "want", "about",
+            "their", "your", "для", "который", "чтобы", "person", "people",
         }
-        picked = [w for w in words if w.lower() not in stop][:6]
+        picked = [w for w in words if w.lower() not in stop][:4]
         if not picked:
             return "your operating geometry"
-        return " ".join(picked[:4])
+        return " ".join(picked)
 
     def _detect_gaps(self, scores: dict[str, Any], primary: str) -> set[str]:
         gaps: set[str] = set()

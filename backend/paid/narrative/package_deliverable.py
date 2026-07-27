@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from backend.config import PROJECT_ROOT, WORKSPACE_ROOT
+from backend.config import PROJECT_ROOT, WORKSPACE_ROOT, public_api_url
 from backend.core.category_router import route_categories
 from backend.core.industry_sanity import load_sanity, sanity_check_mechanism
 from backend.core.market_units import PACKAGE_PRICING, market_unit_for
@@ -443,7 +443,8 @@ class ConsultationSynthesizer:
             "product": product,
             "title": f"Recommended pilot · {product}",
             "description_path": "10_consult_metareality/CONSULTATION.html",
-            "description_url_hint": "/app/client-package-latest.html",
+            # Absolute URL filled in PackageDeliverableWriter.write once request_id is known
+            "description_url_hint": "",
         }
 
         # Usability polish — no duplicate water, simpler clauses, dry math limit
@@ -1499,6 +1500,14 @@ class PackageDeliverableWriter:
             offer=offer,
         )
         doc["request_id"] = request_id
+        pack_url = public_api_url(f"/api/v1/packages/{request_id}/result")
+        consult_url = public_api_url(f"/api/v1/packages/{request_id}/consult")
+        if isinstance(doc.get("pilot_offer"), dict):
+            doc["pilot_offer"] = {
+                **doc["pilot_offer"],
+                "description_url_hint": pack_url,
+                "consult_url": consult_url,
+            }
 
         ws = WORKSPACE_ROOT / _safe(request_id)
         ws.mkdir(parents=True, exist_ok=True)
@@ -1591,7 +1600,9 @@ class PackageDeliverableWriter:
             "package_result": result_paths,
             "readme": str(ws / "README_CLIENT.md"),
             "latest_html": str(latest),
-            "url": f"/app/client-package-latest.html?request_id={request_id}",
+            "url": pack_url,
+            "consult_url": consult_url,
+            "tech_url": public_api_url(f"/api/v1/packages/{request_id}/tech"),
             "primary": result_paths.get("html"),
             "tangibility": doc["tangibility"],
             "summary": (

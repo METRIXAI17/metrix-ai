@@ -27,7 +27,18 @@ PORT = int(os.getenv("PORT") or os.getenv("METRIX_PORT", "8787"))
 # Default off for safe production; set METRIX_DEBUG=1 only for local dev.
 DEBUG = os.getenv("METRIX_DEBUG", "0") == "1"
 ENV_NAME = os.getenv("METRIX_ENV", "development" if DEBUG else "production")
+# Public HTTPS origin of this API (Railway). Used to mint absolute pack links.
+# Example: https://metrix-ai-production.up.railway.app
+PUBLIC_BASE_URL = os.getenv("METRIX_PUBLIC_URL", "").rstrip("/")
 API_PREFIX = "/api/v1"
+
+
+def public_api_url(path: str) -> str:
+    """Build browser-openable URL for an API path (relative if PUBLIC_BASE_URL unset)."""
+    p = path if str(path).startswith("/") else f"/{path}"
+    if PUBLIC_BASE_URL:
+        return f"{PUBLIC_BASE_URL}{p}"
+    return p
 CORS_ORIGINS = [
     o.strip()
     for o in os.getenv(
