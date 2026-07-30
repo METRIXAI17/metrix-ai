@@ -50,6 +50,18 @@ Public positioning: [@karimmetrix](https://x.com/karimmetrix)
 - Method: Get a consultation → Pick direction → Ship  
 - Pricing strip: free → pilot → main  
 
+### Circle-System · Deep Tech Metrix (2026-07-30)
+
+- **3 global steps:** params + CY/CN/U → super-speed tests + assembly + Super Program + warmth answers → autopilot circle stack  
+- **Surfaces:** auto-consult · tech write · pilot · main · **white-label arch prompts (no external LLM)**  
+- **Support system** fed by metric firmware; pilot accuracy = logistic DE with L=0.92  
+- API: `GET /api/v1/analytics/circle-system` · `POST /api/v1/analytics/deep-tech` · `/support-system` · `/lexicon` · `/knowledge`  
+- Docs: `docs/DEEP_TECH_METRIX_CIRCLE_SYSTEM.md` · `docs/PILOT_CLIENT_GUIDE_RU.md` · `docs/STARTUP_ACTIONS_AND_VALUATION_RU.md` · `docs/SUPPORT_SYSTEM_RU.md`  
+- Tests: `tests/test_circle_system.py`
+- **Free work after consult:** `POST /api/v1/analytics/free-work/start` · clarify · advance  
+  Frontend: button «Начать работу бесплатно» → phases D0–1 / D1–4 / D3–10 + niche answers + founders lane (Karim × Andryusha)  
+- Niche answer base: 6 industries × ops/product/promotion · `GET /api/v1/analytics/niche-answers`
+
 
 ---
 

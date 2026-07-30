@@ -1255,3 +1255,221 @@ textarea {
   font-size: 0.9rem;
   max-width: 50ch;
 }
+
+/* —— Consult result + free work —— */
+.consult-result,
+.free-work-panel {
+  margin-top: 1.5rem;
+  padding: 1.35rem 1.4rem;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+}
+
+.consult-result-head h3 {
+  font-size: 1.25rem;
+  margin: 0.35rem 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.cr-meta {
+  color: var(--accent);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.cr-blurb {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin-bottom: 0.75rem;
+}
+
+.cr-niche {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  background: rgba(94, 234, 212, 0.06);
+  border: 1px solid rgba(94, 234, 212, 0.2);
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.cr-niche strong {
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cr-links a {
+  color: var(--accent-2);
+  margin-right: 1rem;
+  font-size: 0.9rem;
+}
+
+.cr-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.25rem;
+  font-size: 1.02rem;
+}
+
+.free-work-panel {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: linear-gradient(160deg, rgba(251, 191, 36, 0.05), var(--bg-card) 40%);
+}
+
+.fw-quality {
+  color: var(--text-muted);
+  margin: 0.4rem 0 1rem;
+  line-height: 1.6;
+}
+
+.fw-phases {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.fw-phase {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  background: var(--bg-elevated);
+}
+
+.fw-phase.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.25);
+}
+
+.fw-phase.done {
+  opacity: 0.72;
+}
+
+.fw-phase h5 {
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
+}
+
+.fw-phase .days {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+
+.fw-phase ol {
+  margin: 0.35rem 0 0 1.1rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.fw-phase li {
+  margin: 0.25rem 0;
+}
+
+.fw-phase .result-tag {
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
+.fw-card {
+  margin: 1rem 0;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.fw-card h4 {
+  font-size: 1rem;
+  margin-bottom: 0.45rem;
+}
+
+.fw-card .hint {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.fw-clarify-item {
+  margin-bottom: 0.75rem;
+}
+
+.fw-clarify-item label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.fw-clarify-item input,
+.fw-clarify-item textarea,
+.fw-clarify-item select {
+  width: 100%;
+  background: #0a121c;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+}
+
+.fw-metric {
+  margin-top: 0.6rem;
+  color: var(--gold);
+  font-size: 0.9rem;
+}
+
+.fw-pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  max-height: 280px;
+  overflow: auto;
+  line-height: 1.5;
+}
+
+.fw-founders {
+  border-color: rgba(196, 181, 253, 0.4);
+  background: linear-gradient(135deg, rgba(196, 181, 253, 0.08), rgba(94, 234, 212, 0.05));
+}
+
+.fw-founders ul {
+  margin: 0.5rem 0 0.5rem 1.1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.fw-tasty {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.fw-tasty .t-item {
+  margin: 0.35rem 0;
+}
+
+#fw-checklist {
+  margin: 0.4rem 0 0 1.1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}

@@ -22,6 +22,16 @@ from backend.paid.orchestrator import PaidProductCore, flow_overview
 from backend.paid.principles_engine import get_principles_engine
 from backend.paid.system_design_library import get_system_design_library
 from backend.paid.virtual_chips import get_virtual_chip_library
+from backend.core.circle_system import (
+    DeepTechMetrixPipeline,
+    circle_system_overview,
+    lexicon_catalog,
+    run_deep_tech_pipeline,
+)
+from backend.core.circle_system.support_system import SupportSystem
+from backend.core.circle_system.knowledge_libs import ExpertKnowledgePlatform
+from backend.core.circle_system.niche_answer_base import NicheAnswerBase
+from backend.core.circle_system.free_work_flow import FreeWorkFlow
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
@@ -33,6 +43,36 @@ class AnalyticsBody(BaseModel):
     success_metrics: dict = Field(default_factory=dict)
     info_roi_hint: float = 2.0
     force_paid: bool = True
+
+
+class CircleBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    industry: str = "ai-agencies"
+    lang: str = "ru"
+    test_answers: dict = Field(default_factory=dict)
+    product_name: str = "Metrix Circle Runtime"
+    client_label: str = "client"
+    days_elapsed: int = 0
+    pilot_horizon_days: int = 21
+
+
+class FreeWorkStartBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    industry: str = "ai-agencies"
+    track: str = "all"
+    name: str = ""
+    contact: str = ""
+    lang: str = "ru"
+    natural_direction: str | None = None
+    numbers: dict = Field(default_factory=dict)
+    request_id: str | None = None
+    include_founders_lane: bool = True
+
+
+class FreeWorkClarifyBody(BaseModel):
+    work_id: str
+    answers: dict = Field(default_factory=dict)
+    lang: str | None = None
 
 
 @router.get("/system-log")
@@ -356,3 +396,123 @@ def paid_core_preview(body: AnalyticsBody) -> dict[str, Any]:
         "paid_product_core": paid,
         "portal_url": (commercial.get("portal") or {}).get("url"),
     }
+
+
+@router.get("/circle-system")
+def circle_system_info() -> dict[str, Any]:
+    """Circle-System overview + lexicon catalog (read/write words)."""
+    return {
+        **circle_system_overview(),
+        "lexicon": lexicon_catalog(),
+        "endpoints": {
+            "POST /analytics/deep-tech": "Full 3 global steps + product surfaces",
+            "GET /analytics/circle-system": "Overview + modules",
+            "GET /analytics/support-system": "How support works + refs",
+            "GET /analytics/knowledge": "Expert knowledge libraries",
+        },
+    }
+
+
+@router.post("/deep-tech")
+def deep_tech_run(body: CircleBody) -> dict[str, Any]:
+    """
+    Deep Tech Metrix — 3 global steps:
+      A params + indirect certainty
+      B super-speed tests + assembly + super program + warmth answers
+      C circle autopilot stack (pilot, support, white-label prompts)
+    """
+    return run_deep_tech_pipeline(
+        body.business,
+        industry_id=body.industry,
+        lang=body.lang,
+        test_answers=body.test_answers or None,
+        product_name=body.product_name,
+        client_label=body.client_label,
+        days_elapsed=body.days_elapsed,
+        pilot_horizon_days=body.pilot_horizon_days,
+    )
+
+
+@router.get("/support-system")
+def support_system_doc() -> dict[str, Any]:
+    """Support system behaviour + references (standalone empty tick)."""
+    # Demo feed with mild anomaly so structure is visible
+    demo_fw = {
+        "anomalies": [
+            {
+                "metric": "ASM",
+                "level": "warn",
+                "msg": "Assembly below pilot gate (demo)",
+            }
+        ],
+        "support_feed": {"values": {"ASM": 0.3, "SFI": 0.4}},
+        "values": {"ASM": 0.3},
+    }
+    return SupportSystem().run(demo_fw)
+
+
+@router.get("/knowledge")
+def knowledge_libs(q: str = "pilot metrics assembly") -> dict[str, Any]:
+    """Life-app expert knowledge libraries search."""
+    return ExpertKnowledgePlatform().search(q)
+
+
+@router.get("/lexicon")
+def circle_lexicon() -> dict[str, Any]:
+    """Words the program uses for read-in and answer-out."""
+    return lexicon_catalog()
+
+
+@router.get("/niche-answers")
+def niche_answers(industry: str = "", track: str = "ops", lang: str = "ru") -> dict[str, Any]:
+    """Answer base for niches × directions (+ founders lane catalog)."""
+    base = NicheAnswerBase()
+    if not industry:
+        return {
+            "catalog": base.catalog(),
+            "founders_lane": base.founders_lane(lang),
+            "phases": base.free_work_phases(lang),
+        }
+    return {
+        "resolved": base.resolve(industry, track=track, lang=lang),
+        "founders_lane": base.founders_lane(lang),
+        "phases": base.free_work_phases(lang),
+    }
+
+
+@router.post("/free-work/start")
+def free_work_start(body: FreeWorkStartBody) -> dict[str, Any]:
+    """After consult: start free work — phases, clarifications, quality niche answer."""
+    return FreeWorkFlow().start(
+        business=body.business,
+        industry_id=body.industry,
+        track=body.track,
+        name=body.name,
+        contact=body.contact,
+        lang=body.lang,
+        natural_direction=body.natural_direction,
+        numbers=body.numbers or None,
+        request_id=body.request_id,
+        include_founders_lane=body.include_founders_lane,
+    )
+
+
+@router.post("/free-work/clarify")
+def free_work_clarify(body: FreeWorkClarifyBody) -> dict[str, Any]:
+    """Submit clarifications → system re-resolves quality answer + assembly."""
+    return FreeWorkFlow().submit_clarifications(
+        body.work_id,
+        body.answers or {},
+        lang=body.lang,
+    )
+
+
+@router.post("/free-work/advance")
+def free_work_advance(work_id: str) -> dict[str, Any]:
+    """Advance free-work phase (D0-1 → D1-4 → D3-10)."""
+    return FreeWorkFlow().advance_phase(work_id)
+
+
+@router.get("/free-work/{work_id}")
+def free_work_get(work_id: str) -> dict[str, Any]:
+    return FreeWorkFlow().get(work_id)

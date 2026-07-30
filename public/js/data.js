@@ -192,6 +192,9 @@ window.METRIX_DATA = {
       return String(METRIX_API_BASE || "").replace(/\/$/, "");
     })(),
     processPath: "/api/v1/process",
+    freeWorkStartPath: "/api/v1/analytics/free-work/start",
+    freeWorkClarifyPath: "/api/v1/analytics/free-work/clarify",
+    freeWorkAdvancePath: "/api/v1/analytics/free-work/advance",
     enabled: true,
   },
 

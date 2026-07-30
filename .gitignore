@@ -18,7 +18,9 @@ pilot_private/
 # Local workspace dumps & secrets
 backend/workspace/
 backend/data/requests/
+backend/data/free_work/
 docs/_probe*
+docs/screenshot_*.png
 client-package-latest.html
 client-pack-latest.html
 logs/

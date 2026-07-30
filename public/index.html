@@ -133,6 +133,65 @@
             <p class="hint" id="contact-note" hidden></p>
           </div>
         </form>
+
+        <!-- After consult: free work path -->
+        <div id="consult-result" class="consult-result" hidden>
+          <div class="consult-result-head">
+            <div class="eyebrow">Consultation result</div>
+            <h3 id="cr-headline">—</h3>
+            <p id="cr-meta" class="cr-meta"></p>
+            <p id="cr-blurb" class="cr-blurb"></p>
+            <div id="cr-niche-answer" class="cr-niche"></div>
+            <div class="cr-links" id="cr-links"></div>
+          </div>
+          <div class="cr-cta-row">
+            <button type="button" class="btn btn-primary btn-lg" id="btn-start-free-work">
+              Начать работу бесплатно
+            </button>
+            <button type="button" class="btn btn-ghost" id="btn-new-consult">Новая консультация</button>
+          </div>
+        </div>
+
+        <div id="free-work-panel" class="free-work-panel" hidden>
+          <div class="fw-head">
+            <div class="eyebrow">Free work · circle-system</div>
+            <h3 id="fw-title">Дальнейшие действия</h3>
+            <p id="fw-quality" class="fw-quality"></p>
+          </div>
+
+          <div class="fw-phases" id="fw-phases"></div>
+
+          <div class="fw-card" id="fw-clarify-card">
+            <h4>Уточнения для качественного ответа</h4>
+            <p class="hint">Система спрашивает только то, чего не хватает (сборка, не «тепло»).</p>
+            <div id="fw-clarify-form"></div>
+            <button type="button" class="btn btn-primary" id="btn-submit-clarify">Отправить уточнения</button>
+          </div>
+
+          <div class="fw-card" id="fw-checklist-card">
+            <h4>Чеклист направления</h4>
+            <ul id="fw-checklist"></ul>
+            <p id="fw-success-metric" class="fw-metric"></p>
+          </div>
+
+          <div class="fw-card fw-tech" id="fw-tech-card">
+            <h4>Tech write preview</h4>
+            <pre id="fw-tech-md" class="fw-pre"></pre>
+          </div>
+
+          <div class="fw-card fw-founders" id="fw-founders-card" hidden>
+            <div class="eyebrow">Для Karim × Andryusha</div>
+            <h4 id="fw-founders-title">Deep Tech × Branding&VA</h4>
+            <p id="fw-founders-hook"></p>
+            <ul id="fw-founders-list"></ul>
+            <div id="fw-tasty" class="fw-tasty"></div>
+          </div>
+
+          <div class="cr-cta-row">
+            <button type="button" class="btn btn-ghost" id="btn-advance-phase">Следующая фаза →</button>
+            <a class="btn btn-ghost" href="https://x.com/karimmetrix" target="_blank" rel="noopener">@karimmetrix</a>
+          </div>
+        </div>
       </section>
 
       <!-- PRICING (separate block) -->

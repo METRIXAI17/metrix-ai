@@ -757,10 +757,58 @@ class RequestPipeline:
             )
         zones_touched.extend(["memo_convert", "market_units"])
 
+        # ── Circle-System / Deep Tech Metrix (3 global steps) ─────────────
+        circle_out: dict[str, Any] = {}
+        niche_answer: dict[str, Any] = {}
+        free_work_cta: dict[str, Any] = {}
+        _lang = "ru" if any(ord(c) > 127 for c in (req.business or "")[:80]) else "en"
+        try:
+            from backend.core.circle_system import run_deep_tech_pipeline
+            from backend.core.circle_system.niche_answer_base import NicheAnswerBase
+
+            circle_out = run_deep_tech_pipeline(
+                req.business,
+                industry_id=industry_id,
+                lang=_lang,
+                core_metrics={"vvi": vvi, "er": er, "rrc": rrc},
+                product_name="Metrix Circle Runtime",
+                client_label=req.name or "client",
+            )
+            zones_touched.extend(["circle_system", "deep_tech_metrix", "support_system"])
+            cat_for_niche = route_categories(
+                business=req.business,
+                industry_id=industry_id,
+                nums={},
+                sanity_hints={},
+                preferred_track=track,
+            )
+            natural_dir = cat_for_niche.get("primary") or track or "ops"
+            niche_answer = NicheAnswerBase().resolve(
+                industry_id,
+                track=track if track in ("ops", "product", "promotion") else natural_dir,
+                natural_direction=natural_dir if natural_dir in ("ops", "product", "promotion") else "ops",
+                lang=_lang,
+                business=req.business,
+                numbers=(req.success_metrics or {}).get("business_numbers") or {},
+            )
+            free_work_cta = {
+                "label_ru": "Начать работу бесплатно",
+                "label_en": "Start free work",
+                "label": "Начать работу бесплатно" if _lang == "ru" else "Start free work",
+                "endpoint": "/api/v1/analytics/free-work/start",
+                "phases_hint": "D0–1 start · D1–4 tests · D3–10 tech write",
+                "founders_lane": NicheAnswerBase().founders_lane(_lang),
+            }
+        except Exception as exc:  # noqa: BLE001 — never break main path
+            logger.warning("circle_system failed: %s", exc)
+            circle_out = {"ok": False, "error": str(exc)}
+
         # operating mode = decision active mode (richer than orientation alone)
         operating_mode = f"{orient.operating_mode}|{decision.active_mode}"
         if paid_out.get("status") in ("ready", "packageable"):
             operating_mode = f"{operating_mode}|paid_core"
+        if circle_out.get("product_surfaces"):
+            operating_mode = f"{operating_mode}|circle_system"
 
         # Portfolio-aware next step
         if len(demo_ideas) > 1:
@@ -798,7 +846,7 @@ class RequestPipeline:
                 "program_id": req.program_id,
                 "product_result": product,
                 "industry_name": industry["name"],
-                "pipeline_version": "2.3-memo-convert",
+                "pipeline_version": "2.4-circle-system",
                 "idea_count": len(demo_ideas),
                 "idea_portfolio": (product.get("portfolio") or {}),
                 "block_18_slot": "backend/paid",
@@ -809,6 +857,11 @@ class RequestPipeline:
                 "memo_convert": memo_out,
                 "market_unit": market_unit,
                 "package_costs": package_costs,
+                "circle_system": circle_out,
+                "deep_tech_product_surfaces": (circle_out or {}).get("product_surfaces") or {},
+                "circle_assertions": (circle_out or {}).get("assertions") or [],
+                "niche_answer": niche_answer,
+                "free_work_cta": free_work_cta,
                 "category_router": route_categories(
                     business=req.business,
                     industry_id=industry_id,

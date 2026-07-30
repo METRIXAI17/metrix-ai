@@ -1,0 +1,61 @@
+{
+  "total": 100.0,
+  "grade": "A",
+  "axes": [
+    {
+      "name": "tests",
+      "score": 100.0,
+      "weight": 0.3,
+      "notes": [
+        "73 passed in 9.44s",
+        "all tests green"
+      ],
+      "defects": [],
+      "weighted": 30.0
+    },
+    {
+      "name": "deep_tech",
+      "score": 100.0,
+      "weight": 0.2,
+      "notes": [
+        "assembly=0.83",
+        "primary=METRIX LEDGER & OPERATIONAL CORE"
+      ],
+      "defects": [],
+      "weighted": 20.0
+    },
+    {
+      "name": "free_work",
+      "score": 100.0,
+      "weight": 0.15,
+      "notes": [
+        "quality=0.45"
+      ],
+      "defects": [],
+      "weighted": 15.0
+    },
+    {
+      "name": "niche_coverage",
+      "score": 100.0,
+      "weight": 0.15,
+      "notes": [
+        "packs ok 18/18",
+        "founders lane ok"
+      ],
+      "defects": [],
+      "weighted": 15.0
+    },
+    {
+      "name": "private_rooms",
+      "score": 100.0,
+      "weight": 0.2,
+      "notes": [
+        "slug=9dijpwb1i27x",
+        "return_url present"
+      ],
+      "defects": [],
+      "weighted": 20.0
+    }
+  ],
+  "all_defects": []
+}
