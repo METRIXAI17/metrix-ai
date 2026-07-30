@@ -328,8 +328,8 @@
 
       const industry = $("#req-industry").value;
       const business = $("#req-business").value.trim();
-      const name = $("#req-name").value.trim();
-      const contact = $("#req-email").value.trim();
+      const xNick = ($("#req-x")?.value || "").trim();
+      const tgNick = ($("#req-telegram")?.value || "").trim();
       const track = $("#req-track").value;
 
       if (!industry) {
@@ -343,12 +343,18 @@
         return;
       }
 
+      // API still uses name/contact — map social nicks (no email)
+      const name = xNick ? (xNick.startsWith("@") ? xNick : `@${xNick}`) : "";
+      const contact = tgNick ? (tgNick.startsWith("@") ? tgNick : `@${tgNick}`) : "";
+
       const payload = {
         industry,
         industryName: D.industries.find((i) => i.id === industry)?.name,
         track: track || "all",
         name,
         contact,
+        x: name,
+        telegram: contact,
         business,
         createdAt: new Date().toISOString(),
       };
@@ -557,8 +563,8 @@
       business: p.business,
       industry: p.industry,
       track: p.track || "all",
-      name: p.name || "",
-      contact: p.contact || "",
+      name: p.x || p.name || "",
+      contact: p.telegram || p.contact || "",
       lang,
       natural_direction: cat.primary || null,
       request_id: (state.lastProcess && state.lastProcess.request_id) || null,
