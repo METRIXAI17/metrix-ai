@@ -2,7 +2,9 @@
 Answer base per industry × direction (ops / product / promotion).
 
 Used to self-clarify and emit high-quality free-work / consult answers.
-Includes a dual founders lane (Deep Tech × Branding&VA) for Karim + Andryusha.
+
+Note: founders dual lane (Deep Tech × Branding&VA) is stored but not exposed
+in client free-work until partners explicitly enable it.
 """
 
 from __future__ import annotations
@@ -638,7 +640,6 @@ class NicheAnswerBase:
         return {
             "industries": list(NICHE_BASE.keys()),
             "directions": list(DIRECTIONS),
-            "founders_lane": FOUNDERS_LANE["id"],
             "count_packs": sum(len(v["directions"]) for v in NICHE_BASE.values()),
         }
 

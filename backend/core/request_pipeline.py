@@ -797,7 +797,6 @@ class RequestPipeline:
                 "label": "Начать работу бесплатно" if _lang == "ru" else "Start free work",
                 "endpoint": "/api/v1/analytics/free-work/start",
                 "phases_hint": "D0–1 start · D1–4 tests · D3–10 tech write",
-                "founders_lane": NicheAnswerBase().founders_lane(_lang),
             }
         except Exception as exc:  # noqa: BLE001 — never break main path
             logger.warning("circle_system failed: %s", exc)

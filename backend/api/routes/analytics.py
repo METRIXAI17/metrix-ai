@@ -66,7 +66,7 @@ class FreeWorkStartBody(BaseModel):
     natural_direction: str | None = None
     numbers: dict = Field(default_factory=dict)
     request_id: str | None = None
-    include_founders_lane: bool = True
+    include_founders_lane: bool = False
 
 
 class FreeWorkClarifyBody(BaseModel):
@@ -465,17 +465,15 @@ def circle_lexicon() -> dict[str, Any]:
 
 @router.get("/niche-answers")
 def niche_answers(industry: str = "", track: str = "ops", lang: str = "ru") -> dict[str, Any]:
-    """Answer base for niches × directions (+ founders lane catalog)."""
+    """Answer base for niches × directions."""
     base = NicheAnswerBase()
     if not industry:
         return {
             "catalog": base.catalog(),
-            "founders_lane": base.founders_lane(lang),
             "phases": base.free_work_phases(lang),
         }
     return {
         "resolved": base.resolve(industry, track=track, lang=lang),
-        "founders_lane": base.founders_lane(lang),
         "phases": base.free_work_phases(lang),
     }
 

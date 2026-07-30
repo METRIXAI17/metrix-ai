@@ -2,7 +2,7 @@
 Free work flow after consultation — start button path.
 
 Client: start free work → system self-clarifies → quality niche answer
-→ day phases + quizzes → tech write spine → founders dual lane (optional).
+→ day phases + quizzes → tech write spine.
 """
 
 from __future__ import annotations
@@ -43,8 +43,9 @@ class FreeWorkFlow:
         natural_direction: str | None = None,
         numbers: dict[str, Any] | None = None,
         request_id: str | None = None,
-        include_founders_lane: bool = True,
+        include_founders_lane: bool = False,  # reserved; not exposed to clients yet
     ) -> dict[str, Any]:
+        _ = include_founders_lane  # deferred product decision
         work_id = str(uuid.uuid4())
         numbers = dict(numbers or {})
 
@@ -127,8 +128,6 @@ class FreeWorkFlow:
         )
 
         phases = self.niche.free_work_phases(lang)
-        founders = self.niche.founders_lane(lang) if include_founders_lane else None
-
         tech_specs = (circle.get("terminal_specs") or {}).get("terminal_functions") or []
         tech_md = "\n\n".join(
             f"### {t.get('title')}\n{t.get('markdown', '')}" for t in tech_specs[:4]
@@ -185,12 +184,11 @@ class FreeWorkFlow:
                 ),
                 "autopilot_ready": (circle.get("layers") or {}).get("autopilot_ready"),
             },
-            "founders_lane": founders,
             "product_surfaces": (circle.get("product_surfaces") or {}).get("tech_write"),
             "next_ui": {
                 "show_phases": True,
                 "show_clarify_form": True,
-                "show_founders_lane": bool(founders),
+                "show_founders_lane": False,
                 "primary_button": "submit_clarifications",
             },
         }
@@ -271,7 +269,6 @@ class FreeWorkFlow:
                 f"### {t.get('title')}\n{t.get('markdown', '')}"
                 for t in ((circle.get("terminal_specs") or {}).get("terminal_functions") or [])[:4]
             )[:4000],
-            "founders_lane": self.niche.founders_lane(lang),
             "message_ru": "Ответ обновлён по уточнениям. Можно продолжать free work.",
             "message_en": "Answer updated from clarifications. Continue free work.",
         }

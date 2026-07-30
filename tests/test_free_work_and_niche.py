@@ -16,13 +16,6 @@ def test_niche_all_industries_all_directions():
             assert r["success_metric"]
 
 
-def test_founders_lane():
-    f = NicheAnswerBase().founders_lane("ru")
-    assert "@andrewsmm1" in f["for"]
-    assert len(f["joint_deliverables_free"]) >= 3
-    assert f["display_hook"]
-
-
 def test_free_work_start_and_clarify():
     fw = FreeWorkFlow()
     start = fw.start(
@@ -39,7 +32,8 @@ def test_free_work_start_and_clarify():
     assert start["work_id"]
     assert start["phases"]
     assert start["quality_answer"]["answer"]
-    assert start["founders_lane"]
+    assert start.get("founders_lane") in (None, {})
+    assert start["next_ui"]["show_founders_lane"] is False
     assert start["cta"]["label"]
 
     clar = fw.submit_clarifications(

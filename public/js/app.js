@@ -562,7 +562,7 @@
       lang,
       natural_direction: cat.primary || null,
       request_id: (state.lastProcess && state.lastProcess.request_id) || null,
-      include_founders_lane: true,
+      include_founders_lane: false,
     };
 
     try {
@@ -658,21 +658,6 @@
       current_phase: phases[0],
       free_work_checklist: ["Brief", "Signer", "One success metric"],
       tech_write_preview: "# Tech write\n\n(connect API for full draft)",
-      founders_lane: {
-        title: "Deep Tech × Branding&VA",
-        display_hook:
-          "Karim — TZ/assembly; Andryusha — Phenomenon→Notation→Object. Один free stream.",
-        joint_deliverables_free: [
-          { title: "VA name seed", owner: "@andrewsmm1", desc: "3 name candidates" },
-          { title: "Tech TZ spine", owner: "@karimmetrix", desc: "scope + acceptance" },
-          { title: "Object lockup v0", owner: "@andrewsmm1", desc: "visual token" },
-          { title: "Pilot charter dual", owner: "both", desc: "metric + brand constraint" },
-        ],
-        tasty_moments: [
-          "Имя + объект раньше paid pilot",
-          "X-ready: crystal visual + mechanism line",
-        ],
-      },
     };
   }
 
@@ -763,34 +748,6 @@
     const pre = $("#fw-tech-md");
     if (pre) pre.textContent = data.tech_write_preview || "(нет preview — уточните поля)";
 
-    // Founders lane
-    const fl = data.founders_lane;
-    const fcard = $("#fw-founders-card");
-    if (fcard && fl) {
-      fcard.hidden = false;
-      $("#fw-founders-title").textContent = fl.title || "Deep Tech × Branding&VA";
-      $("#fw-founders-hook").textContent = fl.display_hook || fl.hook || "";
-      const list = $("#fw-founders-list");
-      if (list) {
-        list.innerHTML = (fl.joint_deliverables_free || [])
-          .map(
-            (d) =>
-              `<li><strong>${escapeHtml(d.title)}</strong> · ${escapeHtml(d.owner || "")} — ${escapeHtml(
-                d.desc || ""
-              )}</li>`
-          )
-          .join("");
-      }
-      const tasty = $("#fw-tasty");
-      if (tasty) {
-        tasty.innerHTML = (fl.tasty_moments || [])
-          .map((t) => `<div class="t-item">✦ ${escapeHtml(t)}</div>`)
-          .join("");
-      }
-    } else if (fcard) {
-      fcard.hidden = true;
-    }
-
     panel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -837,7 +794,6 @@
       if (data.ok === false) throw new Error(data.error || "clarify failed");
       // keep phases from previous if missing
       data.phases = data.phases || (state.freeWork && state.freeWork.phases);
-      data.founders_lane = data.founders_lane || (state.freeWork && state.freeWork.founders_lane);
       data.self_clarifications = data.open_clarifications || [];
       data.free_work_checklist =
         (data.quality_answer && data.quality_answer.free_work_checklist) ||
@@ -885,7 +841,6 @@
         self_clarifications: (state.freeWork || {}).self_clarifications || [],
         free_work_checklist: (state.freeWork || {}).free_work_checklist,
         tech_write_preview: (state.freeWork || {}).tech_write_preview,
-        founders_lane: (state.freeWork || {}).founders_lane,
       };
       renderFreeWork(state.freeWork);
     } catch (e) {
