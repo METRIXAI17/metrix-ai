@@ -52,6 +52,14 @@ INDUSTRY_PARAM_LEXICON: dict[str, list[str]] = {
         "assembly", "bom", "setup", "config", "rework", "throughput",
         "station", "fixture", "firmware", "qc", "kit", "line",
     ],
+    "asset-decisions": [
+        "asset", "capital", "risk", "metric", "portfolio", "strategy",
+        "monitor", "cognition", "liquidity", "private", "horizon", "drawdown",
+    ],
+    "d2c-offramp": [
+        "d2c", "freelace", "freelance", "document", "workspace", "offramp",
+        "agent", "order", "brief", "exchange", "handoff", "idea", "outreach",
+    ],
 }
 
 # Оси концептуального пространства (общие + индустриальные)

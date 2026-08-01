@@ -50,6 +50,15 @@ Public positioning: [@karimmetrix](https://x.com/karimmetrix)
 - Method: Get a consultation → Pick direction → Ship  
 - Pricing strip: free → pilot → main  
 
+### Unified liquidity surface (2026-08-02)
+
+- **One offer:** Shift · Assistant · Interface on a horizontal liquidity axis  
+- **8 niches:** previous 6 + **asset-decisions** + **d2c-offramp** (badge **Автоликвидность**)  
+- Problem → top-solution rotating slides · asset visual *AI for asset management decisions*  
+- Expert ideas free · transactions paid · volume tariff note · TZ / no-guarantee framing for assets  
+- Report: `docs/REPORT_UNIFIED_SURFACE_2026-08-02.md`  
+
+
 ### Circle-System · Deep Tech Metrix (2026-07-30)
 
 - **3 global steps:** params + CY/CN/U → super-speed tests + assembly + Super Program + warmth answers → autopilot circle stack  

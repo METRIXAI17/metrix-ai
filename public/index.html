@@ -5,10 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Metrix AI — free business orientation. Ops, product, promotion. Pilot after consult."
+      content="Metrix AI — AI that turns intent into liquidity. Free expert orientation. Ops · product · promotion · autoliquidity (assets + D2C). Pilot after consult."
     />
     <meta name="theme-color" content="#070a0f" />
-    <title>Metrix AI — Free consult · Pilot</title>
+    <meta property="og:title" content="Metrix AI — Orient · Decide · Liquidate" />
+    <meta
+      property="og:description"
+      content="Expert ideas free. Transactions paid. Asset decisions + D2C freelace offramp on one liquidity surface."
+    />
+    <meta property="og:image" content="assets/ai-asset-management-decisions.jpg" />
+    <title>Metrix AI — Free consult · Autoliquidity · Pilot</title>
     <link rel="stylesheet" href="css/styles.css" />
     <link
       rel="icon"
@@ -33,8 +39,10 @@
         </div>
 
         <div class="nav-links">
+          <a href="#offer">Offer</a>
+          <a href="#niches">Niches</a>
+          <a href="#problems">Problems</a>
           <a href="#products">Flagships</a>
-          <a href="#how">How it works</a>
           <a href="#pricing">Pricing</a>
           <a href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">@karimmetrix</a>
         </div>
@@ -43,18 +51,93 @@
 
     <main id="top">
       <header class="hero wrap">
-        <div class="hero-badge">Free consult · then pilot</div>
-        <h1>Orient your business.<br /><em>Pick a solution.</em><br />Ship the rest.</h1>
+        <div class="hero-badge">Expert ideas free · transactions paid · autoliquidity</div>
+        <h1>AI that turns<br /><em>intent into liquidity.</em></h1>
         <p class="hero-lead">
-          Free orientation from a short business description. We rank
-          <strong>ops · product · promotion</strong> and propose a pilot.
+          One surface for online business: orient the problem, structure the decision,
+          ship a document the market can buy — or a terminal agent can execute.
+          <strong>Ops · product · promotion</strong> plus
+          <strong>asset decisions</strong> and <strong>D2C freelace offramp</strong>.
         </p>
         <div class="hero-actions">
           <button type="button" class="btn btn-primary" data-mode-jump="request">Get a consultation</button>
-          <button type="button" class="btn btn-ghost" data-mode-jump="marketplace">See products</button>
+          <button type="button" class="btn btn-ghost" data-scroll="#niches">See niches</button>
+          <button type="button" class="btn btn-ghost" data-scroll="#problems">Top solutions</button>
         </div>
-        <div class="industry-strip" id="industry-strip" aria-label="Industries"></div>
+        <div class="industry-strip" id="industry-strip" aria-label="Niches"></div>
       </header>
+
+      <!-- MASTER OFFER — three product lines on one horizontal surface -->
+      <section class="section wrap" id="offer">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Common offer</div>
+            <h2 id="master-offer-title">One surface · three lines</h2>
+            <p id="master-offer-sub" class="how-lead"></p>
+          </div>
+        </div>
+        <div class="pillar-grid" id="master-pillars"></div>
+        <p class="disclaimer-line" id="master-disclaimers"></p>
+      </section>
+
+      <!-- ASSET VISUAL -->
+      <section class="section wrap asset-banner" id="asset-visual" aria-label="Asset decisions visual">
+        <div class="asset-banner-inner">
+          <img
+            src="assets/ai-asset-management-decisions.jpg"
+            alt="AI for asset management decisions — Metrix AI"
+            width="640"
+            height="640"
+            loading="lazy"
+          />
+          <div class="asset-banner-copy">
+            <div class="eyebrow">Autoliquidity · assets</div>
+            <h2>AI for asset management decisions</h2>
+            <p>
+              Cognition · monitoring · strategy generation. Deal management stays with you.
+              Work by TZ — no yield guarantees, no AUM-style base fee.
+            </p>
+            <button type="button" class="btn btn-primary" data-industry-jump="asset-decisions" data-mode-jump="request">
+              Open asset lane
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- NICHES with descriptions -->
+      <section class="section wrap" id="niches">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Niches</div>
+            <h2>Directions — simplified</h2>
+            <p>Eight lanes. Two marked <strong>Автоликвидность</strong>: decision-making and D2C share one liquidity surface.</p>
+          </div>
+        </div>
+        <div class="niche-grid" id="niche-grid"></div>
+      </section>
+
+      <!-- PROBLEM SLIDES -->
+      <section class="section wrap" id="problems">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Frequent problems</div>
+            <h2>Top solution the system proposes</h2>
+            <p>Rotating slides from real orientation patterns — not a YouTube vinaigrette.</p>
+          </div>
+        </div>
+        <div class="problem-stage" id="problem-stage">
+          <div class="problem-card">
+            <div class="eyebrow">Problem</div>
+            <h3 id="problem-title">—</h3>
+            <div class="eyebrow" style="margin-top: 1rem">Top solution</div>
+            <p id="problem-solution"></p>
+            <div class="problem-foot">
+              <span class="tag accent" id="problem-niche"></span>
+              <div class="marquee-dots" id="problem-dots"></div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- PRODUCTS -->
       <section class="section wrap mode-panel active" id="mode-marketplace" data-panel="marketplace">
@@ -62,13 +145,13 @@
           <div>
             <div class="eyebrow">Flagships</div>
             <h2>What you can start with</h2>
-            <p id="home-catalog-note">Click a card for the essence.</p>
+            <p id="home-catalog-note">Click a card for the essence. Autoliquidity lanes are labeled.</p>
           </div>
         </div>
         <div class="grid grid-flagship" id="program-grid"></div>
       </section>
 
-      <!-- HOW IT WORKS — excited product story -->
+      <!-- HOW IT WORKS -->
       <section class="section wrap" id="how">
         <div class="section-head">
           <div>
@@ -87,7 +170,8 @@
             <div class="eyebrow">Free consult + free tech write</div>
             <h2>Describe your business</h2>
             <p>
-              5–20 sentences. Industry required. You get free orientation and free technical writing (tech TZ).
+              5–20 sentences. Niche required. You get free orientation and free technical writing (tech TZ).
+              Expert ideas free — transactions when you execute.
             </p>
           </div>
         </div>
@@ -95,7 +179,7 @@
         <form class="form-card" id="request-form" novalidate>
           <div class="form-grid">
             <div class="field">
-              <label for="req-industry">Industry <span class="req">*</span></label>
+              <label for="req-industry">Niche <span class="req">*</span></label>
               <select id="req-industry" name="industry" required>
                 <option value="">Select…</option>
               </select>
@@ -120,7 +204,7 @@
                 id="req-business"
                 name="business"
                 required
-                placeholder="Who you serve, how you make money, where it hurts, any numbers you have."
+                placeholder="Who you serve, how you make money, where it hurts, any numbers you have. Idea without a doc? Capital without a model? Say it."
               ></textarea>
             </div>
             <p class="form-error" id="form-error" role="alert"></p>
@@ -134,7 +218,6 @@
           </div>
         </form>
 
-        <!-- After consult: free work path -->
         <div id="consult-result" class="consult-result" hidden>
           <div class="consult-result-head">
             <div class="eyebrow">Consultation result</div>
@@ -186,7 +269,7 @@
         </div>
       </section>
 
-      <!-- PRICING (separate block) -->
+      <!-- PRICING -->
       <section class="section wrap" id="pricing">
         <div class="package-banner package-banner-slim">
           <div>
@@ -206,7 +289,7 @@
       <div class="wrap footer-inner">
         <div>
           <strong style="color: var(--text)">Metrix AI</strong>
-          <span> · Free consult · pilot-first</span>
+          <span> · Expert free · pilot-first · autoliquidity</span>
         </div>
         <div>
           <a href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">@karimmetrix</a>
@@ -233,7 +316,6 @@
       </div>
     </div>
 
-    <!-- Production API (Railway). On localhost, data.js keeps http://127.0.0.1:8787. -->
     <script>
       (function () {
         var h = location.hostname;
@@ -250,4 +332,3 @@
     <script src="js/app.js"></script>
   </body>
 </html>
-

@@ -1231,6 +1231,206 @@ textarea {
   color: var(--text-dim);
 }
 
+/* —— Master offer pillars —— */
+.pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.pillar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  background:
+    radial-gradient(100% 80% at 100% 0%, rgba(94, 234, 212, 0.1), transparent 55%),
+    var(--bg-card);
+}
+
+.pillar-card h3 {
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.pillar-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.disclaimer-line {
+  margin-top: 1.1rem;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  max-width: 70ch;
+}
+
+/* —— Asset banner —— */
+.asset-banner-inner {
+  display: grid;
+  grid-template-columns: minmax(180px, 280px) 1fr;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(240, 171, 252, 0.28);
+  background:
+    radial-gradient(80% 100% at 0% 50%, rgba(240, 171, 252, 0.12), transparent 60%),
+    var(--bg-card);
+}
+
+.asset-banner-inner img {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: block;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.asset-banner-copy h2 {
+  font-size: 1.45rem;
+  letter-spacing: -0.02em;
+  margin: 0.35rem 0 0.6rem;
+}
+
+.asset-banner-copy p {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  max-width: 48ch;
+}
+
+/* —— Niche grid —— */
+.niche-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.9rem;
+}
+
+.niche-card {
+  position: relative;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--flag-accent, #5eead4) 30%, transparent);
+  border-radius: var(--radius);
+  padding: 1.15rem 1.2rem 1.1rem;
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--flag-accent, #5eead4) 18%, transparent), transparent 55%),
+    var(--bg-card);
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.niche-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--flag-accent, #5eead4) 60%, transparent);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.niche-icon {
+  font-size: 1.25rem;
+  opacity: 0.9;
+}
+
+.niche-card h3 {
+  font-size: 1.05rem;
+  padding-right: 4.5rem;
+}
+
+.niche-blurb {
+  color: var(--flag-accent, var(--accent));
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.niche-desc {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.niche-problems {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.niche-badge {
+  font-size: 0.62rem !important;
+  max-width: 9rem;
+  text-align: center;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.industry-tile-auto {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tile-accent, #f0abfc) 45%, transparent);
+}
+
+/* —— Problem slides stage —— */
+.problem-stage {
+  max-width: 720px;
+}
+
+.problem-card {
+  padding: 1.5rem 1.55rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background:
+    radial-gradient(90% 80% at 0% 0%, rgba(56, 189, 248, 0.12), transparent 55%),
+    var(--bg-card);
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.problem-card h3 {
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  margin-top: 0.25rem;
+}
+
+.problem-card #problem-solution {
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  line-height: 1.65;
+  flex: 1;
+  margin-top: 0.25rem;
+}
+
+.problem-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .asset-banner-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-banner-inner img {
+    max-width: 220px;
+  }
+}
+
 /* Package promo banner */
 .package-banner {
   margin: 2rem 0;

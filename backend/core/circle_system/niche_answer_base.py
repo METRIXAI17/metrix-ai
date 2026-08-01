@@ -412,6 +412,142 @@ NICHE_BASE: dict[str, dict[str, Any]] = {
             },
         },
     },
+    "asset-decisions": {
+        "name": "Asset decisions",
+        "hook": "AI for asset management decisions — cognition · monitoring · strategies. Autoliquidity.",
+        "badge": "Автоликвидность",
+        "must_clarify": [
+            "capital_band",
+            "horizon",
+            "key_metric_today",
+            "what_you_refuse_to_do",
+        ],
+        "tasty_proof": "One situation pack: market model + risk language + do-not-do list — deals still yours.",
+        "directions": {
+            "ops": {
+                "title": "Key metric + risk map",
+                "answer": (
+                    "Автоликвидность: определяем ключевую метрику, модель её изменения, риск-рамку. "
+                    "Не «бот торгует», а поддержка решений. Free: metric card + what-not-to-do."
+                ),
+                "answer_en": (
+                    "Autoliquidity: key metric, change model, risk frame. "
+                    "Decision support — not unmanaged auto-trading. Free: metric card + do-not-do list."
+                ),
+                "free_work": [
+                    "Name capital band and horizon",
+                    "What metric would prove the model works",
+                    "Three actions you refuse forever",
+                ],
+                "success_metric": "Signed key metric + risk rules for pilot window",
+                "out_of_scope_default": ["custody of funds", "guaranteed yield", "unattended live trading"],
+            },
+            "product": {
+                "title": "Situation strategy pack",
+                "answer": (
+                    "Продукт: готовые модели рынка под ситуацию + логический/риск разбор. "
+                    "Подписка или разовая программа. Менеджмент сделок — у клиента. Work by TZ."
+                ),
+                "answer_en": (
+                    "Product: situation market models + logical/risk analysis. "
+                    "One-shot or subscription. Client keeps deal management. Work by TZ."
+                ),
+                "free_work": [
+                    "One market situation you face now",
+                    "Data sources you trust",
+                    "Pass/fail for a strategy draft",
+                ],
+                "success_metric": "One strategy pack accepted without auto-execution clause",
+                "out_of_scope_default": ["broker integration with write access", "profit SLA"],
+            },
+            "promotion": {
+                "title": "Private-room narrative",
+                "answer": (
+                    "Промо аккуратно: base mechanisms (когнитивка, мониторинг, генерация стратегий). "
+                    "Приватка после теста. Без гарантий. Free: 1 post outline + disclaimers."
+                ),
+                "answer_en": (
+                    "Promo carefully: base mechanisms (cognition, monitoring, strategy gen). "
+                    "Private room after test. No guarantees. Free: one post outline + disclaimers."
+                ),
+                "free_work": [
+                    "Audience who already has capital or seeks private room",
+                    "One honest non-guarantee line",
+                    "CTA to free metric card",
+                ],
+                "success_metric": "1 private-room conversation booked",
+                "out_of_scope_default": ["public yield promises", "signal-channel hype"],
+            },
+        },
+    },
+    "d2c-offramp": {
+        "name": "D2C · freelace offramp",
+        "hook": "Idea → freelace-ready document → market → optional terminal agent. Autoliquidity.",
+        "badge": "Автоликвидность",
+        "must_clarify": [
+            "idea_one_liner",
+            "skills_you_sell",
+            "exchange_or_channel",
+            "agent_allowed_yes_no",
+        ],
+        "tasty_proof": "Document that matches a live freelace problem and can be handed to a terminal agent.",
+        "directions": {
+            "ops": {
+                "title": "Idea → brief → match",
+                "answer": (
+                    "Ops: структурируем сырую идею в brief. Базовый поиск заказов можно автоматизировать. "
+                    "Free: 1 document pack under a real exchange problem shape."
+                ),
+                "answer_en": (
+                    "Ops: structure raw idea into a brief. Basic order search can be automated. "
+                    "Free: one document pack shaped like a live exchange problem."
+                ),
+                "free_work": [
+                    "Write the incomplete idea in 5 sentences",
+                    "Name exchange or channel",
+                    "What you will not automate",
+                ],
+                "success_metric": "1 document matches a live gig shape",
+                "out_of_scope_default": ["full account takeover on freelace platforms"],
+            },
+            "product": {
+                "title": "Workspace + agent handoff",
+                "answer": (
+                    "Продукт: workspace D2C. Клиент платит за творческое многовариативное решение; "
+                    "терминальный агент исполняет принятый документ. Free tech write: scope + DoD + handoff."
+                ),
+                "answer_en": (
+                    "Product: D2C workspace. Client pays for creative multi-variant work; "
+                    "terminal agent executes the accepted document. Free tech write: scope + DoD + handoff."
+                ),
+                "free_work": [
+                    "Creative layer only you can do",
+                    "What the agent must not invent",
+                    "Acceptance checklist for the doc",
+                ],
+                "success_metric": "Handoff kit accepted; agent dry-run once",
+                "out_of_scope_default": ["unsupervised client messaging", "payment fraud paths"],
+            },
+            "promotion": {
+                "title": "Document not vinaigrette",
+                "answer": (
+                    "Промо против YouTube-винегрета: ценность = документ, изменение = цифровой продукт + агент. "
+                    "Free: 1 proof post — before (idea) / after (sold or accepted doc)."
+                ),
+                "answer_en": (
+                    "Promo vs YouTube vinaigrette: value = document, change = digital product + agent. "
+                    "Free: one proof post — before (idea) / after (sold or accepted doc)."
+                ),
+                "free_work": [
+                    "One anonymized before/after",
+                    "One sentence of clear value",
+                    "CTA to free workspace brief",
+                ],
+                "success_metric": "1 outreach reply or freelace shortlist",
+                "out_of_scope_default": ["30-min empty hype videos as the product"],
+            },
+        },
+    },
 }
 
 

@@ -306,6 +306,89 @@ MARKET_UNITS: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "asset-decisions": {
+        "application_point": "decision_support_liquidity",
+        "application_ru": "Поддержка решений по активам · автоликвидность",
+        "badge": "Автоликвидность",
+        "liquidity_surface": "decision_making",
+        "product": {
+            "sku": "decision_support_desk",
+            "name": "Decision Support Desk",
+            "one_liner": (
+                "Key metric · risk model · situation packs — cognition, monitoring, "
+                "strategy generation. Deal management stays with the client."
+            ),
+        },
+        "promotion": {
+            "angle": "private_room_proof",
+            "angle_ru": "Приватка после теста модели, без гарантий доходности",
+            "one_liner": "Private room after model test — work by TZ, no yield guarantees.",
+        },
+        "offers": [
+            {
+                "track": "ops",
+                "title": "Key-metric + risk map (ops)",
+                "price_usd": 690,
+                "simple": True,
+            },
+            {
+                "track": "product",
+                "title": "Situation strategy pack (product)",
+                "price_usd": 990,
+                "simple": True,
+            },
+            {
+                "track": "promotion",
+                "title": "Private-room narrative + disclaimers",
+                "price_usd": 490,
+                "simple": True,
+            },
+        ],
+        "disclaimers": [
+            "Not investment advice",
+            "Not auto-trading custody",
+            "No profit guarantees",
+        ],
+    },
+    "d2c-offramp": {
+        "application_point": "d2c_document_liquidity",
+        "application_ru": "D2C: идея → документ → биржа → агент · автоликвидность",
+        "badge": "Автоликвидность",
+        "liquidity_surface": "d2c",
+        "product": {
+            "sku": "workspace_offramp",
+            "name": "Workspace Offramp",
+            "one_liner": (
+                "Incomplete idea → freelace-ready document → optional order match → "
+                "terminal agent on accepted scope."
+            ),
+        },
+        "promotion": {
+            "angle": "document_not_vinaigrette",
+            "angle_ru": "Ценность = документ на бирже, не 30-минутный винегрет",
+            "one_liner": "Sell the creative multi-variant layer; agent executes the fixed doc.",
+        },
+        "offers": [
+            {
+                "track": "ops",
+                "title": "Idea → brief → freelace match (ops)",
+                "price_usd": 490,
+                "simple": True,
+            },
+            {
+                "track": "product",
+                "title": "Workspace + agent handoff kit",
+                "price_usd": 890,
+                "simple": True,
+            },
+            {
+                "track": "promotion",
+                "title": "Proof: document sold / accepted once",
+                "price_usd": 390,
+                "simple": True,
+            },
+        ],
+    },
 }
 
 

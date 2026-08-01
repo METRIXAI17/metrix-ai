@@ -108,6 +108,28 @@ INDUSTRIES: dict[str, dict[str, Any]] = {
         "accent": "#fda4af",
         "default_fin_models": ["metaobject", "chipforge", "orientationforge"],
     },
+    "asset-decisions": {
+        "id": "asset-decisions",
+        "name": "Asset decisions",
+        "short": "Assets",
+        "blurb": "AI for asset management decisions · autoliquidity.",
+        "application_point": "decision_support_liquidity",
+        "primary_product": "Decision Support Desk",
+        "accent": "#f0abfc",
+        "badge": "Автоликвидность",
+        "default_fin_models": ["marketforge", "edgeforge", "orientationforge"],
+    },
+    "d2c-offramp": {
+        "id": "d2c-offramp",
+        "name": "D2C · freelace offramp",
+        "short": "D2C",
+        "blurb": "Idea → document → exchange → agent · autoliquidity.",
+        "application_point": "d2c_document_liquidity",
+        "primary_product": "Workspace Offramp",
+        "accent": "#67e8f9",
+        "badge": "Автоликвидность",
+        "default_fin_models": ["prologforge", "marketforge", "orientationforge"],
+    },
 }
 
 TRACKS = ("product", "models", "promotion")

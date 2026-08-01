@@ -14,6 +14,8 @@
     selectedFlagship: null,
     marqueeTimer: null,
     marqueeIndex: 0,
+    problemTimer: null,
+    problemIndex: 0,
     lastPayload: null,
     lastProcess: null,
     freeWorkId: null,
@@ -26,14 +28,18 @@
   function init() {
     renderIndustryStrip();
     fillRequestSelects();
+    renderMasterOffer();
+    renderNicheGrid();
     renderFlagships();
     renderHowItWorks();
     renderPackageBanner();
     bindModeSwitch();
+    bindScrollJumps();
     bindModal();
     bindForm();
     bindFreeWork();
     startMarquee();
+    startProblemSlides();
 
     const note = $("#contact-note");
     if (note) {
@@ -48,6 +54,144 @@
       $$(".industry-tile").forEach((t) =>
         t.classList.toggle("active", t.dataset.industry === state.industry)
       );
+      const ind = $("#req-industry");
+      if (ind) ind.value = state.industry;
+    }
+  }
+
+  function bindScrollJumps() {
+    $$("[data-scroll]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const sel = btn.dataset.scroll;
+        if (sel) $(sel)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+    $$("[data-industry-jump]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.industryJump;
+        if (!id) return;
+        state.industry = id;
+        $$(".industry-tile").forEach((t) =>
+          t.classList.toggle("active", t.dataset.industry === id)
+        );
+        const ind = $("#req-industry");
+        if (ind) ind.value = id;
+      });
+    });
+  }
+
+  function renderMasterOffer() {
+    const m = D.masterOffer;
+    if (!m) return;
+    const sub = $("#master-offer-sub");
+    if (sub) sub.textContent = m.sub || "";
+    const host = $("#master-pillars");
+    if (host) {
+      host.innerHTML = (m.pillars || [])
+        .map(
+          (p) => `
+        <article class="pillar-card" data-pillar="${escapeHtml(p.id)}">
+          <div class="eyebrow">${escapeHtml(p.name)}</div>
+          <h3>${escapeHtml(p.line)}</h3>
+          <p>${escapeHtml(p.detail)}</p>
+        </article>`
+        )
+        .join("");
+    }
+    const disc = $("#master-disclaimers");
+    if (disc) {
+      disc.textContent = (m.disclaimers || []).join(" · ");
+    }
+  }
+
+  function renderNicheGrid() {
+    const root = $("#niche-grid");
+    if (!root) return;
+    root.innerHTML = (D.industries || [])
+      .map((ind) => {
+        const badge = ind.badge
+          ? `<span class="card-sticker niche-badge">${escapeHtml(ind.badge)}</span>`
+          : "";
+        const problems = (ind.problems || [])
+          .slice(0, 3)
+          .map((p) => `<li>${escapeHtml(p)}</li>`)
+          .join("");
+        return `
+      <button type="button" class="niche-card" data-industry="${escapeHtml(ind.id)}"
+        style="--flag-accent:${escapeHtml(ind.accent || "#5eead4")}">
+        ${badge}
+        <div class="niche-icon">${ind.icon || "◇"}</div>
+        <h3>${escapeHtml(ind.name)}</h3>
+        <p class="niche-blurb">${escapeHtml(ind.blurb || "")}</p>
+        <p class="niche-desc">${escapeHtml(ind.description || "")}</p>
+        ${problems ? `<ul class="niche-problems">${problems}</ul>` : ""}
+        <span class="linkish">Consult this niche →</span>
+      </button>`;
+      })
+      .join("");
+
+    root.onclick = (e) => {
+      const card = e.target.closest("[data-industry]");
+      if (!card) return;
+      const id = card.dataset.industry;
+      state.industry = id;
+      $$(".industry-tile").forEach((t) =>
+        t.classList.toggle("active", t.dataset.industry === id)
+      );
+      const ind = $("#req-industry");
+      if (ind) ind.value = id;
+      setMode("request");
+    };
+  }
+
+  function startProblemSlides() {
+    if (state.problemTimer) clearInterval(state.problemTimer);
+    const slides = D.problemSlides || [];
+    if (!slides.length) return;
+    paintProblem(0);
+    state.problemTimer = setInterval(() => {
+      state.problemIndex = (state.problemIndex + 1) % slides.length;
+      paintProblem(state.problemIndex);
+    }, 5200);
+    const dots = $("#problem-dots");
+    if (dots) {
+      dots.onclick = (e) => {
+        const d = e.target.closest("[data-pidx]");
+        if (!d) return;
+        state.problemIndex = Number(d.dataset.pidx) || 0;
+        paintProblem(state.problemIndex);
+      };
+    }
+  }
+
+  function paintProblem(idx) {
+    const slides = D.problemSlides || [];
+    if (!slides.length) return;
+    const s = slides[idx % slides.length];
+    const title = $("#problem-title");
+    const sol = $("#problem-solution");
+    const niche = $("#problem-niche");
+    const dots = $("#problem-dots");
+    if (title) {
+      title.classList.remove("marquee-in");
+      void title.offsetWidth;
+      title.textContent = s.problem;
+      title.classList.add("marquee-in");
+    }
+    if (sol) {
+      sol.classList.remove("marquee-in");
+      void sol.offsetWidth;
+      sol.textContent = s.solution;
+      sol.classList.add("marquee-in");
+    }
+    if (niche) niche.textContent = s.niche || "metrix";
+    if (dots) {
+      dots.innerHTML = slides
+        .map(
+          (_, i) =>
+            `<span class="marquee-dot${i === idx % slides.length ? " active" : ""}" data-pidx="${i}"></span>`
+        )
+        .join("");
     }
   }
 
@@ -99,11 +243,11 @@
     root.innerHTML = D.industries
       .map(
         (ind) => `
-      <button type="button" class="industry-tile" data-industry="${ind.id}"
+      <button type="button" class="industry-tile${ind.badge ? " industry-tile-auto" : ""}" data-industry="${ind.id}"
         style="--tile-accent:${ind.accent}">
         <div class="icon">${ind.icon}</div>
         <strong>${escapeHtml(ind.short || ind.name)}</strong>
-        <span>${escapeHtml(ind.blurb)}</span>
+        <span>${escapeHtml(ind.badge || ind.blurb)}</span>
       </button>`
       )
       .join("");
@@ -220,7 +364,7 @@
         )
         .join("");
     } else {
-      const detail = (f.detail || f.essence || "").replace(/\n/g, "<br/>");
+      const detail = escapeHtml(f.detail || f.essence || "").replace(/\n/g, "<br/>");
       body = `
         <p style="color:var(--text);font-size:1.05rem;margin-bottom:0.75rem">${escapeHtml(f.essence)}</p>
         <p style="color:var(--text-muted);font-size:0.95rem;line-height:1.7">${detail}</p>`;
@@ -264,6 +408,14 @@
       if (f) {
         const tr = $("#req-track");
         if (tr && f.track) tr.value = f.track === "models" ? "models" : f.track;
+        if (f.industryHint) {
+          state.industry = f.industryHint;
+          const ind = $("#req-industry");
+          if (ind) ind.value = f.industryHint;
+          $$(".industry-tile").forEach((t) =>
+            t.classList.toggle("active", t.dataset.industry === f.industryHint)
+          );
+        }
       }
     });
   }
@@ -292,7 +444,12 @@
     if (ind) {
       ind.innerHTML =
         `<option value="">Select…</option>` +
-        D.industries.map((i) => `<option value="${i.id}">${escapeHtml(i.name)}</option>`).join("");
+        D.industries
+          .map((i) => {
+            const badge = i.badge ? ` · ${i.badge}` : "";
+            return `<option value="${i.id}">${escapeHtml(i.name)}${escapeHtml(badge)}</option>`;
+          })
+          .join("");
     }
     if (tr) {
       tr.innerHTML =
@@ -862,9 +1019,11 @@
     if (title) title.textContent = "Pricing";
     if (why) {
       why.innerHTML = `
-        <strong>Consult — free.</strong> <strong>Tech TZ / technical writing — free.</strong><br/>
+        <strong>Expert ideas + consult — free.</strong> <strong>Tech TZ — free.</strong><br/>
         Pilot: ops $${p.pilotOpsUsd || 690} · product $${p.pilotProductUsd || 790} · promotion $${p.pilotPromotionUsd || 490}.
-        Main package $${p.mainPackageUsd || 2490} after pilot success.`;
+        Main package $${p.mainPackageUsd || 2490} after pilot success.<br/>
+        <span style="opacity:.9">${escapeHtml(p.volumeNote || "")}</span><br/>
+        <span style="opacity:.85">${escapeHtml(p.transactionNote || "")}</span>`;
     }
   }
 
