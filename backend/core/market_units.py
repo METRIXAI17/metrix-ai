@@ -134,17 +134,33 @@ MARKET_UNITS: dict[str, dict[str, Any]] = {
             },
         ],
     },
-    "cloud-economy": {
-        "application_point": "third_party_api_cost_cut",
-        "application_ru": (
-            "Фаундеры продуктивного творчества и кастомных операций — "
-            "сократить расходы на сторонние API"
-        ),
-        "redirect_from": "generic_cloud_finops",
+    "api-for-devs": {
+        "application_point": "client_api_integrations",
+        "application_ru": "API-интеграции для разработчиков клиентских продуктов",
         "product": {
-            "sku": "expert",
-            "name": "Expert",
-            "one_liner": "Cut third-party API spend while strengthening quality (expert env vs pure LLM).",
+            "sku": "api_integration_map",
+            "name": "API Cost & Integration Map",
+            "one_liner": "Карта вызовов, cost, quality floor для клиентских интеграций.",
+        },
+        "promotion": {
+            "angle": "dev_client_proof",
+            "one_liner": "Кейс: hot path дешевле при том же quality floor.",
+        },
+        "offers": [
+            {"track": "ops", "title": "API call map", "price_usd": 690, "simple": True},
+            {"track": "product", "title": "Integration TZ pack", "price_usd": 990, "simple": True},
+            {"track": "promotion", "title": "Dev proof card", "price_usd": 390, "simple": True},
+        ],
+    },
+    "cloud-economy": {
+        "application_point": "client_api_integrations",
+        "application_ru": "Alias → api-for-devs",
+        "redirect_from": "generic_cloud_finops",
+        "alias_of": "api-for-devs",
+        "product": {
+            "sku": "api_integration_map",
+            "name": "API Cost & Integration Map",
+            "one_liner": "Cut third-party API spend while strengthening quality.",
         },
         "promotion": {
             "angle": "event_review_container",
@@ -350,11 +366,32 @@ MARKET_UNITS: dict[str, dict[str, Any]] = {
             "No profit guarantees",
         ],
     },
-    "d2c-offramp": {
+    "freelace-d2c": {
         "application_point": "d2c_document_liquidity",
-        "application_ru": "D2C: идея → документ → биржа → агент · автоликвидность",
+        "application_ru": "Фриланс и D2C: идея → документ → заказ",
         "badge": "Автоликвидность",
         "liquidity_surface": "d2c",
+        "product": {
+            "sku": "workspace_offramp",
+            "name": "Workspace Offramp",
+            "one_liner": "Идея → документ под заказ → передача исполнителю или агенту.",
+        },
+        "promotion": {
+            "angle": "document_not_vinaigrette",
+            "one_liner": "Ценность = документ, не 30-минутный винегрет.",
+        },
+        "offers": [
+            {"track": "ops", "title": "Brief pack", "price_usd": 490, "simple": True},
+            {"track": "product", "title": "Handoff kit", "price_usd": 890, "simple": True},
+            {"track": "promotion", "title": "Proof card", "price_usd": 390, "simple": True},
+        ],
+    },
+    "d2c-offramp": {
+        "application_point": "d2c_document_liquidity",
+        "application_ru": "Alias → freelace-d2c",
+        "badge": "Автоликвидность",
+        "liquidity_surface": "d2c",
+        "alias_of": "freelace-d2c",
         "product": {
             "sku": "workspace_offramp",
             "name": "Workspace Offramp",
@@ -440,9 +477,20 @@ def package_cost_report() -> dict[str, Any]:
 
 
 def market_unit_for(industry_id: str) -> dict[str, Any]:
-    unit = MARKET_UNITS.get(industry_id) or MARKET_UNITS["ai-agencies"]
+    from backend.config import resolve_industry_id
+
+    rid = resolve_industry_id(industry_id)
+    # Prefer canonical market unit when alias points to a renamed niche
+    unit = (
+        MARKET_UNITS.get(rid)
+        or MARKET_UNITS.get(industry_id)
+        or MARKET_UNITS["ai-agencies"]
+    )
+    if unit.get("alias_of") and unit["alias_of"] in MARKET_UNITS:
+        unit = MARKET_UNITS[unit["alias_of"]]
+        rid = unit.get("industry_id") or rid
     return {
-        "industry_id": industry_id,
+        "industry_id": rid,
         **unit,
         "package_pricing_ref": "consult_techwrite_bundle",
     }

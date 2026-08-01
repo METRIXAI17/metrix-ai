@@ -29,7 +29,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any
 
-from backend.config import DATA_DIR, INDUSTRIES
+from backend.config import DATA_DIR, INDUSTRIES, resolve_industry_id
 from backend.core.decision_core import DecisionMakingCore
 from backend.core.category_router import route_categories
 from backend.core.industry_sanity import load_sanity
@@ -78,13 +78,16 @@ class RequestPipeline:
         if errors:
             return self._fail(req, errors, "invalid")
 
-        industry_id = req.industry.strip()
+        raw_industry = req.industry.strip()
+        industry_id = resolve_industry_id(raw_industry)
         if industry_id not in INDUSTRIES:
+            from backend.config import PUBLIC_INDUSTRY_IDS
+
             return self._fail(
                 req,
-                [f"Unknown industry: {industry_id}"],
+                [f"Unknown industry: {raw_industry}"],
                 "invalid",
-                next_steps=[f"Choose industry from: {', '.join(INDUSTRIES)}"],
+                next_steps=[f"Choose industry from: {', '.join(PUBLIC_INDUSTRY_IDS)}"],
             )
 
         industry = INDUSTRIES[industry_id]

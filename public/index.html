@@ -1,49 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Metrix AI — AI that turns intent into liquidity. Free expert orientation. Ops · product · promotion · autoliquidity (assets + D2C). Pilot after consult."
+      content="Metrix AI — единое рабочее пространство: проблема → решение → документ. Экспертные идеи бесплатно. Оплата за внедрение после подтверждения. Без подписок и роялти."
     />
     <meta name="theme-color" content="#070a0f" />
-    <meta property="og:title" content="Metrix AI — Orient · Decide · Liquidate" />
+    <meta property="og:title" content="Metrix AI — проблема → решение → документ" />
     <meta
       property="og:description"
-      content="Expert ideas free. Transactions paid. Asset decisions + D2C freelace offramp on one liquidity surface."
+      content="Не кот в мешке. Экспертные идеи бесплатно. Внедрение с живым общением после подтверждения. Без подписок и роялти."
     />
     <meta property="og:image" content="assets/ai-asset-management-decisions.jpg" />
-    <title>Metrix AI — Free consult · Autoliquidity · Pilot</title>
+    <title>Metrix AI — рабочее пространство онлайн-бизнеса</title>
     <link rel="stylesheet" href="css/styles.css" />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235eead4'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' font-family='sans-serif' font-weight='700' fill='%23041016'%3EM%3C/text%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23070a0f'/%3E%3Cpath d='M6 24 V8 L12 18 L16 10 L20 18 L26 8 V24 H22 V14 L18 22 H14 L10 14 V24 Z' fill='%235eead4'/%3E%3C/svg%3E"
     />
   </head>
   <body>
     <nav class="nav" aria-label="Main">
       <div class="nav-inner">
         <a href="#top" class="logo" id="logo-home">
-          <span class="logo-mark">M</span>
+          <span class="logo-mark logo-mark-brand" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                class="logo-m-path"
+                d="M4 40 V8 L16 28 L24 14 L32 28 L44 8 V40 H36 V20 L28 36 H20 L12 20 V40 Z"
+                fill="currentColor"
+              />
+            </svg>
+          </span>
           <span class="logo-text">Metrix <span>AI</span></span>
         </a>
 
-        <div class="mode-switch" role="tablist" aria-label="Interface mode">
+        <div class="mode-switch" role="tablist" aria-label="Режим">
           <button type="button" class="active" data-mode="marketplace" role="tab" aria-selected="true">
-            Products
+            Продукты
           </button>
           <button type="button" data-mode="request" role="tab" aria-selected="false">
-            Free consult
+            Консультация
           </button>
         </div>
 
         <div class="nav-links">
-          <a href="#offer">Offer</a>
-          <a href="#niches">Niches</a>
-          <a href="#problems">Problems</a>
-          <a href="#products">Flagships</a>
-          <a href="#pricing">Pricing</a>
+          <a href="#offer">Оффер</a>
+          <a href="#niches">Ниши</a>
+          <a href="#problems">Проблемы</a>
+          <a href="#products">Флагманы</a>
+          <a href="#pricing">Цены</a>
           <a href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">@karimmetrix</a>
         </div>
       </div>
@@ -51,143 +59,130 @@
 
     <main id="top">
       <header class="hero wrap">
-        <div class="hero-badge">Expert ideas free · transactions paid · autoliquidity</div>
-        <h1>AI that turns<br /><em>intent into liquidity.</em></h1>
-        <p class="hero-lead">
-          One surface for online business: orient the problem, structure the decision,
-          ship a document the market can buy — or a terminal agent can execute.
-          <strong>Ops · product · promotion</strong> plus
-          <strong>asset decisions</strong> and <strong>D2C freelace offramp</strong>.
-        </p>
+        <div class="hero-badge">Идеи бесплатно · внедрение после подтверждения</div>
+        <h1>Проблема → решение<br /><em>→ документ.</em></h1>
+        <p class="hero-lead" id="master-offer-sub"></p>
+        <p class="hero-sub2" id="master-offer-sub2"></p>
         <div class="hero-actions">
-          <button type="button" class="btn btn-primary" data-mode-jump="request">Get a consultation</button>
-          <button type="button" class="btn btn-ghost" data-scroll="#niches">See niches</button>
-          <button type="button" class="btn btn-ghost" data-scroll="#problems">Top solutions</button>
+          <button type="button" class="btn btn-primary" data-mode-jump="request">Получить консультацию</button>
+          <button type="button" class="btn btn-ghost" data-scroll="#niches">Ниши клиентов</button>
+          <button type="button" class="btn btn-ghost" data-scroll="#problems">Проблемы</button>
         </div>
-        <div class="industry-strip" id="industry-strip" aria-label="Niches"></div>
+        <div class="industry-strip" id="industry-strip" aria-label="Ниши"></div>
       </header>
 
-      <!-- MASTER OFFER — three product lines on one horizontal surface -->
       <section class="section wrap" id="offer">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Common offer</div>
-            <h2 id="master-offer-title">One surface · three lines</h2>
-            <p id="master-offer-sub" class="how-lead"></p>
+            <div class="eyebrow">Продукт</div>
+            <h2>Система поддержки решений</h2>
+            <p class="how-lead">
+              Упрощает путь к доходу: зафиксировали проблему, выбрали решение, получили документ и метрики —
+              то, что рынок может купить, или что выполнит конечный агент.
+            </p>
           </div>
         </div>
-        <div class="pillar-grid" id="master-pillars"></div>
-        <p class="disclaimer-line" id="master-disclaimers"></p>
-      </section>
-
-      <!-- ASSET VISUAL -->
-      <section class="section wrap asset-banner" id="asset-visual" aria-label="Asset decisions visual">
-        <div class="asset-banner-inner">
+        <div class="product-tangible" id="product-tangible">
+          <div class="tangible-card">
+            <div class="eyebrow">На входе</div>
+            <h3>Проблема своими словами</h3>
+            <p>Бизнес, цифры если есть, где болит.</p>
+          </div>
+          <div class="tangible-card">
+            <div class="eyebrow">Внутри</div>
+            <h3>Решение + метрики</h3>
+            <p>Один трек, одна success-метрика, что не делаем.</p>
+          </div>
+          <div class="tangible-card">
+            <div class="eyebrow">На выходе</div>
+            <h3>Документ</h3>
+            <p>Оффер, ТЗ, чеклист — продажа или handoff агенту.</p>
+          </div>
+        </div>
+        <div class="brand-mark-block">
           <img
             src="assets/ai-asset-management-decisions.jpg"
-            alt="AI for asset management decisions — Metrix AI"
-            width="640"
-            height="640"
+            alt="Metrix AI"
+            width="320"
+            height="320"
             loading="lazy"
+            class="brand-mark-img"
           />
-          <div class="asset-banner-copy">
-            <div class="eyebrow">Autoliquidity · assets</div>
-            <h2>AI for asset management decisions</h2>
-            <p>
-              Cognition · monitoring · strategy generation. Deal management stays with you.
-              Work by TZ — no yield guarantees, no AUM-style base fee.
-            </p>
-            <button type="button" class="btn btn-primary" data-industry-jump="asset-decisions" data-mode-jump="request">
-              Open asset lane
-            </button>
+          <div>
+            <div class="eyebrow">Metrix AI</div>
+            <h3>Не кот в мешке</h3>
+            <p>Экспертные идеи бесплатно. Оплата за внедрение с живым общением после подтверждения. Без подписок, без роялти.</p>
+            <button type="button" class="btn btn-primary" data-mode-jump="request">Начать с консультации</button>
           </div>
         </div>
       </section>
 
-      <!-- NICHES with descriptions -->
       <section class="section wrap" id="niches">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Niches</div>
-            <h2>Directions — simplified</h2>
-            <p>Eight lanes. Two marked <strong>Автоликвидность</strong>: decision-making and D2C share one liquidity surface.</p>
+            <div class="eyebrow">Ниши</div>
+            <h2>Где работают клиенты</h2>
+            <p>Конкретные направления. Карточки короткие — без длинных описаний.</p>
           </div>
         </div>
-        <div class="niche-grid" id="niche-grid"></div>
+        <div class="niche-grid niche-grid-compact" id="niche-grid"></div>
+        <div class="niche-full-list wrap-inner" id="niche-full-list"></div>
       </section>
 
-      <!-- PROBLEM SLIDES -->
       <section class="section wrap" id="problems">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Frequent problems</div>
-            <h2>Top solution the system proposes</h2>
-            <p>Rotating slides from real orientation patterns — not a YouTube vinaigrette.</p>
+            <div class="eyebrow">Проблемы</div>
+            <h2>Частые запросы и ответ</h2>
+            <p>Все карточки сразу — без слайдера.</p>
           </div>
         </div>
-        <div class="problem-stage" id="problem-stage">
-          <div class="problem-card">
-            <div class="eyebrow">Problem</div>
-            <h3 id="problem-title">—</h3>
-            <div class="eyebrow" style="margin-top: 1rem">Top solution</div>
-            <p id="problem-solution"></p>
-            <div class="problem-foot">
-              <span class="tag accent" id="problem-niche"></span>
-              <div class="marquee-dots" id="problem-dots"></div>
-            </div>
-          </div>
-        </div>
+        <div class="problem-grid" id="problem-grid"></div>
       </section>
 
-      <!-- PRODUCTS -->
       <section class="section wrap mode-panel active" id="mode-marketplace" data-panel="marketplace">
         <div class="section-head" id="products">
           <div>
-            <div class="eyebrow">Flagships</div>
-            <h2>What you can start with</h2>
-            <p id="home-catalog-note">Click a card for the essence. Autoliquidity lanes are labeled.</p>
+            <div class="eyebrow">Флагманы</div>
+            <h2>С чего начать</h2>
+            <p id="home-catalog-note">Нажмите карточку. Ядро — поддержка решений на пути к доходу.</p>
           </div>
         </div>
         <div class="grid grid-flagship" id="program-grid"></div>
       </section>
 
-      <!-- HOW IT WORKS -->
       <section class="section wrap" id="how">
         <div class="section-head">
           <div>
-            <div class="eyebrow">The ride</div>
-            <h2 id="how-it-works-title">How Metrix AI works</h2>
+            <div class="eyebrow">Путь</div>
+            <h2 id="how-it-works-title">Как это работает</h2>
             <p id="how-it-works-lead" class="how-lead"></p>
           </div>
         </div>
         <div class="how-grid" id="how-it-works-body"></div>
       </section>
 
-      <!-- FREE CONSULT -->
       <section class="section wrap mode-panel" id="mode-request" data-panel="request" hidden>
         <div class="section-head">
           <div>
-            <div class="eyebrow">Free consult + free tech write</div>
-            <h2>Describe your business</h2>
-            <p>
-              5–20 sentences. Niche required. You get free orientation and free technical writing (tech TZ).
-              Expert ideas free — transactions when you execute.
-            </p>
+            <div class="eyebrow">Консультация + tech-TZ</div>
+            <h2>Опишите бизнес</h2>
+            <p>5–20 предложений. Ниша обязательна. Идеи и tech-TZ — бесплатно. Внедрение — после подтверждения.</p>
           </div>
         </div>
 
         <form class="form-card" id="request-form" novalidate>
           <div class="form-grid">
             <div class="field">
-              <label for="req-industry">Niche <span class="req">*</span></label>
+              <label for="req-industry">Ниша <span class="req">*</span></label>
               <select id="req-industry" name="industry" required>
-                <option value="">Select…</option>
+                <option value="">Выберите…</option>
               </select>
             </div>
             <div class="field">
-              <label for="req-track">Preferred track</label>
+              <label for="req-track">Трек</label>
               <select id="req-track" name="track">
-                <option value="">All three</option>
+                <option value="">Все три</option>
               </select>
             </div>
             <div class="field">
@@ -195,23 +190,23 @@
               <input id="req-x" name="x" type="text" autocomplete="username" placeholder="@handle" />
             </div>
             <div class="field">
-              <label for="req-telegram">Telegram nickname</label>
+              <label for="req-telegram">Telegram</label>
               <input id="req-telegram" name="telegram" type="text" autocomplete="username" placeholder="@username" />
             </div>
             <div class="field">
-              <label for="req-business">Your business <span class="req">*</span></label>
+              <label for="req-business">Ваш бизнес <span class="req">*</span></label>
               <textarea
                 id="req-business"
                 name="business"
                 required
-                placeholder="Who you serve, how you make money, where it hurts, any numbers you have. Idea without a doc? Capital without a model? Say it."
+                placeholder="Кому продаёте, как зарабатываете, где болит, какие цифры есть."
               ></textarea>
             </div>
             <p class="form-error" id="form-error" role="alert"></p>
             <p class="form-success" id="form-success" role="status"></p>
             <div style="display: flex; flex-wrap: wrap; gap: 0.6rem">
-              <button type="submit" class="btn btn-primary">Get a consultation</button>
-              <button type="button" class="btn btn-ghost" id="btn-tech-write">Get free tech write</button>
+              <button type="submit" class="btn btn-primary">Получить консультацию</button>
+              <button type="button" class="btn btn-ghost" id="btn-tech-write">Tech-TZ бесплатно</button>
               <a class="btn btn-ghost" href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">DM on X</a>
             </div>
             <p class="hint" id="contact-note" hidden></p>
@@ -220,7 +215,7 @@
 
         <div id="consult-result" class="consult-result" hidden>
           <div class="consult-result-head">
-            <div class="eyebrow">Consultation result</div>
+            <div class="eyebrow">Результат консультации</div>
             <h3 id="cr-headline">—</h3>
             <p id="cr-meta" class="cr-meta"></p>
             <p id="cr-blurb" class="cr-blurb"></p>
@@ -237,31 +232,26 @@
 
         <div id="free-work-panel" class="free-work-panel" hidden>
           <div class="fw-head">
-            <div class="eyebrow">Free work · circle-system</div>
+            <div class="eyebrow">Free work</div>
             <h3 id="fw-title">Дальнейшие действия</h3>
             <p id="fw-quality" class="fw-quality"></p>
           </div>
-
           <div class="fw-phases" id="fw-phases"></div>
-
           <div class="fw-card" id="fw-clarify-card">
-            <h4>Уточнения для качественного ответа</h4>
-            <p class="hint">Система спрашивает только то, чего не хватает (сборка, не «тепло»).</p>
+            <h4>Уточнения</h4>
+            <p class="hint">Только то, чего не хватает для сборки.</p>
             <div id="fw-clarify-form"></div>
-            <button type="button" class="btn btn-primary" id="btn-submit-clarify">Отправить уточнения</button>
+            <button type="button" class="btn btn-primary" id="btn-submit-clarify">Отправить</button>
           </div>
-
           <div class="fw-card" id="fw-checklist-card">
-            <h4>Чеклист направления</h4>
+            <h4>Чеклист</h4>
             <ul id="fw-checklist"></ul>
             <p id="fw-success-metric" class="fw-metric"></p>
           </div>
-
           <div class="fw-card fw-tech" id="fw-tech-card">
-            <h4>Tech write preview</h4>
+            <h4>Tech write</h4>
             <pre id="fw-tech-md" class="fw-pre"></pre>
           </div>
-
           <div class="cr-cta-row">
             <button type="button" class="btn btn-ghost" id="btn-advance-phase">Следующая фаза →</button>
             <a class="btn btn-ghost" href="https://x.com/karimmetrix" target="_blank" rel="noopener">@karimmetrix</a>
@@ -269,17 +259,16 @@
         </div>
       </section>
 
-      <!-- PRICING -->
       <section class="section wrap" id="pricing">
         <div class="package-banner package-banner-slim">
           <div>
-            <div class="eyebrow" style="margin-bottom: 0.35rem">Pricing</div>
-            <h3 id="pkg-title">Pricing</h3>
+            <div class="eyebrow" style="margin-bottom: 0.35rem">Цены</div>
+            <h3 id="pkg-title">Цены</h3>
             <p id="pkg-why"></p>
           </div>
           <div class="pricing-actions">
-            <button type="button" class="btn btn-primary" data-mode-jump="request">Get a consultation</button>
-            <button type="button" class="btn btn-gold" data-mode-jump="techwrite">Get free tech write</button>
+            <button type="button" class="btn btn-primary" data-mode-jump="request">Консультация</button>
+            <button type="button" class="btn btn-gold" data-mode-jump="techwrite">Tech-TZ</button>
           </div>
         </div>
       </section>
@@ -289,12 +278,12 @@
       <div class="wrap footer-inner">
         <div>
           <strong style="color: var(--text)">Metrix AI</strong>
-          <span> · Expert free · pilot-first · autoliquidity</span>
+          <span> · без подписок · без роялти</span>
         </div>
         <div>
           <a href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">@karimmetrix</a>
           ·
-          <a href="#top">Top</a>
+          <a href="#top">Наверх</a>
         </div>
       </div>
     </footer>
@@ -310,8 +299,8 @@
         </header>
         <div id="modal-body"></div>
         <div class="modal-actions">
-          <button type="button" class="btn btn-primary" id="modal-request">Get a consultation</button>
-          <button type="button" class="btn btn-ghost" id="modal-close-2">Close</button>
+          <button type="button" class="btn btn-primary" id="modal-request">Консультация</button>
+          <button type="button" class="btn btn-ghost" id="modal-close-2">Закрыть</button>
         </div>
       </div>
     </div>

@@ -30,6 +30,8 @@
     fillRequestSelects();
     renderMasterOffer();
     renderNicheGrid();
+    renderProblemGrid();
+    renderNicheFullList();
     renderFlagships();
     renderHowItWorks();
     renderPackageBanner();
@@ -39,7 +41,6 @@
     bindForm();
     bindFreeWork();
     startMarquee();
-    startProblemSlides();
 
     const note = $("#contact-note");
     if (note) {
@@ -85,22 +86,10 @@
     if (!m) return;
     const sub = $("#master-offer-sub");
     if (sub) sub.textContent = m.sub || "";
-    const host = $("#master-pillars");
-    if (host) {
-      host.innerHTML = (m.pillars || [])
-        .map(
-          (p) => `
-        <article class="pillar-card" data-pillar="${escapeHtml(p.id)}">
-          <div class="eyebrow">${escapeHtml(p.name)}</div>
-          <h3>${escapeHtml(p.line)}</h3>
-          <p>${escapeHtml(p.detail)}</p>
-        </article>`
-        )
-        .join("");
-    }
-    const disc = $("#master-disclaimers");
-    if (disc) {
-      disc.textContent = (m.disclaimers || []).join(" · ");
+    const sub2 = $("#master-offer-sub2");
+    if (sub2) {
+      sub2.textContent = m.sub2 || "";
+      sub2.hidden = !m.sub2;
     }
   }
 
@@ -110,22 +99,17 @@
     root.innerHTML = (D.industries || [])
       .map((ind) => {
         const badge = ind.badge
-          ? `<span class="card-sticker niche-badge">${escapeHtml(ind.badge)}</span>`
+          ? `<span class="niche-pill">${escapeHtml(ind.badge)}</span>`
           : "";
-        const problems = (ind.problems || [])
-          .slice(0, 3)
-          .map((p) => `<li>${escapeHtml(p)}</li>`)
-          .join("");
         return `
-      <button type="button" class="niche-card" data-industry="${escapeHtml(ind.id)}"
+      <button type="button" class="niche-card niche-card-compact" data-industry="${escapeHtml(ind.id)}"
         style="--flag-accent:${escapeHtml(ind.accent || "#5eead4")}">
-        ${badge}
-        <div class="niche-icon">${ind.icon || "◇"}</div>
-        <h3>${escapeHtml(ind.name)}</h3>
-        <p class="niche-blurb">${escapeHtml(ind.blurb || "")}</p>
-        <p class="niche-desc">${escapeHtml(ind.description || "")}</p>
-        ${problems ? `<ul class="niche-problems">${problems}</ul>` : ""}
-        <span class="linkish">Consult this niche →</span>
+        <span class="niche-icon">${ind.icon || "◇"}</span>
+        <span class="niche-title-row">
+          <strong>${escapeHtml(ind.short || ind.name)}</strong>
+          ${badge}
+        </span>
+        <span class="niche-blurb">${escapeHtml(ind.blurb || "")}</span>
       </button>`;
       })
       .join("");
@@ -144,55 +128,37 @@
     };
   }
 
-  function startProblemSlides() {
-    if (state.problemTimer) clearInterval(state.problemTimer);
+  function renderProblemGrid() {
+    const root = $("#problem-grid");
+    if (!root) return;
     const slides = D.problemSlides || [];
-    if (!slides.length) return;
-    paintProblem(0);
-    state.problemTimer = setInterval(() => {
-      state.problemIndex = (state.problemIndex + 1) % slides.length;
-      paintProblem(state.problemIndex);
-    }, 5200);
-    const dots = $("#problem-dots");
-    if (dots) {
-      dots.onclick = (e) => {
-        const d = e.target.closest("[data-pidx]");
-        if (!d) return;
-        state.problemIndex = Number(d.dataset.pidx) || 0;
-        paintProblem(state.problemIndex);
-      };
-    }
+    root.innerHTML = slides
+      .map(
+        (s) => `
+      <article class="problem-static-card">
+        <div class="eyebrow">Проблема</div>
+        <h3>${escapeHtml(s.problem)}</h3>
+        <div class="eyebrow">Ответ</div>
+        <p>${escapeHtml(s.solution)}</p>
+        <span class="tag accent">${escapeHtml(s.niche || "")}</span>
+      </article>`
+      )
+      .join("");
   }
 
-  function paintProblem(idx) {
-    const slides = D.problemSlides || [];
-    if (!slides.length) return;
-    const s = slides[idx % slides.length];
-    const title = $("#problem-title");
-    const sol = $("#problem-solution");
-    const niche = $("#problem-niche");
-    const dots = $("#problem-dots");
-    if (title) {
-      title.classList.remove("marquee-in");
-      void title.offsetWidth;
-      title.textContent = s.problem;
-      title.classList.add("marquee-in");
+  function renderNicheFullList() {
+    const root = $("#niche-full-list");
+    if (!root) return;
+    const list = D.clientNicheList || (D.industries || []).map((i) => i.name);
+    if (!list.length) {
+      root.innerHTML = "";
+      return;
     }
-    if (sol) {
-      sol.classList.remove("marquee-in");
-      void sol.offsetWidth;
-      sol.textContent = s.solution;
-      sol.classList.add("marquee-in");
-    }
-    if (niche) niche.textContent = s.niche || "metrix";
-    if (dots) {
-      dots.innerHTML = slides
-        .map(
-          (_, i) =>
-            `<span class="marquee-dot${i === idx % slides.length ? " active" : ""}" data-pidx="${i}"></span>`
-        )
-        .join("");
-    }
+    root.innerHTML = `
+      <div class="eyebrow" style="margin-bottom:0.5rem">Полный список ниш</div>
+      <ol class="niche-list-ol">
+        ${list.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}
+      </ol>`;
   }
 
   function setMode(mode) {
@@ -308,10 +274,11 @@
     if (state.marqueeTimer) clearInterval(state.marqueeTimer);
     const slides = D.whyUsSlides || [];
     if (!slides.length) return;
+    // Slow enough to read 1–2 sentences; crossfade without layout jump (fixed height in CSS)
     state.marqueeTimer = setInterval(() => {
       state.marqueeIndex = (state.marqueeIndex + 1) % slides.length;
       paintMarquee(state.marqueeIndex);
-    }, 4200);
+    }, 9000);
   }
 
   function paintMarquee(idx) {
@@ -324,10 +291,12 @@
       const dots = host.querySelector("[data-marquee-dots]");
       if (label) label.textContent = s.title;
       if (text) {
-        text.classList.remove("marquee-in");
-        void text.offsetWidth;
-        text.textContent = s.text;
-        text.classList.add("marquee-in");
+        // Soft opacity swap only — no height animation / reflow
+        text.style.opacity = "0";
+        window.setTimeout(() => {
+          text.textContent = s.text;
+          text.style.opacity = "1";
+        }, 180);
       }
       if (dots) {
         dots.innerHTML = slides
@@ -1016,14 +985,13 @@
     const title = $("#pkg-title");
     const why = $("#pkg-why");
     const p = D.packagePricing || {};
-    if (title) title.textContent = "Pricing";
+    if (title) title.textContent = "Цены";
     if (why) {
       why.innerHTML = `
-        <strong>Expert ideas + consult — free.</strong> <strong>Tech TZ — free.</strong><br/>
-        Pilot: ops $${p.pilotOpsUsd || 690} · product $${p.pilotProductUsd || 790} · promotion $${p.pilotPromotionUsd || 490}.
-        Main package $${p.mainPackageUsd || 2490} after pilot success.<br/>
-        <span style="opacity:.9">${escapeHtml(p.volumeNote || "")}</span><br/>
-        <span style="opacity:.85">${escapeHtml(p.transactionNote || "")}</span>`;
+        <strong>Консультация и tech-TZ — бесплатно.</strong><br/>
+        Пилот: ops $${p.pilotOpsUsd || 690} · продукт $${p.pilotProductUsd || 790} · промо $${p.pilotPromotionUsd || 490}.
+        Полный пакет $${p.mainPackageUsd || 2490} после пилота.<br/>
+        <span style="opacity:.95">${escapeHtml(p.volumeNote || "Оплата за внедрение после подтверждения. Без подписок и роялти.")}</span>`;
     }
   }
 

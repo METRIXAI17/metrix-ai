@@ -1,297 +1,271 @@
 /**
- * Metrix AI — public surface (unified offer · niches · problems · pricing)
- * Horizontal axis: liquidity (decision-making ↔ D2C offramp ↔ autoliquidity)
+ * Metrix AI — public surface
+ * Workspace: problem → decision → sellable document (or agent-ready pack)
  */
 window.METRIX_DATA = {
   brand: {
     name: "Metrix AI",
-    tagline: "Orient · Decide · Liquidate",
-    focus: "Operational success with a liquidity path",
+    tagline: "Проблема → решение → документ",
+    focus: "Система поддержки решений на пути к доходу",
     x: "https://x.com/karimmetrix",
   },
 
-  /** One surface — three product lines (not three separate businesses) */
   masterOffer: {
-    headline: "AI that turns intent into liquidity",
+    headline: "Metrix AI",
     sub:
-      "One workspace for online business: orient the problem, structure the decision, " +
-      "ship a document the market can buy — or a terminal agent can execute. " +
-      "Expert ideas free. Transactions paid. No salary-style retainers, no % of placements.",
-    pillars: [
-      {
-        id: "shift",
-        name: "Metrix AI Shift",
-        line: "Close the three hard gaps: organization · product · promotion.",
-        detail:
-          "Pilot-first path for online business. Scale key problems on a volume tariff. " +
-          "Prompt builder as the gate to any IT-reachable fix. Ops libraries + expert system under the hood.",
-      },
-      {
-        id: "assistant",
-        name: "Metrix AI Assistant",
-        line: "Global decision layer — metrics, structure, market pulse.",
-        detail:
-          "Dynamic market data, key-metric detector, change model, structured user intents. " +
-          "Terminal agents for execution when you authorize them. Concierge-grade clarity without a human payroll.",
-      },
-      {
-        id: "interface",
-        name: "Metrix AI Interface",
-        line: "The surface: workspace, D2C offramp, asset decisions.",
-        detail:
-          "Write an idea → get a freelace-ready / builder-ready document → optional agent run. " +
-          "Asset lane: cognition · monitoring · strategy generation — trade management stays with you.",
-      },
-    ],
-    disclaimers: [
-      "Work is delivered against a clear TZ (spec). No guarantees of profit, yield, or deal success.",
-      "Asset / market tools are decision support — not investment advice and not auto-trading custody.",
-    ],
+      "Единое рабочее пространство для онлайн-бизнеса: сформулируйте проблему, определите решение, отправьте документ, который рынок может купить, или который может выполнить конечный агент. Экспертные идеи бесплатно. Оплата за внедрение с живым общением после подтверждения.",
+    sub2: "Не кот в мешке. Никаких подписок, никакого роялти.",
+    pillars: [],
+    disclaimers: [],
   },
 
   /**
-   * Niches (8). Last two are autoliquidity lanes: decision-making + D2C share one liquidity surface.
+   * Конкретные ниши клиентов (короткие карточки, без длинных описаний).
+   * cloud → api-for-devs: API-интеграции под клиентские продукты.
    */
   industries: [
     {
       id: "ai-agencies",
-      name: "AI Agencies",
-      short: "Agencies",
-      blurb: "Ops efficiency · delivery without agent chaos.",
+      name: "AI-агентства и студии",
+      short: "AI-студии",
+      blurb: "Сдача проектов без хаоса",
       icon: "◇",
       accent: "#5eead4",
-      description:
-        "Agencies that sell AI delivery: fix intake, rework, handoff. Terminal Teammate as base-layer access — not another chatbot. Promo = buyer fin models.",
-      problems: ["rework eats margin", "agents without scoreboard", "sales without unit economics"],
-      liquidity: "ops",
     },
     {
-      id: "cloud-economy",
-      name: "Cloud / API cost",
-      short: "Cloud",
-      blurb: "Cut third-party API spend, keep quality.",
-      icon: "☁",
+      id: "api-for-devs",
+      name: "API для разработчиков",
+      short: "API / dev",
+      blurb: "Интеграции и клиентские штуки",
+      icon: "⚡",
       accent: "#7dd3fc",
-      description:
-        "For founders burning tokens and vendor APIs. Unit-cost map, quality band, Expert path vs pure LLM bill. Event promo that reviews what already ships.",
-      problems: ["API bill grows faster than revenue", "quality vs cost fog", "no Expert vs LLM comparison"],
-      liquidity: "ops",
     },
     {
-      id: "cost-engineering",
-      name: "Cost Engineering",
-      short: "Cost",
-      blurb: "Cut waste parameters, keep capability.",
-      icon: "▣",
-      accent: "#fbbf24",
-      description:
-        "Simple waste map + resellable Void Scanner. One-page ops offer + broad product pack for people who hire cost engineers.",
-      problems: ["fat specs nobody uses", "capability cut with the waste", "no resellable SKU"],
-      liquidity: "ops",
-    },
-    {
-      id: "chipmaking",
-      name: "Chipmaking",
-      short: "Chips",
-      blurb: "Design-loop clarity before tapeout.",
-      icon: "▦",
-      accent: "#c4b5fd",
-      description:
-        "Conceptual yield twin and design-loop voids — ops / product / promo as three simple offers. Clarity without hype fog.",
-      problems: ["design-loop voids", "late yield surprises", "buzzword promo"],
-      liquidity: "ops",
-    },
-    {
-      id: "telecom",
-      name: "Telecom",
-      short: "Telecom",
-      blurb: "ARPU, churn, SLA-native SKUs.",
-      icon: "◈",
-      accent: "#86efac",
-      description:
-        "Carrier-grade product language: SLA, ARPU, MOS. Ops levers for churn; promo as intent-signal care weave.",
-      problems: ["spreadsheet SLA fog", "SKU ≠ QoS", "churn without lever board"],
-      liquidity: "ops",
-    },
-    {
-      id: "device-assembly",
-      name: "Device assembly",
-      short: "Devices",
-      blurb: "Stations & config that scale — hands + online.",
-      icon: "⬡",
-      accent: "#fda4af",
-      description:
-        "Assembly → setup → guided config as a product. Online business paired with physical periphery when you want to build with your hands.",
-      problems: ["station rework time", "config matrix chaos", "demo that does not scale"],
-      liquidity: "ops",
-    },
-    {
-      id: "asset-decisions",
-      name: "Asset decisions",
-      short: "Assets",
-      blurb: "AI for asset management decisions.",
-      icon: "◎",
-      accent: "#f0abfc",
-      badge: "Автоликвидность",
-      description:
-        "Decision support for people who already have capital (or want a private room): key metric, risk model, what not to do. " +
-        "Cognition · monitoring · strategy generation — deal management stays yours. Presented as work by TZ, no yield guarantees. " +
-        "Not “trading bots hype”: base mechanisms that Claude/API stacks already use to draft strategies.",
-      problems: [
-        "capital parked in banks / signals with no model",
-        "no key metric or change model",
-        "bot scripts without risk language",
-      ],
-      liquidity: "autoliquidity",
-      fork: "assistant",
-    },
-    {
-      id: "d2c-offramp",
-      name: "D2C · freelace offramp",
-      short: "D2C",
-      blurb: "Idea → document → exchange → agent.",
+      id: "freelace-d2c",
+      name: "Фриланс и D2C-офферы",
+      short: "Фриланс",
+      blurb: "Идея → документ → заказ",
       icon: "↗",
       accent: "#67e8f9",
       badge: "Автоликвидность",
-      description:
-        "Direct D2C offramp: you drop an idea you cannot finish; the system returns a workspace document that matches freelace / market demand. " +
-        "Basic order search can be automated; creative multi-variant work is what clients pay for — then a terminal agent executes the accepted doc. " +
-        "Liquidity = decision-making with a path to cash, not another 30-minute YouTube vinaigrette.",
-      problems: [
-        "idea with no freelace-ready pack",
-        "outreach without a document",
-        "creative work lost before terminal agent",
-      ],
-      liquidity: "autoliquidity",
-      fork: "interface",
     },
+    {
+      id: "expert-services",
+      name: "Экспертные услуги",
+      short: "Эксперты",
+      blurb: "Упаковка оффера и ТЗ",
+      icon: "✦",
+      accent: "#c4b5fd",
+    },
+    {
+      id: "ecommerce",
+      name: "Онлайн-магазины",
+      short: "E-com",
+      blurb: "Оффер, воронка, unit-экон.",
+      icon: "▣",
+      accent: "#fbbf24",
+    },
+    {
+      id: "content-monetize",
+      name: "Контент и аудитория",
+      short: "Контент",
+      blurb: "Монетизация без размытия",
+      icon: "◈",
+      accent: "#86efac",
+    },
+    {
+      id: "education",
+      name: "Курсы и обучение",
+      short: "Обучение",
+      blurb: "Программа → продаваемый пакет",
+      icon: "◫",
+      accent: "#fda4af",
+    },
+    {
+      id: "saas-founders",
+      name: "SaaS и цифровые продукты",
+      short: "SaaS",
+      blurb: "Пилот, метрика, оффер",
+      icon: "⬡",
+      accent: "#a5b4fc",
+    },
+    {
+      id: "automation-builders",
+      name: "Автоматизация и no-code",
+      short: "Авто",
+      blurb: "Сценарии под доход",
+      icon: "◎",
+      accent: "#f9a8d4",
+    },
+    {
+      id: "cost-ops",
+      name: "Себестоимость и unit-economics",
+      short: "Unit-экон.",
+      blurb: "Где утекают деньги",
+      icon: "▤",
+      accent: "#fcd34d",
+    },
+    {
+      id: "device-assembly",
+      name: "Сборка и конфиг устройств",
+      short: "Устройства",
+      blurb: "Руками + онлайн-оффер",
+      icon: "⬢",
+      accent: "#fb7185",
+    },
+    {
+      id: "asset-decisions",
+      name: "Решения по активам",
+      short: "Активы",
+      blurb: "Метрика и риски, без обещаний",
+      icon: "◎",
+      accent: "#f0abfc",
+      badge: "Автоликвидность",
+    },
+  ],
+
+  /** Полный список ниш (для отчёта и select) — то же, что industries */
+  clientNicheList: [
+    "AI-агентства и студии",
+    "API-интеграции для разработчиков клиентских продуктов",
+    "Фриланс и D2C-офферы (документ под заказ)",
+    "Экспертные услуги (коучинг, консалтинг, упаковка)",
+    "Онлайн-магазины и товарный D2C",
+    "Контент-креаторы и монетизация аудитории",
+    "Онлайн-курсы и образовательные продукты",
+    "SaaS и цифровые продукты на ранней стадии",
+    "Автоматизация, no-code, агентные сценарии под доход",
+    "Себестоимость, unit-economics, cost-ops",
+    "Сборка, конфиг, периферия + онлайн-продажа",
+    "Решения по активам и капиталу (decision support)",
+    "Маркетинговые и performance-команды",
+    "B2B-услуги и агентства (не только AI)",
+    "Локальный сервис с онлайн-записью и оффером",
   ],
 
   tracks: [
-    { id: "product", name: "Product", label: "Product", color: "#5eead4", salesGuide: true },
+    { id: "product", name: "Product", label: "Продукт", color: "#5eead4", salesGuide: true },
     { id: "models", name: "Teammate", label: "Teammate", color: "#fbbf24", salesGuide: true },
-    { id: "promotion", name: "Promotion", label: "Promotion", color: "#c4b5fd", salesGuide: false },
+    { id: "promotion", name: "Promotion", label: "Продвижение", color: "#c4b5fd", salesGuide: false },
   ],
 
-  /** Why-us marquee (ops · product · promotion · liquidity) */
   whyUsSlides: [
     {
       key: "ops",
-      title: "Operations",
-      text:
-        "Same product. Better ops analytics → different money. Orient the geometry of the business, kill free-discovery waste, lock a scoreboard — without a token-swarm of agents.",
+      title: "Операции",
+      text: "Одна табло-метрика и карта утечек — те же люди, больше маржи.",
     },
     {
       key: "product",
-      title: "Product",
-      text:
-        "The product is access to the base layer — not “another AI tool”. Libraries → procurement as self-generation → live demand → own stack. Capture liquidity where others rent infrastructure.",
+      title: "Продукт",
+      text: "Решение = документ и метрики, которые можно продать или отдать агенту.",
     },
     {
       key: "promotion",
-      title: "Promotion",
-      text:
-        "Promotion is the angle, not a separate product. When ops and product are locked, the story sells: proof posts, reverse outreach, events that review what already ships.",
+      title: "Продвижение",
+      text: "Угол продажи из фактов пилота, не из пустого контента.",
     },
     {
-      key: "liquidity",
-      title: "Liquidity",
-      text:
-        "D2C and decision-making sit on one surface: structure the request → ship a document or metric model → optional agent. Autoliquidity niches: assets + freelace offramp.",
+      key: "income",
+      title: "Доход",
+      text: "Поддержка решений, которая укорачивает путь от идеи к оплачиваемому шагу.",
     },
   ],
 
   /**
-   * Frequent problems → top solution the system proposes (rotating slides).
-   * Filled from real sequence + process dry-runs (2026-08-02).
+   * Проблемы + конкретный ответ (все карточки сразу, без слайдера).
+   * Без «лучшее решение», без Metrix AI Shift.
    */
   problemSlides: [
     {
-      problem: "Online business stuck: org · product · promo all half-done",
-      solution:
-        "Metrix AI Shift: free orient → one primary track → pilot on that track only. Volume tariff if you scale all three later. Main package only after pilot proof.",
-      niche: "shift",
+      problem: "Идея есть, продавать нечего",
+      solution: "Пакет: 1-страничный оффер + ТЗ + чеклист приёмки — можно выложить или отдать исполнителю.",
+      niche: "Фриланс / D2C",
     },
     {
-      problem: "Capital idle or trust in crypto signals — no decision model",
-      solution:
-        "Asset decisions lane: key metric + risk model + “what not to do”. Cognition / monitoring / strategy drafts. Management of deals stays with client. Work by TZ, no yield promise.",
-      niche: "asset-decisions",
+      problem: "Три направления сразу, ничего не закрыто",
+      solution: "Выбираем один трек (продукт, ops или промо), 14-дневный пилот с одной метрикой успеха.",
+      niche: "Онлайн-бизнес",
     },
     {
-      problem: "Idea exists; freelace gigs look the same; nothing to send",
-      solution:
-        "D2C workspace: structured brief → freelace-ready document → optional order match → terminal agent on accepted scope. You sell the multi-variant creative layer; agent executes the fixed doc.",
-      niche: "d2c-offramp",
+      problem: "API и токены жрут бюджет",
+      solution: "Карта вызовов API: что оставить, что урезать, что заменить — с полом качества.",
+      niche: "API / dev",
     },
     {
-      problem: "API / token burn without quality floor",
-      solution:
-        "Expert path: unit-cost map, hot-path calls, quality band. Compare pure LLM multi-agent vs Metrix hybrid. Event promo that reviews current spend before selling the fix.",
-      niche: "cloud-economy",
+      problem: "Капитал есть, модели нет",
+      solution: "Карточка ключевой метрики, рамка рисков и список «чего не делать». Сделки — у вас.",
+      niche: "Активы",
     },
     {
-      problem: "Agency delivery rework >20%",
-      solution:
-        "Ops map: intake · rework · handoff. Lower VVI on agent specs. 14-day scoreboard + one Terminal Teammate lane — not a full rewrite.",
-      niche: "ai-agencies",
+      problem: "Клиенты просят «ещё агентов», маржа падает",
+      solution: "Три рычага: приёмка, переделки, handoff. Табло на 14 дней без переписывания стека.",
+      niche: "AI-студии",
     },
     {
-      problem: "YouTube “AI freelace bots” — no clear value",
-      solution:
-        "Horizontal surface: decision document first, automation second. Value = pack the client can buy on the exchange; change = digital product + optional agent, not a 30-minute salad of buzzwords.",
-      niche: "d2c-offramp",
+      problem: "Непонятно, за что платить",
+      solution: "Бесплатно: диагноз и экспертные идеи. Платно: внедрение после вашего «да», с живым созвоном.",
+      niche: "Все",
     },
     {
-      problem: "Want hands-on + online income",
-      solution:
-        "Device / periphery lane: one station end-to-end, config SKU matrix, then online offer. Project for people who already have something — not for “wage slavery” scripts.",
-      niche: "device-assembly",
+      problem: "Курс / экспертка не продаётся",
+      solution: "Упаковка: обещание результата, 3 модуля, цена, возражения — один продаваемый пакет.",
+      niche: "Обучение / эксперты",
     },
     {
-      problem: "Trading bot curiosity without risk language",
-      solution:
-        "Only base mechanisms: market models under a situation, logical + risk analysis, explicit “do not do X”. Subscription or one-shot program for info + abstract support — not unmanaged auto-trading.",
-      niche: "asset-decisions",
+      problem: "Хочу руками + онлайн",
+      solution: "Одна станция или SKU конфига → оффер в сеть. Онлайн-продажа на базе осязаемого результата.",
+      niche: "Устройства",
     },
   ],
 
   howItWorks: {
-    title: "How Metrix AI works",
+    title: "Как это работает",
     lead:
-      "One horizontal surface: free expert orientation → structured document / metric model → pilot or autoliquidity lane. " +
-      "Transactions when you execute. Volume discount when you scale multiple problem packs.",
+      "Сформулировали проблему → получили решение в виде документа и метрик → рынок купил или конечный агент выполнил. Идеи бесплатно, внедрение — после подтверждения.",
     steps: [
       {
         n: "01",
-        title: "Orient",
-        text: "Industry + your words + numbers. Diagnosis, mechanism, product fork (Shift / Assistant / Interface) — without a catalog tour.",
+        title: "Проблема",
+        text: "Коротко: кто вы, где деньги, где болит. Ниша из списка.",
       },
       {
         n: "02",
-        title: "Structure",
-        text: "Free tech TZ / workspace doc: scope, packages, acceptance. SEQUENCE-style arch prompts when you build with agents.",
+        title: "Решение",
+        text: "Диагноз, направление, tech-TZ: объём, приёмка, что не делаем.",
       },
       {
         n: "03",
-        title: "Pick liquidity path",
-        text: "Ops/product/promo pilot — or autoliquidity: asset decisions · D2C freelace offramp. One primary lane so energy does not leak.",
+        title: "Документ",
+        text: "Пакет, который можно продать, отдать подрядчику или агенту.",
       },
       {
         n: "04",
-        title: "Ship · optional agent",
-        text: "Pilot proof → main package or volume tariff. Terminal agents only on accepted docs / authorized actions. You keep deal management.",
+        title: "Внедрение",
+        text: "После вашего подтверждения — живое общение и платная реализация. Без подписок и роялти.",
       },
     ],
   },
 
   flagships: [
     {
-      id: "consult",
-      title: "Free consultation",
-      essence: "Short business brief → diagnosis, direction, next steps.",
+      id: "decision-support",
+      title: "Поддержка решений → доход",
+      essence:
+        "Система, которая упрощает путь: проблема → ясное решение → документ, метрики и следующий оплачиваемый шаг.",
       detail:
-        "Describe your business in 5–20 sentences. Free orientation pack (EN/RU): diagnosis, change mechanism, product choice, short notes. Expert ideas free — transactions when you buy execution.",
+        "Осязаемый продукт Metrix AI: не «ещё чат», а рабочее место, где каждый ответ сводится к решению и артефакту (оффер, ТЗ, метрика, чеклист). Экспертные идеи бесплатно. Внедрение — после подтверждения, с живым общением. Без подписок и роялти.",
+      track: "product",
+      accent: "#5eead4",
+      sticker: "Ядро",
+      cta: "request",
+    },
+    {
+      id: "consult",
+      title: "Бесплатная консультация",
+      essence: "Краткий бриф → диагноз, направление, следующие шаги.",
+      detail:
+        "5–20 предложений о бизнесе. Пакет ориентации: что ломается, какой механизм, куда идти. Идеи бесплатно.",
       track: "ops",
       accent: "#5eead4",
       sticker: "Free",
@@ -299,10 +273,9 @@ window.METRIX_DATA = {
     },
     {
       id: "tech-journalism",
-      title: "Technical journalism",
-      essence: "Free tech TZ: consult → readable, build-ready writing.",
-      detail:
-        "Technical specification language: scope, work packages, acceptance, DoD — free tech write after orientation. Prompt builder for any IT-reachable problem.",
+      title: "Tech-TZ бесплатно",
+      essence: "Читаемое ТЗ: scope, пакеты работ, приёмка.",
+      detail: "После ориентации — техническое письмо, с которым можно идти к исполнителю или агенту.",
       track: "product",
       accent: "#38bdf8",
       sticker: "Free",
@@ -310,10 +283,9 @@ window.METRIX_DATA = {
     },
     {
       id: "pilot",
-      title: "Pilot",
-      essence: "One live lane — ops, product, or promotion — with proof metrics.",
-      detail:
-        "Paid pilot, clear scoreboard, go/no-go for main package. Volume tariff if you expand to multi-problem packs after pilot success.",
+      title: "Пилот",
+      essence: "Один трек, одна метрика, 14–30 дней — потом решение о полном пакете.",
+      detail: "Цены в блоке Pricing. Не подписка: фиксированная работа после подтверждения.",
       track: "product",
       accent: "#fbbf24",
       sticker: "Pilot",
@@ -322,15 +294,9 @@ window.METRIX_DATA = {
     {
       id: "teammate",
       title: "Terminal Teammate",
-      essence: "Access to the base layer — not “an AI product”.",
+      essence: "Доступ к базовому слою: библиотеки, закупки-промпты, живой спрос.",
       detail:
-        "Terminal Teammate is permission to descend under the surface of the market.\n\n" +
-        "Step 1 — Company by niches: libraries, configs.\n" +
-        "Step 2 — Procurement: prompts = self-generation of what you used to buy outside.\n" +
-        "Step 3 — Sales: live demand, not a static catalog.\n" +
-        "Step 4 — Own stack: engineering, materials, research, content — fewer rented costs.\n" +
-        "Step 5 — Corporate network that multiplies the first four.\n\n" +
-        "This is not a chatbot. It is base-layer access.",
+        "Не чатбот. Карта ниш → самогенерация того, что раньше покупали снаружи → продажи с рынка → свой стек. По шагам, после пилота.",
       track: "models",
       accent: "#c4b5fd",
       sticker: "Flagship",
@@ -338,11 +304,10 @@ window.METRIX_DATA = {
     },
     {
       id: "asset-lane",
-      title: "Asset decisions",
-      essence: "AI for asset management decisions — cognition, monitor, strategies.",
+      title: "Решения по активам",
+      essence: "Метрика, риски, сценарии. Управление сделками — у вас.",
       detail:
-        "Autoliquidity niche. Private-room friendly: key metric, risk model, market situation packs. " +
-        "You keep deal management. No base fee as “AMC % of AUM” — paid work by TZ / subscription for intel + support. No guarantees.",
+        "Поддержка решений, не обещание доходности. Работа по ТЗ после подтверждения. Без роялти с капитала.",
       track: "product",
       accent: "#f0abfc",
       sticker: "Автоликвидность",
@@ -351,31 +316,32 @@ window.METRIX_DATA = {
     },
     {
       id: "d2c-lane",
-      title: "D2C freelace offramp",
-      essence: "Idea → document → market → optional terminal agent.",
+      title: "D2C и фриланс-пакет",
+      essence: "Идея → документ под заказ → передача исполнителю или агенту.",
       detail:
-        "Autoliquidity niche. Workspace for incomplete ideas. Output matches freelace exchange problems so you can sell the creative layer; agent runs the accepted document. Basic order search automatable.",
+        "Рынок платит за оформленное решение. Мы собираем документ, который совпадает с формой заказа.",
       track: "product",
       accent: "#67e8f9",
       sticker: "Автоликвидность",
       cta: "request",
-      industryHint: "d2c-offramp",
+      industryHint: "freelace-d2c",
     },
     {
-      id: "expert",
-      title: "API cost · Expert",
-      essence: "Cut third-party API spend, keep quality.",
+      id: "api-lane",
+      title: "API для разработчиков",
+      essence: "Карта интеграций и клиентских API без лишнего burn.",
       detail:
-        "For founders burning tokens and vendor APIs. Unit-cost map, quality band, Expert path vs pure LLM bill.",
+        "Для тех, кто собирает штуки клиентам: что вызывать, где резать cost, какой пол качества.",
       track: "product",
-      accent: "#86efac",
-      sticker: "Flagship",
+      accent: "#7dd3fc",
+      sticker: "Dev",
       cta: "request",
+      industryHint: "api-for-devs",
     },
     {
       id: "metrix-ai",
-      title: "Why Metrix AI",
-      essence: "Dynamic story: ops · product · promotion · liquidity.",
+      title: "Почему мы",
+      essence: "Короткие факты: ops, продукт, промо, путь к доходу.",
       detail: "",
       track: "ops",
       accent: "#7dd3fc",
@@ -388,20 +354,19 @@ window.METRIX_DATA = {
   packagePricing: {
     freeConsultUsd: 0,
     freeTechWriteUsd: 0,
-    freeTechWriteNote: "Expert ideas + tech TZ after free consult are free.",
+    freeTechWriteNote: "Экспертные идеи и tech-TZ после консультации — бесплатно.",
     pilotOpsUsd: 690,
     pilotProductUsd: 790,
     pilotPromotionUsd: 490,
     mainPackageUsd: 2490,
     volumeNote:
-      "Volume tariff: multi-problem packs (org + product + promo) after pilot — discount vs three separate pilots. Ask in consult.",
-    transactionNote: "Transactions / agent runs / private rooms: paid. No placement %, no “salary” retainer required to start.",
+      "Оплата за внедрение после подтверждения, с живым общением. Без подписок и роялти.",
+    transactionNote: "",
   },
 
   fullPackage: {
-    name: "Pricing",
-    why:
-      "Expert ideas free. Tech TZ free. Pilot by track. Main / volume after proof. Transactions when you execute.",
+    name: "Цены",
+    why: "Идеи бесплатно. Внедрение — после вашего «да». Без подписок и роялти.",
   },
 
   api: {

@@ -138,17 +138,48 @@ textarea {
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #5eead4, #38bdf8 50%, #c4b5fd);
+  background: transparent;
   display: grid;
   place-items: center;
   font-size: 0.75rem;
   font-weight: 800;
-  color: #041016;
-  box-shadow: 0 0 24px rgba(94, 234, 212, 0.35);
+  color: #5eead4;
+}
+
+/* Brand monogram M — distinct accent color only */
+.logo-mark-brand {
+  width: 36px;
+  height: 36px;
+  color: #5eead4;
+  filter: drop-shadow(0 0 12px rgba(94, 234, 212, 0.45));
+}
+
+.logo-mark-brand svg {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+.logo-m-path {
+  fill: currentColor;
+}
+
+.logo-text {
+  color: var(--text);
+  font-weight: 700;
 }
 
 .logo-text span {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.hero-sub2 {
+  margin-top: 0.65rem;
   color: var(--accent);
+  font-weight: 600;
+  font-size: 1rem;
+  max-width: 48ch;
 }
 
 .nav-links {
@@ -539,7 +570,7 @@ textarea {
   font-weight: 700;
 }
 
-/* Marquee (Why us) */
+/* Marquee (Why us) — fixed height, no jump */
 .card-flag-marquee {
   min-height: 200px;
 }
@@ -550,7 +581,8 @@ textarea {
   flex-direction: column;
   gap: 0.4rem;
   text-align: left;
-  min-height: 5.5rem;
+  min-height: 5.6rem;
+  height: 5.6rem;
 }
 
 .marquee-label {
@@ -559,23 +591,24 @@ textarea {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--flag-accent);
+  flex-shrink: 0;
 }
 
 .marquee-text {
-  color: var(--text-muted) !important;
-  font-size: 0.88rem !important;
-  line-height: 1.5 !important;
+  color: #e2e8f0 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.45 !important;
   margin: 0 !important;
   opacity: 1;
+  transition: opacity 0.2s ease;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .marquee-text.marquee-in {
-  animation: marqueeFade 0.55s ease;
-}
-
-@keyframes marqueeFade {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  /* opacity only via JS — no transform jump */
 }
 
 .marquee-dots {
@@ -1306,122 +1339,221 @@ textarea {
   max-width: 48ch;
 }
 
-/* —— Niche grid —— */
+/* —— Niche grid (compact, dark, readable) —— */
 .niche-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.65rem;
 }
 
-.niche-card {
+.niche-card,
+.niche-card-compact {
   position: relative;
   text-align: left;
   width: 100%;
   cursor: pointer;
-  border: 1px solid color-mix(in srgb, var(--flag-accent, #5eead4) 30%, transparent);
-  border-radius: var(--radius);
-  padding: 1.15rem 1.2rem 1.1rem;
-  background:
-    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--flag-accent, #5eead4) 18%, transparent), transparent 55%),
-    var(--bg-card);
-  color: inherit;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  background: #111822;
+  color: #e8eef7;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  gap: 0.2rem;
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 0;
 }
 
-.niche-card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--flag-accent, #5eead4) 60%, transparent);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+.niche-card-compact:hover {
+  border-color: color-mix(in srgb, var(--flag-accent, #5eead4) 70%, transparent);
+  background: #161f2c;
 }
 
 .niche-icon {
-  font-size: 1.25rem;
-  opacity: 0.9;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--flag-accent, var(--accent));
 }
 
-.niche-card h3 {
-  font-size: 1.05rem;
-  padding-right: 4.5rem;
+.niche-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.niche-title-row strong {
+  font-size: 0.92rem;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
 }
 
 .niche-blurb {
-  color: var(--flag-accent, var(--accent));
-  font-size: 0.82rem;
-  font-weight: 600;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.3;
 }
 
-.niche-desc {
-  color: var(--text-muted);
-  font-size: 0.88rem;
-  line-height: 1.5;
-  flex: 1;
-}
-
-.niche-problems {
-  margin: 0.25rem 0 0;
-  padding-left: 1.1rem;
-  color: var(--text-dim);
-  font-size: 0.8rem;
-  line-height: 1.45;
-}
-
-.niche-badge {
-  font-size: 0.62rem !important;
-  max-width: 9rem;
-  text-align: center;
-  line-height: 1.2;
-  white-space: normal;
+.niche-pill {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--flag-accent, #5eead4) 25%, #0f172a);
+  color: var(--flag-accent, #5eead4);
+  border: 1px solid color-mix(in srgb, var(--flag-accent, #5eead4) 40%, transparent);
 }
 
 .industry-tile-auto {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tile-accent, #f0abfc) 45%, transparent);
 }
 
-/* —— Problem slides stage —— */
-.problem-stage {
-  max-width: 720px;
+/* —— Problems: static grid (no slider) —— */
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.75rem;
 }
 
-.problem-card {
-  padding: 1.5rem 1.55rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-strong);
-  background:
-    radial-gradient(90% 80% at 0% 0%, rgba(56, 189, 248, 0.12), transparent 55%),
-    var(--bg-card);
-  min-height: 220px;
+.problem-static-card {
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #111822;
+  color: #e8eef7;
   display: flex;
   flex-direction: column;
+  gap: 0.35rem;
+  min-height: 0;
 }
 
-.problem-card h3 {
-  font-size: 1.25rem;
+.problem-static-card .eyebrow {
+  color: #5eead4;
+  margin-bottom: 0;
+}
+
+.problem-static-card h3 {
+  font-size: 1rem;
   letter-spacing: -0.02em;
-  line-height: 1.35;
-  margin-top: 0.25rem;
+  line-height: 1.3;
+  color: #f8fafc;
+  margin: 0 0 0.25rem;
 }
 
-.problem-card #problem-solution {
-  color: var(--text-muted);
-  font-size: 0.98rem;
-  line-height: 1.65;
+.problem-static-card p {
+  color: #cbd5e1;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0 0 0.5rem;
   flex: 1;
-  margin-top: 0.25rem;
 }
 
-.problem-foot {
-  display: flex;
+.product-tangible {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.tangible-card {
+  background: #111822;
+  border: 1px solid rgba(94, 234, 212, 0.22);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  color: #e8eef7;
+}
+
+.tangible-card h3 {
+  font-size: 1rem;
+  margin: 0.25rem 0;
+  color: #f8fafc;
+}
+
+.tangible-card p {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.brand-mark-block {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) 1fr;
+  gap: 1.25rem;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  padding: 1.1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: #0d1219;
+}
+
+.brand-mark-img {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  display: block;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.brand-mark-block h3 {
+  font-size: 1.2rem;
+  margin: 0.3rem 0 0.5rem;
+  color: #f8fafc;
+}
+
+.brand-mark-block p {
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0 0 1rem;
+  max-width: 48ch;
+}
+
+.niche-list-ol {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  columns: 2;
+  column-gap: 2rem;
+}
+
+.niche-list-ol li {
+  break-inside: avoid;
+  margin-bottom: 0.25rem;
+}
+
+.niche-full-list {
   margin-top: 1.25rem;
-  flex-wrap: wrap;
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  background: #0d1219;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+/* Flagship cards: ensure text is light on dark */
+.card-flag p,
+.card-flag .marquee-text {
+  color: #e2e8f0 !important;
 }
 
 @media (max-width: 720px) {
+  .brand-mark-block {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-mark-img {
+    max-width: 160px;
+  }
+
+  .niche-list-ol {
+    columns: 1;
+  }
+
   .asset-banner-inner {
     grid-template-columns: 1fr;
   }

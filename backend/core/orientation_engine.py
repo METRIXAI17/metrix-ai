@@ -60,6 +60,42 @@ INDUSTRY_PARAM_LEXICON: dict[str, list[str]] = {
         "d2c", "freelace", "freelance", "document", "workspace", "offramp",
         "agent", "order", "brief", "exchange", "handoff", "idea", "outreach",
     ],
+    "api-for-devs": [
+        "api", "integration", "webhook", "sdk", "token", "rate limit",
+        "developer", "client", "endpoint", "latency", "cost", "vendor",
+    ],
+    "freelace-d2c": [
+        "freelace", "freelance", "d2c", "offer", "brief", "document",
+        "order", "client", "handoff", "package", "workspace",
+    ],
+    "expert-services": [
+        "expert", "coach", "consult", "offer", "package", "session",
+        "client", "retainer", "delivery", "promise",
+    ],
+    "ecommerce": [
+        "shop", "sku", "aov", "margin", "cart", "return", "ads",
+        "product", "store", "funnel", "cac",
+    ],
+    "content-monetize": [
+        "content", "audience", "subscribe", "monetize", "creator",
+        "channel", "post", "guide", "ticket",
+    ],
+    "education": [
+        "course", "module", "student", "lesson", "curriculum",
+        "cohort", "tuition", "learning", "program",
+    ],
+    "saas-founders": [
+        "saas", "activation", "mrr", "churn", "onboarding", "icp",
+        "pilot", "subscription", "product", "b2b",
+    ],
+    "automation-builders": [
+        "automation", "no-code", "zapier", "workflow", "scenario",
+        "bot", "trigger", "hours", "process",
+    ],
+    "cost-ops": [
+        "cost", "unit", "economics", "cogs", "margin", "leak",
+        "waste", "opex", "budget", "roi",
+    ],
 }
 
 # Оси концептуального пространства (общие + индустриальные)

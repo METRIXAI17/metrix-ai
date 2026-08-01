@@ -87,52 +87,52 @@ NICHE_BASE: dict[str, dict[str, Any]] = {
             },
         },
     },
-    "cloud-economy": {
-        "name": "Cloud / API cost",
-        "hook": "Cut third-party API burn; Expert path vs pure LLM bill.",
+    "api-for-devs": {
+        "name": "API для разработчиков",
+        "hook": "Интеграции и клиентские API: карта вызовов, cost, quality floor.",
         "must_clarify": [
             "monthly_api_usd",
             "top_3_vendors",
             "quality_floor",
             "which_calls_are_hot_path",
         ],
-        "tasty_proof": "Same quality band, −30–60% token/API line — on paper first, then pilot.",
+        "tasty_proof": "Один hot path дешевле при том же quality floor — на бумаге, потом пилот.",
         "directions": {
             "ops": {
-                "title": "API cost collapse ops map",
+                "title": "Карта API-вызовов",
                 "answer": (
-                    "Карта вызовов: hot path vs batch. Кэши, детерминизм, Expert env. "
-                    "Пилот: один hot path без падения quality floor."
+                    "Список интеграций: hot path vs batch. Что режем, что кэшируем, какой пол качества. "
+                    "Пилот: один клиентский путь."
                 ),
                 "answer_en": (
-                    "Call map: hot path vs batch. Cache, determinism, Expert env. "
-                    "Pilot: one hot path without quality-floor drop."
+                    "Integration map: hot path vs batch. What to cut, cache, quality floor. "
+                    "Pilot: one client path."
                 ),
                 "free_work": [
-                    "Export last 30d API spend by vendor",
-                    "Mark quality floor (what users notice)",
-                    "Pick one hot path to attack first",
+                    "Список API за 30 дней по вендорам",
+                    "Что клиент замечает как «качество»",
+                    "Один hot path в первую очередь",
                 ],
-                "success_metric": "Hot-path $ / request ↓ with quality ≥ floor",
-                "out_of_scope_default": ["full multi-cloud migration"],
+                "success_metric": "Hot-path $ / request ↓ при quality ≥ floor",
+                "out_of_scope_default": ["полная миграция multi-cloud"],
             },
             "product": {
-                "title": "Expert product kit",
+                "title": "Пакет интеграций под клиента",
                 "answer": (
-                    "Expert = качество вверх при счёте вниз. Free tech write: unit cost, "
-                    "quality band, fallback rules, acceptance."
+                    "Документ: unit cost, quality band, fallback. Free tech write — "
+                    "то, что разработчик отдаёт клиенту как ТЗ."
                 ),
                 "answer_en": (
-                    "Expert = quality up, bill down. Free tech write: unit cost, "
-                    "quality band, fallback rules, acceptance."
+                    "Pack: unit cost, quality band, fallback. Free tech write — "
+                    "what the dev hands the client as TZ."
                 ),
                 "free_work": [
-                    "Define quality band in user language",
-                    "List fallbacks when Expert refuses LLM",
-                    "Draft acceptance for cost+quality pair",
+                    "Quality band словами клиента",
+                    "Fallback когда API отвалился",
+                    "Приёмка cost+quality",
                 ],
-                "success_metric": "Signed Expert TZ + cost baseline",
-                "out_of_scope_default": ["custom model training from scratch"],
+                "success_metric": "Подписанное ТЗ + cost baseline",
+                "out_of_scope_default": ["обучение своей модели с нуля"],
             },
             "promotion": {
                 "title": "Event / review container",
@@ -548,7 +548,269 @@ NICHE_BASE: dict[str, dict[str, Any]] = {
             },
         },
     },
+    "freelace-d2c": {
+        "name": "Фриланс и D2C-офферы",
+        "hook": "Идея → документ под заказ → передача исполнителю или агенту.",
+        "badge": "Автоликвидность",
+        "must_clarify": ["idea_one_liner", "skills_you_sell", "channel", "agent_yes_no"],
+        "tasty_proof": "Документ, совпадающий с формой живого заказа.",
+        "directions": {
+            "ops": {
+                "title": "Идея → brief",
+                "answer": "Сырую идею собираем в 1-страничный brief и оффер. Можно выложить или отдать исполнителю.",
+                "answer_en": "Raw idea → one-page brief and offer. Publish or hand to executor.",
+                "free_work": ["5 предложений об идее", "Канал продаж", "Что не автоматизируем"],
+                "success_metric": "1 документ совпал с формой заказа",
+                "out_of_scope_default": ["захват аккаунтов на биржах"],
+            },
+            "product": {
+                "title": "Пакет handoff",
+                "answer": "Документ + DoD + что агент не выдумывает. Free tech write: scope и приёмка.",
+                "answer_en": "Document + DoD + agent must-not invent. Free tech write: scope and acceptance.",
+                "free_work": ["Творческий слой только ваш", "Что агент не трогает", "Чеклист приёмки"],
+                "success_metric": "Handoff-пакет принят",
+                "out_of_scope_default": ["авто-сообщения клиенту без вас"],
+            },
+            "promotion": {
+                "title": "Документ, не винегрет",
+                "answer": "Ценность = оформленное решение. Free: before/after — идея vs принятый пакет.",
+                "answer_en": "Value = packaged decision. Free: before/after — idea vs accepted pack.",
+                "free_work": ["Один before/after", "Одно предложение ценности", "CTA на brief"],
+                "success_metric": "1 ответ на outreach или shortlist",
+                "out_of_scope_default": ["пустой хайп как продукт"],
+            },
+        },
+    },
+    "expert-services": {
+        "name": "Экспертные услуги",
+        "hook": "Упаковка оффера: обещание, пакет, цена, возражения.",
+        "must_clarify": ["who_buys", "result_promise", "price_band", "delivery_hours"],
+        "tasty_proof": "Один продаваемый пакет вместо «созвонимся».",
+        "directions": {
+            "ops": {
+                "title": "Карта услуги",
+                "answer": "Кто платит, какой результат, сколько часов. Free: 1-страничный оффер.",
+                "answer_en": "Who pays, what result, how many hours. Free: one-page offer.",
+                "free_work": ["Кто подписывает", "Результат за 30 дней", "Часы на доставку"],
+                "success_metric": "Оффер отправлен 3 людям",
+                "out_of_scope_default": ["личный бренд с нуля за неделю"],
+            },
+            "product": {
+                "title": "Пакет услуги",
+                "answer": "3 модуля, цена, что не входит. Free tech write: ТЗ на доставку.",
+                "answer_en": "3 modules, price, out of scope. Free tech write: delivery TZ.",
+                "free_work": ["3 модуля", "Цена", "Out of scope"],
+                "success_metric": "Пакет принят 1 клиентом или prepay",
+                "out_of_scope_default": ["полная воронка ads"],
+            },
+            "promotion": {
+                "title": "Угол продажи",
+                "answer": "Один proof + CTA на пакет. Не контент ради контента.",
+                "answer_en": "One proof + CTA to the pack. Not content for content.",
+                "free_work": ["1 proof", "1 CTA", "Канал"],
+                "success_metric": "1 созвон с пакетом на столе",
+                "out_of_scope_default": ["daily posting machine"],
+            },
+        },
+    },
+    "ecommerce": {
+        "name": "Онлайн-магазины",
+        "hook": "Оффер, unit-экон., где теряется маржа.",
+        "must_clarify": ["aov", "margin", "traffic_source", "top_sku"],
+        "tasty_proof": "Один SKU с ясной маржой и оффером.",
+        "directions": {
+            "ops": {
+                "title": "Unit-экон. карта",
+                "answer": "AOV, маржа, возвраты, реклама. Free: leak-map на 1 странице.",
+                "answer_en": "AOV, margin, returns, ads. Free: one-page leak map.",
+                "free_work": ["AOV", "Маржа top SKU", "CAC если есть"],
+                "success_metric": "1 leak закрыт на бумаге",
+                "out_of_scope_default": ["полный редизайн магазина"],
+            },
+            "product": {
+                "title": "Оффер SKU",
+                "answer": "Упаковка top SKU: обещание, бандл, цена. Free: оффер-лист.",
+                "answer_en": "Top SKU pack: promise, bundle, price. Free: offer sheet.",
+                "free_work": ["Top SKU", "Обещание", "Цена/бандл"],
+                "success_metric": "Оффер выложен или протестирован",
+                "out_of_scope_default": ["новый бренд с нуля"],
+            },
+            "promotion": {
+                "title": "Угол трафика",
+                "answer": "Один канал + proof. Free: 1 креатив-рамка под оффер.",
+                "answer_en": "One channel + proof. Free: one creative frame for the offer.",
+                "free_work": ["Канал", "Proof", "CTA"],
+                "success_metric": "1 тест канала",
+                "out_of_scope_default": ["масштаб ads без unit-экон."],
+            },
+        },
+    },
+    "content-monetize": {
+        "name": "Контент и аудитория",
+        "hook": "Монетизация без размытия: один оффер к аудитории.",
+        "must_clarify": ["audience_size", "platform", "offer_today", "ticket"],
+        "tasty_proof": "Один платный шаг (гайд, созвон, продукт) с ясной ценой.",
+        "directions": {
+            "ops": {
+                "title": "Карта монетизации",
+                "answer": "Аудитория → касание → оффер. Free: 1 путь к оплате.",
+                "answer_en": "Audience → touch → offer. Free: one path to payment.",
+                "free_work": ["Размер аудитории", "Платформа", "Текущий оффер"],
+                "success_metric": "1 оплата по новому пути",
+                "out_of_scope_default": ["рост подписчиков как единственная цель"],
+            },
+            "product": {
+                "title": "Цифровой продукт",
+                "answer": "Гайд/пакет/созвон: scope и цена. Free tech write: структура продукта.",
+                "answer_en": "Guide/pack/call: scope and price. Free tech write: product structure.",
+                "free_work": ["Формат", "Цена", "Результат для покупателя"],
+                "success_metric": "Продукт выложен",
+                "out_of_scope_default": ["ежедневный контент-завод"],
+            },
+            "promotion": {
+                "title": "Анонс",
+                "answer": "1 пост/сторис с оффером. Free: текст анонса.",
+                "answer_en": "One post/story with offer. Free: announcement copy.",
+                "free_work": ["Канал", "Дата", "CTA"],
+                "success_metric": "1 анонс + 1 ответ",
+                "out_of_scope_default": ["агентство SMM"],
+            },
+        },
+    },
+    "education": {
+        "name": "Курсы и обучение",
+        "hook": "Программа → продаваемый пакет с приёмкой.",
+        "must_clarify": ["audience", "outcome", "modules", "price"],
+        "tasty_proof": "3 модуля + цена + для кого — один пакет.",
+        "directions": {
+            "ops": {
+                "title": "Карта курса",
+                "answer": "Для кого, какой исход, сколько модулей. Free: программа на 1 странице.",
+                "answer_en": "Who, outcome, modules. Free: one-page program.",
+                "free_work": ["Аудитория", "Исход", "Число модулей"],
+                "success_metric": "Программа утверждена",
+                "out_of_scope_default": ["LMS с нуля"],
+            },
+            "product": {
+                "title": "Пакет курса",
+                "answer": "Оффер + модули + приёмка. Free tech write: структура.",
+                "answer_en": "Offer + modules + acceptance. Free tech write: structure.",
+                "free_work": ["3 модуля", "Цена", "Что не входит"],
+                "success_metric": "Страница продаж или пресейл",
+                "out_of_scope_default": ["запись 40 часов видео"],
+            },
+            "promotion": {
+                "title": "Пресейл",
+                "answer": "1 анонс + waitlist. Free: текст пресейла.",
+                "answer_en": "One announcement + waitlist. Free: presale copy.",
+                "free_work": ["Канал", "Дата старта", "CTA"],
+                "success_metric": "N заявок в waitlist",
+                "out_of_scope_default": ["вебинарная машина"],
+            },
+        },
+    },
+    "saas-founders": {
+        "name": "SaaS и цифровые продукты",
+        "hook": "Один пилот, одна метрика, один оффер.",
+        "must_clarify": ["icp", "activation", "price", "blocker"],
+        "tasty_proof": "Pilot slice с success metric, не «весь продукт».",
+        "directions": {
+            "ops": {
+                "title": "Activation map",
+                "answer": "Где пользователь застревает. Free: 5 шагов onboarding.",
+                "answer_en": "Where users stick. Free: 5 onboarding steps.",
+                "free_work": ["ICP", "Activation event", "Текущий blocker"],
+                "success_metric": "Activation ↑ на пилоте",
+                "out_of_scope_default": ["rewrite всего продукта"],
+            },
+            "product": {
+                "title": "Pilot vertical",
+                "answer": "Узкий slice + DoD. Free tech write: scope пилота.",
+                "answer_en": "Narrow slice + DoD. Free tech write: pilot scope.",
+                "free_work": ["Slice", "DoD", "Цена пилота"],
+                "success_metric": "1 пилот-клиент",
+                "out_of_scope_default": ["enterprise SSO сразу"],
+            },
+            "promotion": {
+                "title": "Оффер пилота",
+                "answer": "1 страница: кому, зачем, цена. Free: текст оффера.",
+                "answer_en": "One page: who, why, price. Free: offer copy.",
+                "free_work": ["ICP", "Proof", "CTA"],
+                "success_metric": "3 разговора с ICP",
+                "out_of_scope_default": ["Product Hunt ради хайпа"],
+            },
+        },
+    },
+    "automation-builders": {
+        "name": "Автоматизация и no-code",
+        "hook": "Сценарии, которые ведут к доходу, не к «красивым схемам».",
+        "must_clarify": ["process", "hours_saved", "revenue_link", "tools"],
+        "tasty_proof": "Один сценарий: вход → шаг → оплачиваемый результат.",
+        "directions": {
+            "ops": {
+                "title": "Карта процесса",
+                "answer": "Где часы и деньги. Free: 1 сценарий as-is / to-be.",
+                "answer_en": "Where hours and money. Free: one as-is / to-be scenario.",
+                "free_work": ["Процесс", "Часы в неделю", "Связь с деньгами"],
+                "success_metric": "1 сценарий запущен",
+                "out_of_scope_default": ["автоматизация всего бизнеса"],
+            },
+            "product": {
+                "title": "Сценарий-продукт",
+                "answer": "Пакет: входные данные, шаги, выход. Free tech write: ТЗ сценария.",
+                "answer_en": "Pack: inputs, steps, output. Free tech write: scenario TZ.",
+                "free_work": ["Инструменты", "Выход", "Приёмка"],
+                "success_metric": "ТЗ принято",
+                "out_of_scope_default": ["кастомный SaaS"],
+            },
+            "promotion": {
+                "title": "Кейс",
+                "answer": "Before/after часов. Free: 1 кейс-карточка.",
+                "answer_en": "Before/after hours. Free: one case card.",
+                "free_work": ["До", "После", "CTA"],
+                "success_metric": "1 лид с кейса",
+                "out_of_scope_default": ["YouTube-серия без оффера"],
+            },
+        },
+    },
+    "cost-ops": {
+        "name": "Себестоимость и unit-economics",
+        "hook": "Где утекают деньги — карта без обрезания способности.",
+        "must_clarify": ["revenue", "cogs", "fixed", "biggest_leak"],
+        "tasty_proof": "1-page leak map + что не режем.",
+        "directions": {
+            "ops": {
+                "title": "Leak map",
+                "answer": "Доходы, COGS, фикс, топ-утечка. Free: 1 страница.",
+                "answer_en": "Revenue, COGS, fixed, top leak. Free: one page.",
+                "free_work": ["Выручка", "COGS", "Главная утечка"],
+                "success_metric": "1 утечка закрыта планом",
+                "out_of_scope_default": ["полный audit 5 лет"],
+            },
+            "product": {
+                "title": "Пакет unit-экон.",
+                "answer": "Шаблон метрик + правила. Free tech write: scoreboard.",
+                "answer_en": "Metric template + rules. Free tech write: scoreboard.",
+                "free_work": ["3 метрики", "Частота", "Owner"],
+                "success_metric": "Scoreboard живёт 14 дней",
+                "out_of_scope_default": ["ERP внедрение"],
+            },
+            "promotion": {
+                "title": "Waste-killer card",
+                "answer": "1 кейс «было/стало». Free: карточка.",
+                "answer_en": "One before/after card. Free: case card.",
+                "free_work": ["Цифра", "Действие", "CTA"],
+                "success_metric": "1 разговор с buyer",
+                "out_of_scope_default": ["рекламный бюджет"],
+            },
+        },
+    },
 }
+
+# Aliases for legacy industry ids
+NICHE_BASE["cloud-economy"] = NICHE_BASE["api-for-devs"]
+NICHE_BASE["cost-engineering"] = NICHE_BASE["cost-ops"]
+NICHE_BASE["d2c-offramp"] = NICHE_BASE["freelace-d2c"]
 
 
 # Dual founders lane — tasty for Karim (deep tech) + Andryusha (branding/VA)
