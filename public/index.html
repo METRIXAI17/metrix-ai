@@ -40,12 +40,18 @@
           <span class="logo-text">Metrix <span>AI</span></span>
         </a>
 
-        <div class="mode-switch" role="tablist" aria-label="Mode">
+        <div class="mode-switch mode-switch-wide" role="tablist" aria-label="Mode">
           <button type="button" class="active" data-mode="marketplace" role="tab" aria-selected="true" data-i18n="nav_products">
             Products
           </button>
           <button type="button" data-mode="request" role="tab" aria-selected="false" data-i18n="nav_consult">
             Consult
+          </button>
+          <button type="button" data-mode="tasks" role="tab" aria-selected="false" data-i18n="nav_tasks">
+            Business Tasks
+          </button>
+          <button type="button" data-mode="generate" role="tab" aria-selected="false" class="mode-fire" data-i18n="nav_generate">
+            Generate 🔥
           </button>
         </div>
 
@@ -75,7 +81,13 @@
         <p class="hero-sub2" id="master-offer-sub2"></p>
         <div class="hero-actions">
           <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
-            Start consult
+            Consult + Tech-TZ
+          </button>
+          <button type="button" class="btn btn-ghost mode-fire-btn" data-mode-jump="generate" data-i18n="cta_generate">
+            Generate 🔥
+          </button>
+          <button type="button" class="btn btn-ghost" data-mode-jump="tasks" data-i18n="cta_tasks">
+            Business Tasks
           </button>
           <button type="button" class="btn btn-ghost" data-scroll="#niches" data-i18n="cta_niches">10 niches</button>
         </div>
@@ -114,7 +126,7 @@
               Instant expert ideas. Pay for implementation with live talk after confirmation. Experiment without fear.
             </p>
             <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
-              Start consult
+              Consult + Tech-TZ
             </button>
           </div>
         </div>
@@ -163,6 +175,107 @@
           </div>
         </div>
         <div class="grid grid-flagship" id="program-grid"></div>
+        <div class="cr-cta-row" style="margin-top: 1.25rem">
+          <button type="button" class="btn btn-primary mode-fire-btn" data-mode-jump="generate" data-i18n="cta_generate">
+            Generate business 🔥
+          </button>
+          <button type="button" class="btn btn-ghost" data-mode-jump="tasks" data-i18n="cta_tasks">
+            Business Tasks
+          </button>
+        </div>
+      </section>
+
+      <!-- GENERATE BUSINESS (primary placement — right after products) -->
+      <section class="section wrap mode-panel" id="mode-generate" data-panel="generate" hidden>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">🔥</div>
+            <h2 data-i18n="generate_title">Generate business</h2>
+            <p class="how-lead" data-i18n="generate_lead">
+              Describe the essence. The system asks for direction at each stage.
+            </p>
+          </div>
+        </div>
+        <form class="form-card form-card-slim" id="gen-form" novalidate>
+          <div class="form-grid">
+            <div class="field field-full field-span">
+              <label for="gen-headline" data-i18n="gen_headline_label">Business in a few words *</label>
+              <input
+                id="gen-headline"
+                name="headline"
+                type="text"
+                required
+                maxlength="120"
+                data-i18n-ph="gen_headline_ph"
+                placeholder="E.g. AI studio · less rework · clear offer"
+              />
+            </div>
+            <div class="field field-full field-span">
+              <label for="gen-business" data-i18n="gen_business_label">Business essence *</label>
+              <textarea
+                id="gen-business"
+                name="business"
+                required
+                rows="5"
+                data-i18n-ph="gen_business_ph"
+                placeholder="Describe the essence in your own words — niches are chosen automatically…"
+              ></textarea>
+            </div>
+            <div class="field field-full field-span" id="gen-choices" hidden>
+              <div class="eyebrow" data-i18n="gen_plan">Plan (like a TZ)</div>
+              <div id="gen-choice-cards" class="choice-cards"></div>
+            </div>
+            <p class="form-error" id="gen-error" role="alert"></p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.6rem">
+              <button type="submit" class="btn btn-primary btn-lg" id="gen-submit" data-i18n="gen_run">
+                Run orchestration
+              </button>
+              <button type="button" class="btn btn-ghost" data-mode-jump="request" data-i18n="cta_consult">
+                Consult + Tech-TZ
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div id="gen-result" class="gen-result" hidden>
+          <div class="gen-result-head">
+            <div class="eyebrow" data-i18n="gen_result">Result</div>
+            <h3 id="gen-msg">—</h3>
+            <p id="gen-gate" class="gate-chip"></p>
+          </div>
+          <div class="gen-orch-block" id="gen-orch-block">
+            <div class="eyebrow" data-i18n="gen_orch">Orchestration · 10 niches</div>
+            <p id="gen-orch-note" class="how-lead" style="margin-bottom: 0.75rem"></p>
+            <div id="gen-niche-rank" class="niche-rank-row"></div>
+            <div class="eyebrow" style="margin-top: 1rem" data-i18n="gen_stack">Service stack</div>
+            <div id="gen-service-stack" class="svc-stack-row"></div>
+          </div>
+          <div class="panel-clean panel-result">
+            <div class="panel-col">
+              <div class="eyebrow" data-i18n="gen_plan">Plan</div>
+              <div id="gen-plan"></div>
+              <div class="eyebrow" style="margin-top: 1rem" data-i18n="gen_open_q">Questions</div>
+              <ul id="gen-questions" class="clean-list"></ul>
+            </div>
+            <div class="panel-col">
+              <div class="eyebrow" data-i18n="gen_panel">Panel</div>
+              <div id="gen-panel" class="mini-panel"></div>
+              <div class="eyebrow" style="margin-top: 1rem" data-i18n="gen_quality">Quality</div>
+              <pre id="gen-quality" class="fw-pre slim"></pre>
+            </div>
+            <div class="panel-col">
+              <div class="eyebrow" data-i18n="gen_expert">Expert base</div>
+              <pre id="gen-expert" class="fw-pre slim"></pre>
+              <div class="eyebrow" style="margin-top: 1rem" data-i18n="gen_code">Code pack</div>
+              <pre id="gen-code" class="fw-pre slim"></pre>
+            </div>
+          </div>
+          <div class="cr-cta-row">
+            <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
+              Consult + Tech-TZ
+            </button>
+          </div>
+        </div>
       </section>
 
       <section class="section wrap" id="how">
@@ -189,7 +302,7 @@
           </div>
           <div class="pricing-actions">
             <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
-              Start consult
+              Consult + Tech-TZ
             </button>
           </div>
         </div>
@@ -221,11 +334,11 @@
               </select>
             </div>
             <div class="field">
-              <label for="req-x">X nickname</label>
+              <label for="req-x" data-i18n="label_x">X nickname</label>
               <input id="req-x" name="x" type="text" autocomplete="username" placeholder="@handle" />
             </div>
             <div class="field">
-              <label for="req-telegram">Telegram</label>
+              <label for="req-telegram" data-i18n="label_telegram">Telegram</label>
               <input id="req-telegram" name="telegram" type="text" autocomplete="username" placeholder="@username" />
             </div>
             <div class="field field-full">
@@ -242,8 +355,9 @@
             <p class="form-error" id="form-error" role="alert"></p>
             <p class="form-success" id="form-success" role="status"></p>
             <div style="display: flex; flex-wrap: wrap; gap: 0.6rem">
-              <button type="submit" class="btn btn-primary" data-i18n="cta_consult">Start consult</button>
-              <button type="button" class="btn btn-ghost" id="btn-tech-write">Tech-TZ</button>
+              <button type="submit" class="btn btn-primary" id="btn-consult-tech" data-i18n="cta_consult">
+                Consult + Tech-TZ
+              </button>
               <a class="btn btn-ghost" href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">DM on X</a>
             </div>
             <p class="hint" id="contact-note" hidden></p>
@@ -269,8 +383,8 @@
 
         <div id="free-work-panel" class="free-work-panel" hidden>
           <div class="fw-head">
-            <div class="eyebrow">Free work</div>
-            <h3 id="fw-title">Next steps</h3>
+            <div class="eyebrow" data-i18n="fw_eyebrow">Free work</div>
+            <h3 id="fw-title" data-i18n="fw_title_default">Next steps</h3>
             <p id="fw-quality" class="fw-quality"></p>
           </div>
           <div class="fw-phases" id="fw-phases"></div>
@@ -286,13 +400,48 @@
             <p id="fw-success-metric" class="fw-metric"></p>
           </div>
           <div class="fw-card fw-tech" id="fw-tech-card">
-            <h4>Tech write</h4>
+            <h4 data-i18n="fw_tech">Tech write</h4>
             <pre id="fw-tech-md" class="fw-pre"></pre>
           </div>
           <div class="cr-cta-row">
             <button type="button" class="btn btn-ghost" id="btn-advance-phase" data-i18n="fw_next">Next phase →</button>
             <a class="btn btn-ghost" href="https://x.com/karimmetrix" target="_blank" rel="noopener">@karimmetrix</a>
           </div>
+        </div>
+      </section>
+
+      <!-- BUSINESS TASKS -->
+      <section class="section wrap mode-panel" id="mode-tasks" data-panel="tasks" hidden>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow" data-i18n="tasks_eyebrow">Distribution tasks</div>
+            <h2 data-i18n="tasks_title">Business Tasks</h2>
+            <p class="how-lead" data-i18n="tasks_lead">
+              What you get: clarity, a document, a next paid step. Cards open free consult + tech write.
+            </p>
+          </div>
+        </div>
+        <div class="svc-grid svc-grid-rich" id="svc-grid"></div>
+        <div id="svc-demo" class="svc-demo" hidden>
+          <div class="svc-demo-inner">
+            <div class="eyebrow" data-i18n="demo">Demo</div>
+            <h3 id="svc-demo-title">—</h3>
+            <ul id="svc-demo-lines"></ul>
+            <div class="cr-cta-row">
+              <button type="button" class="btn btn-primary" id="svc-demo-continue" data-i18n="continue">
+                Continue to consult
+              </button>
+              <button type="button" class="btn btn-ghost" id="svc-demo-close" data-i18n="close">Close</button>
+            </div>
+          </div>
+        </div>
+        <div class="cr-cta-row" style="margin-top: 1.25rem">
+          <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
+            Consult + Tech-TZ
+          </button>
+          <button type="button" class="btn btn-ghost mode-fire-btn" data-mode-jump="generate" data-i18n="cta_generate">
+            Generate 🔥
+          </button>
         </div>
       </section>
 
@@ -304,8 +453,10 @@
             <p id="pkg-why"></p>
           </div>
           <div class="pricing-actions">
-            <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="nav_consult">Consult</button>
-            <button type="button" class="btn btn-gold" data-mode-jump="techwrite">Tech-TZ</button>
+            <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
+              Consult + Tech-TZ
+            </button>
+            <button type="button" class="btn btn-gold" data-mode-jump="generate" data-i18n="nav_generate">Generate 🔥</button>
           </div>
         </div>
       </section>
@@ -354,7 +505,7 @@
         };
       })();
     </script>
-    <script src="js/data.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/data.js?v=20260802-gen-hl"></script>
+    <script src="js/app.js?v=20260802-gen-hl"></script>
   </body>
 </html>

@@ -53,18 +53,30 @@ def test_knowledge_synthesis_resource():
 def test_business_generate_go():
     b = BusinessGenerator().generate(RESOURCE_BRIEF, industry_id="cost-ops", lang="ru")
     out = b["output"]
+    assert b.get("role") == "orchestrator"
     assert out["autonomous_code_pack"]["components"]
     assert out["control_panel"]["columns"]
     assert out["expert_base"]["name"]
     assert out["final_gate"]["verdict"] in ("GO", "CONDITIONAL_GO")
+    orch = out["orchestration"]
+    assert orch["mode"] == "multi_niche_orchestrator"
+    assert orch["niches_total"] == 10
+    assert len(orch["niche_ranking"]) == 10
+    assert orch["service_stack"]
+    assert orch["run_plan"]
 
 
-def test_services_catalog_10():
-    assert len(BUSINESS_SERVICES) == 10
-    assert len(list_services("ru")) == 10
-    d = service_demo("resource_loop", lang="ru")
+def test_services_catalog():
+    """Public catalog is distribution-facing; non-distributive lanes stay off surface."""
+    assert len(BUSINESS_SERVICES) == 8
+    assert len(list_services("ru")) == 8
+    ids = {s["id"] for s in BUSINESS_SERVICES}
+    assert "worker_lane" not in ids
+    assert "resource_loop" not in ids
+    assert "distribution_engine" in ids
+    d = service_demo("distribution_engine", lang="ru")
     assert "demo" in d
-    assert d["service"]["id"] == "resource_loop"
+    assert d["service"]["id"] == "distribution_engine"
 
 
 def test_live_niches_batch():

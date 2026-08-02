@@ -1,7 +1,7 @@
 /**
  * Metrix AI — public UI
- * EN default · working RU/EN · Products + Consult only
- * Worker path: accept → pay → mass payout (simple copy)
+ * EN default · RU/EN parent layer (no mixed chrome)
+ * Modes: marketplace | request | tasks | generate
  */
 (function () {
   const D = window.METRIX_DATA;
@@ -10,6 +10,8 @@
     return;
   }
 
+  const MODES = ["marketplace", "request", "tasks", "generate"];
+
   const state = {
     mode: "marketplace",
     industry: "all",
@@ -17,8 +19,10 @@
     marqueeTimer: null,
     marqueeIndex: 0,
     lastProcess: null,
+    lastGenerate: null,
     freeWorkId: null,
     freeWork: null,
+    genChoices: {},
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -26,6 +30,10 @@
 
   function t(key) {
     return D.t ? D.t(key) : key;
+  }
+
+  function lang() {
+    return D.getLang ? D.getLang() : "en";
   }
 
   function escapeHtml(s) {
@@ -46,7 +54,6 @@
   }
 
   function init() {
-    // default EN (first visit) — only if unset
     try {
       if (!localStorage.getItem("metrix_lang")) {
         D.setLang("en");
@@ -54,6 +61,14 @@
     } catch (e) {
       /* ignore */
     }
+
+    document.addEventListener("metrix:lang", () => {
+      applyLangChrome();
+      renderAll();
+      loadServices();
+      startMarquee();
+    });
+
     applyLangChrome();
     renderAll();
     bindModeSwitch();
@@ -62,29 +77,40 @@
     bindModal();
     bindForm();
     bindFreeWork();
+    bindGenerate();
     startMarquee();
+    loadServices();
 
     const params = new URLSearchParams(location.search);
-    if (params.get("mode") === "request") setMode("request");
     if (params.get("lang") === "ru" || params.get("lang") === "en") {
       D.setLang(params.get("lang"));
-      applyLangChrome();
-      renderAll();
     }
+    const hashMode = (location.hash || "").replace(/^#/, "").toLowerCase();
+    if (params.get("mode")) setMode(params.get("mode"));
+    else if (hashMode === "generate" || hashMode === "mode-generate") setMode("generate");
+    else if (hashMode === "tasks" || hashMode === "mode-tasks") setMode("tasks");
+    else if (hashMode === "request" || hashMode === "consult") setMode("request");
     if (params.get("industry")) {
       state.industry = params.get("industry");
-      const ind = $("#req-industry");
-      if (ind) ind.value = state.industry;
+      const el = $("#req-industry");
+      if (el) el.value = state.industry;
     }
+
+    // public debug helper
+    window.metrixSetMode = setMode;
   }
 
   function applyLangChrome() {
-    const lang = D.getLang();
-    document.documentElement.lang = lang;
+    const L = lang();
+    document.documentElement.lang = L;
     $$(".lang-btn").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.lang === lang);
+      btn.classList.toggle("active", btn.dataset.lang === L);
     });
     $$("[data-i18n]").forEach((el) => {
+      // Keep dynamic free-work title if already painted from API
+      if (el.id === "fw-title" && state.freeWork && (state.freeWork.title || state.freeWork.summary)) {
+        return;
+      }
       const key = el.getAttribute("data-i18n");
       if (key) el.textContent = t(key);
     });
@@ -123,55 +149,86 @@
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const lang = btn.dataset.lang;
-        if (!lang) return;
-        D.setLang(lang);
-        applyLangChrome();
-        renderAll();
+        const next = btn.dataset.lang;
+        if (!next || next === lang()) return;
+        D.setLang(next);
+        // metrix:lang handler applies chrome + re-render
       });
     });
   }
 
   function setMode(mode) {
-    if (mode !== "marketplace" && mode !== "request") mode = "marketplace";
+    if (mode === "consult") mode = "request";
+    if (mode === "workers") mode = "marketplace";
+    if (mode === "business" || mode === "biz" || mode === "gen") mode = "generate";
+    if (mode === "business-tasks" || mode === "business_tasks") mode = "tasks";
+    if (!MODES.includes(mode)) mode = "marketplace";
     state.mode = mode;
-    $$(".mode-switch button").forEach((btn) => {
-      const on = btn.dataset.mode === mode;
+
+    $$(".mode-switch button[data-mode]").forEach((btn) => {
+      const on = btn.getAttribute("data-mode") === mode;
       btn.classList.toggle("active", on);
       btn.setAttribute("aria-selected", on ? "true" : "false");
     });
+
     $$(".mode-panel").forEach((panel) => {
-      const on = panel.dataset.panel === mode;
+      const panelId = panel.getAttribute("data-panel") || "";
+      const on = panelId === mode;
       panel.classList.toggle("active", on);
-      if (on) panel.removeAttribute("hidden");
-      else panel.setAttribute("hidden", "");
+      // class-driven visibility; keep hidden attr in sync for a11y
+      if (on) {
+        panel.removeAttribute("hidden");
+        panel.setAttribute("aria-hidden", "false");
+        // force paint in case UA [hidden] lag
+        panel.style.display = "block";
+      } else {
+        panel.setAttribute("hidden", "");
+        panel.setAttribute("aria-hidden", "true");
+        panel.style.display = "none";
+      }
     });
-    if (mode === "request") {
-      $("#mode-request")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      $("#mode-marketplace")?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    if (mode === "tasks") loadServices();
+
+    try {
+      const url = new URL(location.href);
+      url.searchParams.set("mode", mode);
+      history.replaceState(null, "", url.pathname + url.search + url.hash);
+    } catch (_) {}
+
+    const target = document.getElementById("mode-" + mode);
+    if (target) {
+      // after display:block, scroll next frame
+      requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     }
   }
 
   function bindModeSwitch() {
-    $$(".mode-switch button").forEach((btn) => {
-      btn.addEventListener("click", () => setMode(btn.dataset.mode));
-    });
-    $$("[data-mode-jump]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const m = btn.dataset.modeJump;
-        if (m === "pricing") {
-          $("#pricing")?.scrollIntoView({ behavior: "smooth" });
-          return;
-        }
-        if (m === "techwrite") {
-          setMode("request");
-          const tr = $("#req-track");
-          if (tr) tr.value = "product";
-          return;
-        }
-        setMode(m === "consult" ? "request" : m);
-      });
+    // Event delegation — works for nav + any later buttons
+    document.addEventListener("click", (e) => {
+      const modeBtn = e.target.closest(".mode-switch button[data-mode]");
+      if (modeBtn) {
+        e.preventDefault();
+        setMode(modeBtn.getAttribute("data-mode"));
+        return;
+      }
+      const jump = e.target.closest("[data-mode-jump]");
+      if (!jump) return;
+      e.preventDefault();
+      const m = jump.getAttribute("data-mode-jump");
+      if (m === "pricing") {
+        $("#pricing")?.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+      if (m === "techwrite" || m === "consult-tech") {
+        setMode("request");
+        const tr = $("#req-track");
+        if (tr) tr.value = "product";
+        return;
+      }
+      setMode(m === "consult" ? "request" : m);
     });
   }
 
@@ -290,6 +347,8 @@
     if (state.marqueeTimer) clearInterval(state.marqueeTimer);
     const slides = D.getWhyUs();
     if (!slides.length) return;
+    state.marqueeIndex = 0;
+    paintMarquee(0);
     state.marqueeTimer = setInterval(() => {
       state.marqueeIndex = (state.marqueeIndex + 1) % slides.length;
       paintMarquee(state.marqueeIndex);
@@ -375,16 +434,15 @@
         $("#pricing")?.scrollIntoView({ behavior: "smooth" });
         return;
       }
-      if (f?.cta === "techwrite") {
-        setMode("request");
-        const tr = $("#req-track");
-        if (tr) tr.value = "product";
-        return;
-      }
+      // Consult + Tech-TZ is one path (product track when techwrite)
       setMode("request");
       if (f) {
         const tr = $("#req-track");
-        if (tr && f.track) tr.value = f.track === "models" ? "models" : f.track;
+        if (tr) {
+          if (f.cta === "techwrite" || f.track === "product") tr.value = "product";
+          else if (f.track && f.track !== "models") tr.value = f.track;
+          else if (f.track === "models") tr.value = "models";
+        }
         if (f.industryHint) {
           state.industry = f.industryHint;
           const ind = $("#req-industry");
@@ -439,25 +497,19 @@
     const form = $("#request-form");
     if (!form) return;
 
-    $("#btn-tech-write")?.addEventListener("click", () => {
-      const tr = $("#req-track");
-      if (tr) tr.value = "product";
-      form.requestSubmit();
-    });
-
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const business = ($("#req-business")?.value || "").trim();
       const industry = $("#req-industry")?.value || "";
-      const track = $("#req-track")?.value || "";
+      // Consult + Tech-TZ: default product track so tech-write path is included
+      let track = $("#req-track")?.value || "product";
+      if (!track) track = "product";
       const err = $("#form-error");
       const ok = $("#form-success");
       if (err) err.textContent = "";
       if (ok) ok.textContent = "";
       if (!industry || business.length < 20) {
-        if (err) err.textContent = D.getLang() === "ru"
-          ? "Ниша + бизнес (≥20 символов)"
-          : "Niche + business (≥20 characters)";
+        if (err) err.textContent = t("form_err");
         return;
       }
       try {
@@ -467,7 +519,8 @@
           body: JSON.stringify({
             industry,
             business,
-            track: track || "all",
+            track,
+            lang: lang(),
             name: "",
             contact: [$("#req-x")?.value, $("#req-telegram")?.value].filter(Boolean).join(" · "),
           }),
@@ -476,7 +529,7 @@
         const data = await res.json();
         state.lastProcess = data;
         paintConsult(data);
-        if (ok) ok.textContent = "OK";
+        if (ok) ok.textContent = t("form_ok");
       } catch (ex) {
         if (err) err.textContent = ex.message;
       }
@@ -486,6 +539,27 @@
       if ($("#consult-result")) $("#consult-result").hidden = true;
       if ($("#free-work-panel")) $("#free-work-panel").hidden = true;
     });
+  }
+
+  /** Open consult+tech form, optionally prefilled from a Business Task card */
+  function openConsultFromTask(svc) {
+    setMode("request");
+    const tr = $("#req-track");
+    if (tr) tr.value = "product";
+    const L = lang();
+    const ta = $("#req-business");
+    if (ta && !ta.value.trim() && svc) {
+      const name = svc.name || svc.id || "";
+      const benefit = svc.benefit || svc.tagline || "";
+      const ex =
+        Array.isArray(svc.examples) && svc.examples[0]
+          ? svc.examples[0].text || svc.examples[0]
+          : "";
+      ta.value =
+        L === "ru"
+          ? `Нужна услуга «${name}». Польза: ${benefit}. ${ex ? "Пример из ниши: " + ex + ". " : ""}Опишите контур, дайте консультацию и tech-write.`
+          : `I need «${name}». Benefit: ${benefit}. ${ex ? "Niche example: " + ex + ". " : ""}Give consult + tech write for my business.`;
+    }
   }
 
   function paintConsult(data) {
@@ -511,10 +585,12 @@
           body: JSON.stringify({
             business:
               business ||
-              "Free work after consult for operational contour and next steps.",
+              (lang() === "ru"
+                ? "Бесплатная работа после консультации: операционный контур и следующие шаги."
+                : "Free work after consult for operational contour and next steps."),
             industry,
             track: $("#req-track")?.value || "all",
-            lang: D.getLang(),
+            lang: lang(),
           }),
         });
         const data = await res.json();
@@ -538,7 +614,7 @@
       const res = await fetch(`${apiBase()}${D.api.freeWorkClarifyPath}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ work_id: state.freeWorkId, answers: {} }),
+        body: JSON.stringify({ work_id: state.freeWorkId, answers: {}, lang: lang() }),
       });
       paintFreeWork(await res.json());
     });
@@ -548,7 +624,7 @@
     const panel = $("#free-work-panel");
     if (!panel) return;
     panel.hidden = false;
-    $("#fw-title").textContent = data.title || "Free work";
+    $("#fw-title").textContent = data.title || t("fw_title_default");
     $("#fw-quality").textContent = data.quality_note || data.summary || "";
     const phases = data.phases || data.phase_list || [];
     $("#fw-phases").innerHTML = Array.isArray(phases)
@@ -569,6 +645,399 @@
     $("#fw-success-metric").textContent = data.success_metric || "";
     $("#fw-tech-md").textContent =
       data.tech_write || data.tech_md || JSON.stringify(data, null, 2).slice(0, 2000);
+  }
+
+  // ── Generate business ─────────────────────────────────────────────────────
+  function bindGenerate() {
+    const form = $("#gen-form");
+    if (!form) {
+      console.warn("[metrix] #gen-form missing — generate mode markup not found");
+      return;
+    }
+    if (form.dataset.bound === "1") return;
+    form.dataset.bound = "1";
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const headline = ($("#gen-headline")?.value || "").trim();
+      const body = ($("#gen-business")?.value || "").trim();
+      // No niche picker — orchestrator ranks all 10 niches from free text
+      const business = [headline, body].filter(Boolean).join(". ").trim();
+      const err = $("#gen-error");
+      if (err) err.textContent = "";
+      if (headline.length < 3 || body.length < 20) {
+        if (err) err.textContent = t("gen_min_chars");
+        return;
+      }
+      const btn = $("#gen-submit");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = t("gen_loading");
+      }
+      try {
+        const res = await fetch(
+          `${apiBase()}${D.api.businessGeneratePath || "/api/v1/analytics/business-generate"}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              business,
+              industry: "generic",
+              project_name: headline,
+              lang: lang(),
+              choices: state.genChoices,
+            }),
+          }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        state.lastGenerate = data;
+        try {
+          localStorage.setItem("metrix_last_generate", JSON.stringify(data));
+        } catch (_) {}
+        paintGenerate(data);
+        paintChoices((data.output && data.output.plan) || {});
+      } catch (ex) {
+        if (err) err.textContent = `${t("gen_error")}: ${ex.message}`;
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = t("gen_run");
+        }
+      }
+    });
+  }
+
+  function paintChoices(plan) {
+    const wrap = $("#gen-choices");
+    const host = $("#gen-choice-cards");
+    if (!wrap || !host) return;
+    const steps = (plan.steps || []).filter((s) => s.needs_human);
+    if (!steps.length) {
+      wrap.hidden = true;
+      return;
+    }
+    wrap.hidden = false;
+    host.innerHTML = steps
+      .map((s) => {
+        const opts = (s.options || [])
+          .map((o) => {
+            const checked =
+              (state.genChoices[s.id] || s.default_option) === o.id ? "checked" : "";
+            return `<label><input type="radio" name="${escapeHtml(s.id)}" value="${escapeHtml(o.id)}" ${checked}/> ${escapeHtml(o.label)}</label>`;
+          })
+          .join("");
+        return `<div class="choice-block"><h4>${escapeHtml(s.title)}</h4><div class="choice-opts">${opts}</div></div>`;
+      })
+      .join("");
+    host.onchange = (e) => {
+      const input = e.target;
+      if (input && input.name) state.genChoices[input.name] = input.value;
+    };
+  }
+
+  function paintGenerate(data) {
+    const root = $("#gen-result");
+    if (!root) return;
+    root.hidden = false;
+    const out = data.output || {};
+    $("#gen-msg").textContent = data.message || out.pre_corrected?.opening_line || "—";
+    const gate = out.final_gate || {};
+    const gEl = $("#gen-gate");
+    if (gEl) {
+      gEl.textContent =
+        (gate.go_prod ? t("success_go") : t("success_cond")) +
+        (gate.verdict ? " · " + gate.verdict : "");
+      gEl.classList.toggle("warn", !gate.go_prod);
+    }
+
+    // Orchestration: 10 niches + service stack
+    const orch = out.orchestration || {};
+    const noteEl = $("#gen-orch-note");
+    if (noteEl) noteEl.textContent = orch.note || "";
+    const rankHost = $("#gen-niche-rank");
+    if (rankHost) {
+      const ranks = (orch.niche_ranking || []).slice(0, 10);
+      rankHost.innerHTML = ranks
+        .map(
+          (r, i) =>
+            `<span class="niche-rank-chip${i === 0 ? " top" : ""}" title="${escapeHtml(String(r.score))}">${escapeHtml(
+              r.label || r.id
+            )} <em>${escapeHtml(String(Math.round((r.score || 0) * 100)))}%</em></span>`
+        )
+        .join("");
+    }
+    const stackHost = $("#gen-service-stack");
+    if (stackHost) {
+      const stack = orch.service_stack || [];
+      stackHost.innerHTML = stack
+        .map(
+          (s) =>
+            `<span class="svc-stack-chip${s.role === "primary_run" ? " primary" : ""}">${escapeHtml(
+              s.order + ". " + (s.name || s.service_id)
+            )}</span>`
+        )
+        .join("");
+    }
+
+    const plan = out.plan || {};
+    $("#gen-plan").innerHTML = (plan.steps || [])
+      .map(
+        (s) =>
+          `<div class="mp-card"><strong>${escapeHtml(s.id)}</strong> ${escapeHtml(s.title)} → <em>${escapeHtml(s.default_option || "—")}</em></div>`
+      )
+      .join("");
+    const qs = plan.open_questions || out.interaction?.open_questions || [];
+    $("#gen-questions").innerHTML = qs.length
+      ? qs.map((q) => `<li>${escapeHtml(q)}</li>`).join("")
+      : "<li>—</li>";
+
+    const panel = out.control_panel || {};
+    $("#gen-panel").innerHTML = (panel.columns || [])
+      .map((col) => {
+        const cards = (col.cards || [])
+          .slice(0, 3)
+          .map((c) => {
+            let v = c.v;
+            if (typeof v === "object") v = JSON.stringify(v).slice(0, 100);
+            return `<div class="mp-card">${escapeHtml(c.k)}: ${escapeHtml(v)}</div>`;
+          })
+          .join("");
+        return `<div><strong>${escapeHtml(col.title)}</strong>${cards}</div>`;
+      })
+      .join("");
+
+    $("#gen-quality").textContent = JSON.stringify(
+      {
+        quality: out.quality,
+        self_test: out.self_test,
+        synthesis: out.synthesis_highlights,
+        primary_industry: out.primary_industry,
+      },
+      null,
+      2
+    );
+    const eb = out.expert_base || {};
+    $("#gen-expert").textContent = JSON.stringify(
+      {
+        id: eb.id,
+        name: eb.name,
+        summary: eb.summary,
+        layers: eb.layers,
+        original_moves: eb.original_moves,
+      },
+      null,
+      2
+    );
+    $("#gen-code").textContent = JSON.stringify(out.autonomous_code_pack || {}, null, 2);
+    root.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ── Business Tasks ────────────────────────────────────────────────────────
+  async function loadServices() {
+    const grid = $("#svc-grid");
+    if (!grid) return;
+    const L = lang();
+    try {
+      const res = await fetch(
+        `${apiBase()}${D.api.businessServicesPath || "/api/v1/analytics/business-services"}?lang=${encodeURIComponent(L)}`
+      );
+      if (!res.ok) throw new Error("services");
+      const data = await res.json();
+      paintServices(data.services || []);
+    } catch (_) {
+      paintServices(fallbackServices(L));
+    }
+  }
+
+  function fallbackServices(L) {
+    const isEn = L === "en";
+    return [
+      {
+        id: "ops_reframe",
+        name: isEn ? "Ops Contour" : "Операционный контур",
+        tagline: isEn ? "One metric, leaks, scoreboard" : "Одна метрика, утечки, табло",
+        benefit: isEn
+          ? "Less rework · clear weekly gate · more margin from same hours"
+          : "Меньше переделок · ясный weekly gate · маржа из тех же часов",
+        examples: [
+          {
+            niche: "ai-agencies",
+            text: isEn
+              ? "AI studio: −15% rework via handoff scoreboard"
+              : "AI-студия: −15% rework через scoreboard handoff",
+          },
+        ],
+        cta_mode: "consult",
+      },
+      {
+        id: "offer_pack",
+        name: isEn ? "Offer Packaging" : "Упаковка предложения",
+        tagline: isEn ? "Promise · boundaries · pack" : "Обещание · границы · пакет",
+        benefit: isEn
+          ? "Client sees what they pay for · easier close"
+          : "Клиент сразу видит «за что платит» · проще закрыть сделку",
+        examples: [
+          {
+            niche: "expert-services",
+            text: isEn
+              ? "Expert: 90-day pack instead of hourly"
+              : "Эксперт: пакет 90 дней вместо «почасовки»",
+          },
+        ],
+        cta_mode: "consult",
+      },
+      {
+        id: "tech_tz",
+        name: isEn ? "Implementation Spec" : "Тех-ТЗ под внедрение",
+        tagline: isEn ? "Scope · acceptance · out of scope" : "Объём · приёмка · вне рамок",
+        benefit: isEn
+          ? "A document you can hand to an executor today"
+          : "Документ, который можно отдать исполнителю сегодня",
+        examples: [
+          {
+            niche: "api-for-devs",
+            text: isEn
+              ? "Integrations: scope + non-goals + 3 accept scenarios"
+              : "Интеграции: scope + non-goals + приёмка 3 сценария",
+          },
+        ],
+        cta_mode: "consult",
+      },
+      {
+        id: "ai_agent_desk",
+        name: isEn ? "Task AI Agent" : "ИИ-агент под задачу",
+        tagline: isEn ? "Doc → agent on accepted scope" : "Документ → агент по принятому объёму",
+        benefit: isEn
+          ? "Not chat for chat’s sake — executable loop with stops"
+          : "Не чат ради чата — исполнимый контур с стоп-правилами",
+        examples: [
+          {
+            niche: "freelace-d2c",
+            text: isEn
+              ? "Freelance: agent for match + delivery checklist"
+              : "Фриланс: агент по match + delivery checklist",
+          },
+        ],
+        cta_mode: "consult",
+      },
+      {
+        id: "distribution_engine",
+        name: isEn ? "3D Distribution" : "Дистрибуция 3D",
+        tagline: isEn ? "Brand · platforms · networking" : "Бренд · площадки · связи",
+        benefit: isEn
+          ? "7 days: 1 move per channel · no bloated retainers"
+          : "7 дней: 1 ход в каждом канале · без раздутых подписок",
+        examples: [
+          {
+            niche: "education",
+            text: isEn
+              ? "Education: brand + platform + 3 warm intros"
+              : "Обучение: бренд + площадка + 3 тёплых intro",
+          },
+        ],
+        cta_mode: "consult",
+      },
+      {
+        id: "expert_base_gen",
+        name: isEn ? "Project Expert Base" : "Экспертная база проекта",
+        tagline: isEn ? "Unique knowledge layers per brief" : "Уникальные слои знаний под ТЗ",
+        benefit: isEn
+          ? "A base for your loop — not a wiki for bulk"
+          : "База под ваш контур, не «википедия ради объёма»",
+        examples: [
+          {
+            niche: "cost-ops",
+            text: isEn
+              ? "Unit-econ: leak ontology + kill-switches"
+              : "Unit-экон.: ontology утечек + kill-switches",
+          },
+        ],
+        cta_mode: "consult",
+      },
+      {
+        id: "control_panel",
+        name: isEn ? "Control Panel" : "Панель управления",
+        tagline: isEn ? "Metrics · tasks · risks" : "Метрики · задачи · риски",
+        benefit: isEn ? "Sense · Decide · Act — no UI noise" : "Sense · Decide · Act — без UI-шума",
+        examples: [
+          {
+            niche: "automation-builders",
+            text: isEn
+              ? "Auto: 3 pilot widgets, not 40 metrics"
+              : "Авто: 3 виджета на пилот, не 40 метрик",
+          },
+        ],
+        cta_mode: "consult",
+      },
+      {
+        id: "full_business_gen",
+        name: isEn ? "Generate Business 🔥" : "Сгенерировать бизнес 🔥",
+        tagline: isEn
+          ? "Orchestrate 10 niches → system + base + panel"
+          : "Оркестрация 10 ниш → система + база + панель",
+        benefit: isEn
+          ? "Planning brain: ranks niches, service stack, compute"
+          : "Мозг планирования: ранжирует ниши, стек услуг, расчёты",
+        examples: [
+          {
+            niche: "all",
+            text: isEn
+              ? "In: essence · Out: plan + base + panel across 10 niches"
+              : "Вход: суть · Выход: план + база + панель по 10 нишам",
+          },
+        ],
+        cta_mode: "generate",
+      },
+    ];
+  }
+
+  function paintServices(list) {
+    const grid = $("#svc-grid");
+    if (!grid) return;
+    state._svcList = list;
+    grid.innerHTML = list
+      .map((s) => {
+        const examples = (s.examples || [])
+          .slice(0, 2)
+          .map((ex) => {
+            const text = typeof ex === "string" ? ex : ex.text || "";
+            return text
+              ? `<li>${escapeHtml(text)}</li>`
+              : "";
+          })
+          .join("");
+        const isGen = s.cta_mode === "generate" || s.id === "full_business_gen";
+        return `
+      <article class="svc-card svc-card-rich" data-svc="${escapeHtml(s.id)}" tabindex="0" role="button">
+        <div class="svc-card-top">
+          <h3>${escapeHtml(s.name)}</h3>
+          <p class="svc-tagline">${escapeHtml(s.tagline || "")}</p>
+        </div>
+        <p class="svc-benefit">${escapeHtml(s.benefit || s.wow || "")}</p>
+        ${
+          examples
+            ? `<div class="svc-examples"><div class="eyebrow">${escapeHtml(
+                t("tasks_example_label")
+              )}</div><ul>${examples}</ul></div>`
+            : ""
+        }
+        <div class="svc-card-cta">${escapeHtml(
+          isGen ? t("cta_generate") : t("cta_card_consult")
+        )}</div>
+      </article>`;
+      })
+      .join("");
+    grid.onclick = (e) => {
+      const card = e.target.closest("[data-svc]");
+      if (!card) return;
+      const id = card.dataset.svc;
+      const svc = (state._svcList || []).find((x) => x.id === id) || { id };
+      if (svc.cta_mode === "generate" || id === "full_business_gen") {
+        setMode("generate");
+        return;
+      }
+      openConsultFromTask(svc);
+    };
   }
 
   init();

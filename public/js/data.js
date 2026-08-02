@@ -1,6 +1,6 @@
 /**
  * Metrix AI — public surface
- * EN default · RU toggle · Products + Consult only
+ * EN default · RU/EN parent layer · Products · Consult · Business Tasks · Generate
  */
 window.METRIX_DATA = {
   brand: {
@@ -8,11 +8,13 @@ window.METRIX_DATA = {
     x: "https://x.com/karimmetrix",
   },
 
-  /** UI chrome strings */
+  /** UI chrome strings — one language pack at a time, no mixed mode */
   ui: {
     en: {
       nav_products: "Products",
-      nav_consult: "Consult",
+      nav_consult: "Consult + Tech-TZ",
+      nav_tasks: "Tasks",
+      nav_generate: "Generate 🔥",
       nav_product: "Product",
       nav_niches: "Niches",
       nav_flagships: "Flagships",
@@ -23,8 +25,11 @@ window.METRIX_DATA = {
       hero_h1b: "workflows and original projects.",
       hero_sub:
         "Instant expert ideas — right away. Pay after your successful result. Experiment without fear.",
-      cta_consult: "Start consult",
+      cta_consult: "Consult + Tech-TZ",
       cta_niches: "10 niches",
+      cta_tasks: "Business Tasks",
+      cta_generate: "Generate 🔥",
+      cta_card_consult: "Free consult + tech write →",
       eyebrow_product: "Product",
       offer_title: "Decision support system",
       in_label: "Input",
@@ -50,21 +55,27 @@ window.METRIX_DATA = {
       worker_eyebrow: "Workers",
       worker_title: "Simple payout path",
       worker_copy:
-        "Client accepts the work → pays (acquiring) → mass payouts to workers. Transparent cut. No heavy escrow theatre.",
-      form_title: "Describe the business",
+        "Client accepts the work → pays (card) → mass payouts to workers. Transparent platform cut. No heavy escrow theatre.",
+      form_title: "Consult + Tech-TZ",
       form_lead:
-        "5–20 sentences. Niche required. Instant expert ideas. Pay after your successful result.",
+        "5–20 sentences. Niche required. Instant expert ideas and a work document path. Pay after your successful result.",
       label_niche: "Niche",
       label_track: "Track",
+      label_x: "X nickname",
+      label_telegram: "Telegram",
       label_business: "Your business",
       business_ph: "Problem and business in your own words.",
-      result_label: "Consult result",
+      tech_tz: "Tech-TZ",
+      result_label: "Consult + Tech-TZ result",
       cta_free_work: "Start free work",
       cta_new: "New consult",
+      fw_eyebrow: "Free work",
+      fw_title_default: "Next steps",
       fw_clarify: "Clarifications",
       fw_clarify_hint: "Only what is missing for assembly.",
       fw_send: "Send",
       fw_checklist: "Checklist",
+      fw_tech: "Tech write",
       fw_next: "Next phase →",
       pricing_title: "Pricing",
       pricing_why:
@@ -78,17 +89,52 @@ window.METRIX_DATA = {
       for_whom: "For whom",
       workers_title: "Workers",
       workers_text:
-        "People who run projects, freelance, studios, integrations, content, education, automation, unit-econ, devices, or asset decisions. Need a workflow: raw task → document → delivery — no chaos, no pig in a poke.",
+        "People who run projects, freelance, studios, integrations, content, education, automation, unit economics, devices, or asset decisions. Need a workflow: raw task → document → delivery — no chaos, no pig in a poke.",
       clients_title: "Clients of 10 niches",
       clients_text:
-        "Buyers of AI studios, integrations, freelance, experts, content, education, automation, cost-ops, devices, or asset decisions. Get a consultation document and a clear path — experiment without fear.",
+        "Buyers of AI studios, integrations, freelance, experts, content, education, automation, cost ops, devices, or asset decisions. Get a consultation document and a clear path — experiment without fear.",
       audience_title: "For workers and niche clients",
       audience_lead:
         "One interface. Two entries: you do the work in a niche — or you are the client of that niche and want the next clear step.",
+      tasks_eyebrow: "Distribution tasks",
+      tasks_title: "Business Tasks",
+      tasks_lead:
+        "What you get: clarity, a document, a next paid step. Cards open free consult + tech write — same path.",
+      tasks_example_label: "From real niches",
+      try_demo: "View demo",
+      demo: "Demo",
+      continue: "Continue to consult",
+      fair_price: "Fair price · no hype",
+      generate_title: "Generate 🔥",
+      generate_lead:
+        "Orchestrator across all 10 client niches: ranks fit from your description (no niche picker), queues the service stack, runs synthesis and calculations.",
+      gen_headline_label: "Business in a few words *",
+      gen_headline_ph: "E.g. AI studio · less rework · clear offer",
+      gen_business_label: "Business essence *",
+      gen_business_ph: "Describe the essence in your own words — niches are chosen automatically…",
+      gen_run: "Run orchestration",
+      gen_loading: "Orchestrating…",
+      gen_result: "Result",
+      gen_plan: "Plan (like a TZ)",
+      gen_open_q: "Questions / approvals",
+      gen_panel: "Control panel",
+      gen_quality: "Quality / self-test",
+      gen_expert: "Expert base",
+      gen_code: "Code pack",
+      gen_orch: "Orchestration · 10 niches",
+      gen_stack: "Service stack",
+      gen_min_chars: "At least 20 characters",
+      gen_error: "Error",
+      success_go: "Ready for production",
+      success_cond: "Conditional go — refine choices",
+      form_err: "Niche + business (≥20 characters)",
+      form_ok: "OK",
     },
     ru: {
       nav_products: "Продукты",
-      nav_consult: "Консультация",
+      nav_consult: "Консультация + Тех-ТЗ",
+      nav_tasks: "Таски",
+      nav_generate: "Генерация 🔥",
       nav_product: "Продукт",
       nav_niches: "Ниши",
       nav_flagships: "Флагманы",
@@ -99,8 +145,11 @@ window.METRIX_DATA = {
       hero_h1b: "воркфлоу и создания оригинальных проектов.",
       hero_sub:
         "Моментальные экспертные идеи — сразу. Оплата после вашего успешного получения оплаты. Экспериментировать можно не боясь.",
-      cta_consult: "Начать консультацию",
+      cta_consult: "Консультация + Тех-ТЗ",
       cta_niches: "10 ниш",
+      cta_tasks: "Бизнес-таски",
+      cta_generate: "Генерация 🔥",
+      cta_card_consult: "Бесплатная консультация + тех-write →",
       eyebrow_product: "Продукт",
       offer_title: "Система поддержки решений",
       in_label: "На входе",
@@ -126,41 +175,80 @@ window.METRIX_DATA = {
       worker_eyebrow: "Воркеры",
       worker_title: "Простая выплата",
       worker_copy:
-        "Клиент принимает работу → платит (эквайринг) → массовые выплаты воркерам. Прозрачный cut. Без тяжёлого эскроу-театра.",
-      form_title: "Опишите бизнес",
+        "Клиент принимает работу → платит (эквайринг) → массовые выплаты воркерам. Прозрачная доля платформы. Без тяжёлого эскроу-театра.",
+      form_title: "Консультация + Тех-ТЗ",
       form_lead:
-        "5–20 предложений. Ниша обязательна. Моментальные экспертные идеи сразу. Оплата после вашего успешного получения оплаты.",
+        "5–20 предложений. Ниша обязательна. Моментальные экспертные идеи и путь к рабочему документу. Оплата после вашего успешного получения оплаты.",
       label_niche: "Ниша",
       label_track: "Трек",
+      label_x: "Ник в X",
+      label_telegram: "Telegram",
       label_business: "Ваш бизнес",
       business_ph: "Проблема и описание бизнеса своими словами.",
-      result_label: "Результат консультации",
+      tech_tz: "Тех-ТЗ",
+      result_label: "Результат: консультация + Тех-ТЗ",
       cta_free_work: "Начать работу бесплатно",
       cta_new: "Новая консультация",
+      fw_eyebrow: "Бесплатная работа",
+      fw_title_default: "Следующие шаги",
       fw_clarify: "Уточнения",
       fw_clarify_hint: "Только то, чего не хватает для сборки.",
       fw_send: "Отправить",
       fw_checklist: "Чеклист",
+      fw_tech: "Тех-письмо",
       fw_next: "Следующая фаза →",
       pricing_title: "Цены",
       pricing_why:
-        "Моментальные экспертные идеи — сразу. Пилот: ops $690 · продукт $790 · промо $490. Полный пакет $2490 после пилота. Оплата после вашего успешного получения оплаты. Внедрение с живым общением после подтверждения. Экспериментировать можно не боясь. Без подписок.",
+        "Моментальные экспертные идеи — сразу. Пилот: операции $690 · продукт $790 · промо $490. Полный пакет $2490 после пилота. Оплата после вашего успешного получения оплаты. Внедрение с живым общением после подтверждения. Экспериментировать можно не боясь. Без подписок.",
       footer_tag: " · экспериментировать можно не боясь",
       top: "Наверх",
       close: "Закрыть",
       select: "Выберите…",
       all_tracks: "Все три",
-      details: "Details →",
+      details: "Подробнее →",
       for_whom: "Для кого",
       workers_title: "Воркеры",
       workers_text:
-        "Те, кто ведёт проекты, фриланс, студию, интеграции, контент, обучение, автоматизацию, unit-экон., устройства или решения по активам. Нужен воркфлоу: от сырой задачи к документу и выполнению — без хаоса и без «кот в мешке».",
+        "Те, кто ведёт проекты, фриланс, студию, интеграции, контент, обучение, автоматизацию, unit-экономику, устройства или решения по активам. Нужен воркфлоу: от сырой задачи к документу и выполнению — без хаоса и без «кот в мешке».",
       clients_title: "Клиенты 10 ниш",
       clients_text:
-        "Те, кто приходит как заказчик AI-студии, интеграций, фриланса, эксперта, контента, обучения, автоматизации, cost-ops, устройств или asset-решений. Получают документ консультации и понятный путь к результату — можно экспериментировать не боясь.",
+        "Те, кто приходит как заказчик AI-студии, интеграций, фриланса, эксперта, контента, обучения, автоматизации, себестоимости, устройств или решений по активам. Получают документ консультации и понятный путь к результату — можно экспериментировать не боясь.",
       audience_title: "Для воркеров и для клиентов ниш",
       audience_lead:
         "Один интерфейс. Два входа: вы делаете работу в нише — или вы клиент этой ниши и хотите ясный следующий шаг.",
+      tasks_eyebrow: "Дистрибутивные задачи",
+      tasks_title: "Бизнес-таски",
+      tasks_lead:
+        "Польза в целом: ясность, документ, следующий оплачиваемый шаг. Карточки ведут на бесплатную консультацию + tech-write — один путь.",
+      tasks_example_label: "Из реальных ниш",
+      try_demo: "Смотреть демо",
+      demo: "Демо",
+      continue: "К консультации",
+      fair_price: "Адекватная цена · без раздутых обещаний",
+      generate_title: "Генерация 🔥",
+      generate_lead:
+        "Оркестратор по 10 клиентским нишам: сам ранжирует fit по описанию (без выбора ниши), ставит стек услуг, гоняет синтез и расчёты.",
+      gen_headline_label: "Бизнес в нескольких словах *",
+      gen_headline_ph: "Напр.: AI-студия · меньше переделок · ясный оффер",
+      gen_business_label: "Суть бизнеса *",
+      gen_business_ph: "Опишите суть своими словами — ниши подбираются автоматически…",
+      gen_run: "Запустить оркестрацию",
+      gen_loading: "Оркестрация…",
+      gen_result: "Результат",
+      gen_plan: "План (как по ТЗ)",
+      gen_open_q: "Вопросы / согласования",
+      gen_panel: "Панель управления",
+      gen_quality: "Качество / self-test",
+      gen_expert: "Экспертная база",
+      gen_code: "Код-пакет",
+      gen_orch: "Оркестрация · 10 ниш",
+      gen_stack: "Стек услуг",
+      gen_min_chars: "Не меньше 20 символов",
+      gen_error: "Ошибка",
+      success_go: "Кандидат в прод",
+      success_cond: "Условный go — уточните выборы",
+      form_err: "Ниша + бизнес (≥20 символов)",
+      form_ok: "Готово",
     },
   },
 
@@ -199,7 +287,7 @@ window.METRIX_DATA = {
     ],
     ru: [
       { id: "product", name: "Product", label: "Продукт", color: "#5eead4" },
-      { id: "models", name: "Teammate", label: "Teammate", color: "#fbbf24" },
+      { id: "models", name: "Teammate", label: "Напарник", color: "#fbbf24" },
       { id: "promotion", name: "Promotion", label: "Продвижение", color: "#c4b5fd" },
     ],
   },
@@ -270,7 +358,7 @@ window.METRIX_DATA = {
       { id: "pilot", title: "Пилот", essence: "Один трек, одна метрика, живое общение после подтверждения.", detail: "Цены в блоке Pricing. Не подписка.", track: "product", accent: "#fbbf24", sticker: "Pilot", cta: "pricing" },
       { id: "teammate", title: "Terminal Teammate", essence: "Базовый слой: воркфлоу, библиотеки, живой спрос.", detail: "Разворачивание воркфлоу и оригинальных проектов. Шаги после пилота.", track: "models", accent: "#c4b5fd", sticker: "Flagship", cta: "request" },
       { id: "api-lane", title: "Интеграции и фичи", essence: "Настройка интеграций и фич без лишнего burn.", detail: "Карта подключений, cost, quality floor для клиентских продуктов.", track: "product", accent: "#7dd3fc", sticker: "Интеграции", cta: "request", industryHint: "api-for-devs" },
-      { id: "metrix-ai", title: "Почему мы", essence: "Короткие факты: ops, продукт, промо, путь к доходу.", detail: "", track: "ops", accent: "#7dd3fc", sticker: "Why us", cta: "request", marquee: true },
+      { id: "metrix-ai", title: "Почему мы", essence: "Короткие факты: операции, продукт, промо, путь к доходу.", detail: "", track: "ops", accent: "#7dd3fc", sticker: "Почему мы", cta: "request", marquee: true },
     ],
   },
 
@@ -289,13 +377,17 @@ window.METRIX_DATA = {
     freeWorkStartPath: "/api/v1/analytics/free-work/start",
     freeWorkClarifyPath: "/api/v1/analytics/free-work/clarify",
     freeWorkAdvancePath: "/api/v1/analytics/free-work/advance",
+    businessGeneratePath: "/api/v1/analytics/business-generate",
+    businessServicesPath: "/api/v1/analytics/business-services",
     enabled: true,
   },
 };
 
 window.METRIX_DATA.getLang = function () {
   try {
-    return localStorage.getItem("metrix_lang") || "en";
+    var L = localStorage.getItem("metrix_lang");
+    if (L === "en" || L === "ru") return L;
+    return "en";
   } catch (e) {
     return "en";
   }
@@ -306,6 +398,12 @@ window.METRIX_DATA.setLang = function (lang) {
   try {
     localStorage.setItem("metrix_lang", lang);
   } catch (e) {}
+  try {
+    document.documentElement.lang = lang;
+  } catch (e2) {}
+  try {
+    document.dispatchEvent(new CustomEvent("metrix:lang", { detail: { lang: lang } }));
+  } catch (e3) {}
   return lang;
 };
 

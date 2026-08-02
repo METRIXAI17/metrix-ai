@@ -30,6 +30,8 @@ class ClientRequest:
     name: str = ""
     contact: str = ""
     program_id: str | None = None
+    # UI language (en|ru). Empty → auto-detect from business text.
+    lang: str = ""
     extra_params: dict[str, float] = field(default_factory=dict)
     # Custom success metrics positioning → becomes unique TZ for the query
     # Example: {"weights": {"iroi": 0.4}, "targets": {"clarity": 0.7}, "priority": ["iroi","impact"]}
@@ -55,6 +57,9 @@ class ClientRequest:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ClientRequest":
+        lang_raw = str(data.get("lang") or data.get("language") or "").strip().lower()
+        if lang_raw not in ("en", "ru", ""):
+            lang_raw = ""
         return cls(
             industry=str(data.get("industry") or data.get("industry_id") or ""),
             business=str(data.get("business") or data.get("business_text") or ""),
@@ -62,6 +67,7 @@ class ClientRequest:
             name=str(data.get("name") or ""),
             contact=str(data.get("contact") or data.get("email") or ""),
             program_id=data.get("program_id"),
+            lang=lang_raw,
             extra_params=dict(data.get("extra_params") or {}),
             success_metrics=dict(data.get("success_metrics") or {}),
             enable_self_improve=bool(data.get("enable_self_improve", True)),

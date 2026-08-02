@@ -103,19 +103,22 @@ textarea {
   position: sticky;
   top: 0;
   z-index: 50;
-  height: var(--nav-h);
+  min-height: var(--nav-h);
+  height: auto;
   display: flex;
   align-items: center;
   backdrop-filter: blur(16px);
   background: rgba(7, 10, 15, 0.82);
   border-bottom: 1px solid var(--border);
+  padding: 0.35rem 0;
 }
 
 .nav-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
   width: min(100% - 2rem, var(--max));
   margin-inline: auto;
 }
@@ -209,29 +212,41 @@ textarea {
 
 .mode-switch {
   display: flex;
+  flex-wrap: wrap;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 3px;
   gap: 2px;
+  max-width: 100%;
 }
 
 .mode-switch button {
   border: none;
   background: transparent;
   color: var(--text-muted);
-  padding: 0.4rem 0.9rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 999px;
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .mode-switch button.active {
   background: linear-gradient(135deg, rgba(94, 234, 212, 0.25), rgba(56, 189, 248, 0.2));
   color: var(--text);
   box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
+.mode-switch button.mode-fire {
+  color: #fcd34d;
+}
+.mode-switch button.mode-fire.active {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.4), rgba(248, 113, 113, 0.28)) !important;
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.55);
 }
 
 /* —— Hero —— */
@@ -371,12 +386,17 @@ textarea {
 
 /* —— Mode panels —— */
 .mode-panel {
-  display: none;
+  display: none !important;
   animation: fadeUp 0.35s ease;
 }
 
 .mode-panel.active {
-  display: block;
+  display: block !important;
+}
+
+/* Override UA [hidden] so active panels always paint */
+.mode-panel.active[hidden] {
+  display: block !important;
 }
 
 @keyframes fadeUp {
@@ -1945,4 +1965,291 @@ textarea {
   .nav-inner { flex-wrap: wrap; height: auto; padding: 0.5rem 0; gap: 0.5rem; }
   .nav { height: auto; }
   .mode-switch { order: 3; }
+}
+
+/* —— Business Tasks + Generate modes —— */
+.mode-switch-wide {
+  flex-wrap: wrap;
+  max-width: min(100%, 560px);
+}
+.mode-switch-wide button {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.7rem;
+}
+.mode-fire.active {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.35), rgba(248, 113, 113, 0.25)) !important;
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.45);
+}
+.mode-fire-btn {
+  border-color: rgba(251, 191, 36, 0.45);
+}
+
+.svc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+.svc-grid-rich {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.svc-card {
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 1rem;
+  cursor: pointer;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.svc-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+.svc-card-rich {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 220px;
+  padding: 1.25rem 1.3rem;
+  background: linear-gradient(160deg, rgba(17, 24, 34, 0.98), rgba(13, 18, 25, 0.95));
+}
+.svc-card-rich h3 {
+  font-size: 1.12rem;
+  margin-bottom: 0.25rem;
+  color: var(--text);
+}
+.svc-card-rich .svc-tagline {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+.svc-card-rich .svc-benefit {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 500;
+}
+.svc-examples {
+  margin-top: auto;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border);
+}
+.svc-examples .eyebrow {
+  margin-bottom: 0.35rem;
+  font-size: 0.68rem;
+}
+.svc-examples ul {
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+.svc-examples li {
+  margin: 0.2rem 0;
+}
+.svc-card-cta {
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.svc-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.35rem;
+}
+.svc-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+.svc-card .price-note {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.gen-orch-block {
+  margin: 1.25rem 0;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, rgba(94, 234, 212, 0.06), rgba(251, 191, 36, 0.05));
+}
+.niche-rank-row,
+.svc-stack-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.niche-rank-chip,
+.svc-stack-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.niche-rank-chip.top {
+  border-color: rgba(94, 234, 212, 0.45);
+  color: var(--text);
+  background: rgba(94, 234, 212, 0.12);
+  font-weight: 700;
+}
+.niche-rank-chip em {
+  font-style: normal;
+  color: var(--accent);
+  font-weight: 700;
+}
+.svc-stack-chip.primary {
+  border-color: rgba(251, 191, 36, 0.45);
+  color: var(--text);
+  background: rgba(251, 191, 36, 0.1);
+}
+.svc-demo {
+  margin-top: 1.25rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, rgba(94, 234, 212, 0.08), rgba(251, 191, 36, 0.06));
+  padding: 1.25rem;
+}
+.svc-demo ul {
+  margin: 0.75rem 0 0.75rem 1.1rem;
+  color: var(--text-muted);
+}
+.svc-demo .price-note {
+  color: var(--gold, #fbbf24);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.form-card-slim {
+  max-width: 720px;
+}
+.field-span {
+  grid-column: 1 / -1;
+}
+.choice-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.choice-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 8px);
+  padding: 0.75rem;
+  background: var(--bg-elevated);
+}
+.choice-block h4 {
+  font-size: 0.9rem;
+  margin-bottom: 0.45rem;
+}
+.choice-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.choice-opts label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.choice-opts label:has(input:checked) {
+  border-color: var(--border-strong);
+  color: var(--text);
+  background: rgba(94, 234, 212, 0.12);
+}
+.choice-opts input {
+  accent-color: var(--accent);
+}
+
+.gen-result {
+  margin-top: 1.5rem;
+}
+.gate-chip {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(134, 239, 172, 0.12);
+  color: #86efac;
+  border: 1px solid rgba(134, 239, 172, 0.35);
+}
+.gate-chip.warn {
+  background: rgba(251, 191, 36, 0.12);
+  color: var(--gold, #fbbf24);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+.panel-clean {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 900px) {
+  .panel-clean {
+    grid-template-columns: 1fr;
+  }
+}
+.panel-col {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  min-height: 0;
+}
+.panel-result {
+  margin-top: 1.25rem;
+}
+.mini-panel {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.mini-panel .mp-card,
+.mp-card {
+  border-left: 2px solid var(--accent);
+  padding: 0.35rem 0.5rem;
+  margin: 0.35rem 0;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.clean-list {
+  margin: 0.5rem 0 1rem 1.1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.clean-list li {
+  margin: 0.25rem 0;
+}
+.fw-pre.slim {
+  max-height: 180px;
+  overflow: auto;
+  font-size: 0.72rem;
+  padding: 0.6rem;
+}
+
+@media (max-width: 720px) {
+  .mode-switch-wide {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
 }

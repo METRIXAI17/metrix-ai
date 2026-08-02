@@ -764,7 +764,11 @@ class RequestPipeline:
         circle_out: dict[str, Any] = {}
         niche_answer: dict[str, Any] = {}
         free_work_cta: dict[str, Any] = {}
-        _lang = "ru" if any(ord(c) > 127 for c in (req.business or "")[:80]) else "en"
+        _lang_explicit = (getattr(req, "lang", None) or "").strip().lower()
+        if _lang_explicit in ("en", "ru"):
+            _lang = _lang_explicit
+        else:
+            _lang = "ru" if any(ord(c) > 127 for c in (req.business or "")[:80]) else "en"
         try:
             from backend.core.circle_system import run_deep_tech_pipeline
             from backend.core.circle_system.niche_answer_base import NicheAnswerBase

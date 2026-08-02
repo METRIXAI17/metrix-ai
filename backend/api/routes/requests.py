@@ -49,6 +49,7 @@ class ProcessBody(BaseModel):
     name: str = ""
     contact: str = ""
     program_id: str | None = None
+    lang: str = Field(default="", description="en|ru — UI language; empty = auto-detect")
     extra_params: dict[str, float] = Field(default_factory=dict)
     success_metrics: dict = Field(
         default_factory=dict,
@@ -77,6 +78,9 @@ def process_request(body: ProcessBody) -> dict[str, Any]:
     Простой контракт:
       { industry, business, track? } → demo idea + breakdown + metrics + ...
     """
+    lang = (body.lang or "").strip().lower()
+    if lang not in ("en", "ru", ""):
+        lang = ""
     req = ClientRequest(
         industry=body.industry,
         business=body.business,
@@ -84,6 +88,7 @@ def process_request(body: ProcessBody) -> dict[str, Any]:
         name=body.name,
         contact=body.contact,
         program_id=body.program_id,
+        lang=lang,
         extra_params=body.extra_params,
         success_metrics=dict(body.success_metrics or {}),
         enable_self_improve=body.enable_self_improve,
