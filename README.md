@@ -58,6 +58,16 @@ Public positioning: [@karimmetrix](https://x.com/karimmetrix)
 - Expert ideas free · transactions paid · volume tariff note · TZ / no-guarantee framing for assets  
 - Report: `docs/REPORT_UNIFIED_SURFACE_2026-08-02.md`  
 
+### Global Ru Workers · Knowledge Synthesis (2026-08-02 evening)
+
+- **Frontend:** Global Ru Workers — modes Workers · Business Tasks · Generate 🔥 · Consult; **RU/EN** parent i18n  
+- **Knowledge synthesis:** multi-layer (side engines · human-light planner · 8 synthesis methods · expert base · self-test · human-reaction forecast)  
+- **Business generate:** autonomous code pack + unique expert base + control panel (resource+logistics depth)  
+- **Distribution 3D:** brand · platforms · networking (in promo)  
+- **Worker escrow:** milestone proof + transparent cut + reputation (safe payout trust)  
+- **API:** `/analytics/knowledge-synthesis` · `/business-generate` · `/business-services` · `/distribution` · `/workers/*`  
+- **Eval:** 11/11 niches GO · overall **8.06 SHIP** — `docs/reports/EVAL_GLOBAL_RU_WORKERS_2026-08-02.md`  
+
 
 ### Circle-System · Deep Tech Metrix (2026-07-30)
 
