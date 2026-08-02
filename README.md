@@ -58,6 +58,17 @@ Public positioning: [@karimmetrix](https://x.com/karimmetrix)
 - Expert ideas free · transactions paid · volume tariff note · TZ / no-guarantee framing for assets  
 - Report: `docs/REPORT_UNIFIED_SURFACE_2026-08-02.md`  
 
+### Market Units v2 · Coordination Core (2026-08-02 night)
+
+- **If something goes wrong:** degrade to static catalog — never block the request pipeline  
+- **Semantics + data logic:** System Reader signals/voids/density + unit `data_logic`  
+- **Coordination layer:** handoff matrix, sync score, deadlock risk, load balance  
+- **Ontology:** original combos → task algorithms (ops / product / promo / tech-write / teammate) + figurative awareness pass  
+- **Business borrow:** system reader · problem recognition · metric composition (PQI) · Terminal Teammate network  
+- **Recursive core boost:** reader→Decision, problems→OAE, PQI→Success TZ, mesh→Paid, algorithms→Memo  
+- **API:** `POST /api/v1/analytics/market-units/run` · pipeline `meta.market_units_v2` · version **1.3.0**  
+- **Stress + metrics:** `docs/reports/MARKET_UNITS_V2_STRESS_AND_METRICS_2026-08-02.md` · `tests/test_market_units_v2.py`
+
 ### Global Ru Workers · Knowledge Synthesis (2026-08-02 evening)
 
 - **Frontend:** Global Ru Workers — modes Workers · Business Tasks · Generate 🔥 · Consult; **RU/EN** parent i18n  

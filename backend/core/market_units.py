@@ -8,6 +8,12 @@ Update 2026-07-26:
   · Chipmaking → 3 simple offers (ops / product / promotion)
   · Telecom → simple offers (ops / product / promotion)
   · Full package pricing: consultation + tech write
+
+Update 2026-08-02 (v2 coordination core):
+  · Semantic enrichment of units (application logic, density, problem hook)
+  · Optional live run via MarketUnitsEngine (reader → problems → metrics →
+    coordination → ontology → teammate network)
+  · Graceful degrade if v2 engine fails — static catalog always available
 """
 
 from __future__ import annotations
@@ -15,6 +21,8 @@ from __future__ import annotations
 from typing import Any
 
 from backend.config import MONETIZATION
+
+MARKET_UNITS_VERSION = "2026-08-02-v2"
 
 
 # ── Client-facing package ladder (showcase) ────────────────────────────────
@@ -493,20 +501,62 @@ def market_unit_for(industry_id: str) -> dict[str, Any]:
         "industry_id": rid,
         **unit,
         "package_pricing_ref": "consult_techwrite_bundle",
+        "catalog_version": MARKET_UNITS_VERSION,
+        # Semantic fields for data logic (static layer; live engine enriches further)
+        "data_logic": {
+            "application_point": unit.get("application_point"),
+            "product_sku": (unit.get("product") or {}).get("sku"),
+            "offer_tracks": sorted(
+                {str(o.get("track")) for o in (unit.get("offers") or []) if o.get("track")}
+            ),
+            "liquidity_surface": unit.get("liquidity_surface"),
+            "alias_of": unit.get("alias_of"),
+        },
     }
 
 
 def simple_offers(industry_id: str) -> list[dict[str, Any]]:
-    unit = MARKET_UNITS.get(industry_id) or {}
+    unit = market_unit_for(industry_id)
     return list(unit.get("offers") or [])
 
 
 def all_market_units_payload() -> dict[str, Any]:
     return {
         "module": "Market Units",
-        "version": "2026-07-26",
+        "version": MARKET_UNITS_VERSION,
+        "layers": [
+            "catalog",
+            "system_reader",
+            "problem_recognition",
+            "metric_composer",
+            "coordination",
+            "ontology",
+            "teammate_network",
+        ],
         "package_pricing": PACKAGE_PRICING,
         "package_cost_report": package_cost_report(),
         "units": {k: market_unit_for(k) for k in MARKET_UNITS},
+        "v2_endpoint": "POST /api/v1/analytics/market-units/run",
     }
+
+
+def run_enriched_market_unit(
+    industry_id: str,
+    *,
+    business_text: str = "",
+    orientation: dict[str, Any] | None = None,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """
+    Live Market Units v2 run. Prefer this from the request pipeline.
+    Falls back to static unit on any engine error.
+    """
+    from backend.core.market_units_v2 import run_market_units_v2
+
+    return run_market_units_v2(
+        industry_id=industry_id,
+        business_text=business_text,
+        orientation=orientation,
+        **kwargs,
+    )
 

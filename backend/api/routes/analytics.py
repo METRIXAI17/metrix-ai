@@ -8,7 +8,12 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from backend.core.decision_core import DecisionMakingCore
-from backend.core.market_units import all_market_units_payload, market_unit_for, package_cost_report
+from backend.core.market_units import (
+    all_market_units_payload,
+    market_unit_for,
+    package_cost_report,
+    run_enriched_market_unit,
+)
 from backend.core.memo_convert import MemoConvertEngine
 from backend.core.operational_analytics import OperationalAnalyticsEngine
 from backend.core.orientation_engine import OrientationEngine
@@ -149,6 +154,33 @@ def market_units(industry: str = "") -> dict[str, Any]:
             "package_cost_report": package_cost_report(),
         }
     return all_market_units_payload()
+
+
+@router.post("/market-units/run")
+def market_units_run(body: AnalyticsBody) -> dict[str, Any]:
+    """
+    Market Units v2 live run:
+    system reader → problem recognition → metric composer →
+    coordination → ontology algorithms → teammate network → offer routing.
+    """
+    orient = OrientationEngine().orient(
+        body.business, body.industry, track=body.track
+    )
+    orientation = orient.to_dict()
+    scores = dict(orientation.get("scores") or {})
+    um = orientation.get("metrics") or {}
+    return run_enriched_market_unit(
+        body.industry,
+        business_text=body.business,
+        orientation=orientation,
+        scores=scores,
+        vvi=float(um.get("vvi") or 0.4),
+        er=float(um.get("er") or 0.5),
+        rrc=float(um.get("rrc") or 0.5),
+        health=float(um.get("health_score") or um.get("health") or 0.5),
+        success_composite=float(scores.get("overall_orientation") or 0.5),
+        decision_mode="scoring",
+    )
 
 
 @router.get("/package-costs")

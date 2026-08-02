@@ -33,7 +33,11 @@ from backend.config import DATA_DIR, INDUSTRIES, resolve_industry_id
 from backend.core.decision_core import DecisionMakingCore
 from backend.core.category_router import route_categories
 from backend.core.industry_sanity import load_sanity
-from backend.core.market_units import market_unit_for, package_cost_report
+from backend.core.market_units import (
+    market_unit_for,
+    package_cost_report,
+    run_enriched_market_unit,
+)
 from backend.core.memo_convert import MemoConvertEngine
 from backend.core.operational_analytics import OperationalAnalyticsEngine
 from backend.core.orientation_engine import OrientationEngine
@@ -458,7 +462,30 @@ class RequestPipeline:
             success=success_for_commercial,
             ideas=demo_ideas,
         ).to_dict()
-        market_unit = market_unit_for(industry_id)
+        # Market Units v2: reader → problems → metrics → coordination → ontology → teammates
+        market_units_v2: dict[str, Any] = run_enriched_market_unit(
+            industry_id,
+            business_text=req.business,
+            orientation=orientation,
+            scores=scores,
+            vvi=float((oae_dict.get("metrics_delta") or {}).get("vvi_after", vvi)),
+            er=er,
+            rrc=float((oae_dict.get("metrics_delta") or {}).get("rrc_after", rrc)),
+            health=float(
+                (oae_dict.get("metrics_delta") or {}).get("health_after", health)
+            ),
+            success_composite=float(success_card.weighted_composite),
+            situation_score=(
+                (paid_out.get("business_metrics") or {}).get("situation_score")
+            ),
+            decision_mode=str(decision.active_mode),
+            oae=oae_dict,
+            memo_convert=memo_out,
+            paid=paid_out,
+        )
+        market_unit = dict(
+            market_units_v2.get("unit") or market_unit_for(industry_id)
+        )
         package_costs = package_cost_report()
         tech_tasks = memo_out.get("technical_tasks") or []
         if tech_tasks:
@@ -479,6 +506,24 @@ class RequestPipeline:
                     "market_unit_product": (market_unit.get("product") or {}).get(
                         "name"
                     ),
+                    "primary_problem": (
+                        (market_units_v2.get("problem_recognition") or {}).get(
+                            "primary"
+                        )
+                        or {}
+                    ).get("id"),
+                    "pqi": (
+                        (market_units_v2.get("metric_composer") or {}).get(
+                            "product_quality_index"
+                        )
+                    ),
+                    "teammate_lead": (
+                        (market_units_v2.get("teammate_network") or {}).get("lead_id")
+                    ),
+                    "ontology_combo": (
+                        (market_units_v2.get("ontology") or {}).get("primary_combo")
+                        or {}
+                    ).get("id"),
                 }
                 demo_idea = dict(demo_ideas[0])
                 product = {**product, "demo_idea": demo_idea, "demo_ideas": demo_ideas}
@@ -562,6 +607,17 @@ class RequestPipeline:
             "business_situation": (commercial_out.get("business_metrics") or {}).get(
                 "situation_score"
             ),
+            "market_units_pqi": (
+                (market_units_v2.get("metric_composer") or {}).get(
+                    "product_quality_index"
+                )
+            ),
+            "market_units_coordination": (
+                (market_units_v2.get("coordination") or {}).get("coordination_index")
+            ),
+            "market_units_core_boost": (
+                (market_units_v2.get("core_boost") or {}).get("boost_score")
+            ),
         }
         if req.enable_self_improve:
             improve = self_improve_loop(um, product)
@@ -582,7 +638,7 @@ class RequestPipeline:
                 "Paid Product Core: design library → chips → functions → energy → calm → mega map",
                 "Commercial: situation metrics · questions · offer · portal",
                 "Memo Convert: system intake → coop open-opp → analog function → reverse categories → tech tasks",
-                "Market Units: application point + simple offers",
+                "Market Units v2: reader → problems → metrics → coordination → ontology → teammate mesh → offer route",
                 "Fin Models + Monetization + self-improve",
             ],
             "orientation_narrative": orient.narrative,
@@ -657,7 +713,55 @@ class RequestPipeline:
                 "application_point": market_unit.get("application_point"),
                 "product": market_unit.get("product"),
                 "promotion": market_unit.get("promotion"),
-                "offers": market_unit.get("offers"),
+                "offers": market_unit.get("offers_ranked")
+                or market_unit.get("offers"),
+                "semantics": market_unit.get("semantics"),
+                "coordination_index": market_unit.get("coordination_index"),
+                "product_quality_index": market_unit.get("product_quality_index"),
+            },
+            "market_units_v2": {
+                "version": market_units_v2.get("version"),
+                "ok": market_units_v2.get("ok"),
+                "summary": market_units_v2.get("summary"),
+                "primary_problem": (
+                    (market_units_v2.get("problem_recognition") or {}).get("primary")
+                ),
+                "coordination_index": (
+                    (market_units_v2.get("coordination") or {}).get(
+                        "coordination_index"
+                    )
+                ),
+                "product_quality_index": (
+                    (market_units_v2.get("metric_composer") or {}).get(
+                        "product_quality_index"
+                    )
+                ),
+                "ontology_fit": (
+                    (market_units_v2.get("ontology") or {}).get("ontology_fit")
+                ),
+                "teammate_lead": (
+                    (market_units_v2.get("teammate_network") or {}).get("lead_id")
+                ),
+                "teammate_coverage": (
+                    (market_units_v2.get("teammate_network") or {}).get("coverage")
+                ),
+                "core_boost_score": (
+                    (market_units_v2.get("core_boost") or {}).get("boost_score")
+                ),
+                "product_quality_lift": (
+                    (market_units_v2.get("product_quality") or {}).get("lift")
+                ),
+                "algorithms": [
+                    {
+                        "task_type": a.get("task_type"),
+                        "name": a.get("name"),
+                        "estimated_gain": a.get("estimated_gain"),
+                    }
+                    for a in (
+                        (market_units_v2.get("ontology") or {}).get("algorithms") or []
+                    )[:6]
+                ],
+                "interaction_logic": market_units_v2.get("interaction_logic"),
             },
             "package_costs": package_costs.get("primary_package"),
         }
@@ -671,6 +775,31 @@ class RequestPipeline:
             next_steps.append(
                 f"Market Unit product for this industry: {mu_product} "
                 f"({market_unit.get('application_point')})"
+            )
+        mu_primary = (
+            (market_units_v2.get("problem_recognition") or {}).get("primary") or {}
+        )
+        if mu_primary.get("id"):
+            next_steps.append(
+                f"Primary problem: {mu_primary.get('title') or mu_primary.get('id')} "
+                f"(severity={float(mu_primary.get('severity') or 0):.2f}) → "
+                f"hook {mu_primary.get('product_hook')}"
+            )
+        team_lead = (market_units_v2.get("teammate_network") or {}).get("lead_id")
+        if team_lead:
+            next_steps.append(
+                f"Attach Terminal Teammate lead role: {team_lead} "
+                f"(coverage="
+                f"{float((market_units_v2.get('teammate_network') or {}).get('coverage') or 0):.2f})"
+            )
+        pqi = (market_units_v2.get("metric_composer") or {}).get(
+            "product_quality_index"
+        )
+        if pqi is not None:
+            lift = (market_units_v2.get("product_quality") or {}).get("lift")
+            next_steps.append(
+                f"Product Quality Index PQI={float(pqi):.3f}"
+                + (f" · forecast lift +{float(lift):.3f}" if lift is not None else "")
             )
         if tech_tasks:
             next_steps.append(
@@ -758,7 +887,18 @@ class RequestPipeline:
                     "mega_map",
                 ]
             )
-        zones_touched.extend(["memo_convert", "market_units"])
+        zones_touched.extend(
+            [
+                "memo_convert",
+                "market_units",
+                "market_units_v2",
+                "system_reader",
+                "problem_recognition",
+                "coordination_layer",
+                "ontology_engine",
+                "teammate_network",
+            ]
+        )
 
         # ── Circle-System / Deep Tech Metrix (3 global steps) ─────────────
         circle_out: dict[str, Any] = {}
@@ -852,7 +992,7 @@ class RequestPipeline:
                 "program_id": req.program_id,
                 "product_result": product,
                 "industry_name": industry["name"],
-                "pipeline_version": "2.4-circle-system",
+                "pipeline_version": "2.5-market-units-v2",
                 "idea_count": len(demo_ideas),
                 "idea_portfolio": (product.get("portfolio") or {}),
                 "block_18_slot": "backend/paid",
@@ -862,6 +1002,7 @@ class RequestPipeline:
                 "paid_product_core": paid_out,
                 "memo_convert": memo_out,
                 "market_unit": market_unit,
+                "market_units_v2": market_units_v2,
                 "package_costs": package_costs,
                 "circle_system": circle_out,
                 "deep_tech_product_surfaces": (circle_out or {}).get("product_surfaces") or {},
