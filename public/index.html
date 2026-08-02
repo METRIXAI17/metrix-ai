@@ -5,217 +5,259 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Metrix AI — единое рабочее пространство: проблема → решение → документ. Экспертные идеи бесплатно. Оплата за внедрение после подтверждения. Без подписок и роялти."
+      content="Global Ru Workers · Metrix AI — воркеры, business tasks, генерация бизнеса. Артефакт + метрика. Адекватный прайс."
     />
-    <meta name="theme-color" content="#070a0f" />
-    <meta property="og:title" content="Metrix AI — проблема → решение → документ" />
+    <meta name="theme-color" content="#0c1219" />
+    <meta property="og:title" content="Global Ru Workers · Metrix AI" />
     <meta
       property="og:description"
-      content="Не кот в мешке. Экспертные идеи бесплатно. Внедрение с живым общением после подтверждения. Без подписок и роялти."
+      content="Система собирает бизнес как работу по ТЗ: код-пакет, экспертная база, панель. Оплата после результата."
     />
-    <meta property="og:image" content="assets/ai-asset-management-decisions.jpg" />
-    <title>Metrix AI — рабочее пространство онлайн-бизнеса</title>
+    <meta property="og:image" content="assets/metrix-brand-m.jpg" />
+    <title>Global Ru Workers · Metrix AI</title>
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/workers.css" />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23070a0f'/%3E%3Cpath d='M6 24 V8 L12 18 L16 10 L20 18 L26 8 V24 H22 V14 L18 22 H14 L10 14 V24 Z' fill='%235eead4'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230c1219'/%3E%3Cpath fill='%235eead4' d='M10 50V14l11.5 22.5L32 16l10.5 20.5L54 14v36h-9.5V28.5L36 48h-8L19.5 28.5V50H10z'/%3E%3C/svg%3E"
     />
   </head>
-  <body>
+  <body class="grw">
     <nav class="nav" aria-label="Main">
       <div class="nav-inner">
         <a href="#top" class="logo" id="logo-home">
           <span class="logo-mark logo-mark-brand" aria-hidden="true">
-            <svg viewBox="0 0 48 48" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                class="logo-m-path"
-                d="M4 40 V8 L16 28 L24 14 L32 28 L44 8 V40 H36 V20 L28 36 H20 L12 20 V40 Z"
-                fill="currentColor"
-              />
+            <svg class="logo-m-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <path class="logo-m-path" fill="currentColor"
+                d="M12 88V16h10l4 0 18 36 12-24 12 24 18-36h10v72H74V40L62 66H50L38 40v48H12z" />
+              <path class="logo-m-cut" d="M20 28h6l10 20-4 8-12-24z" />
+              <path class="logo-m-cut" d="M80 28h-6L64 48l4 8 12-28z" />
+              <path class="logo-m-cut" d="M46 44l4-8 4 8-4 10-4-10z" />
             </svg>
           </span>
-          <span class="logo-text">Metrix <span>AI</span></span>
+          <span class="logo-text">
+            <span data-i18n="brand">Global Ru Workers</span>
+            <span class="logo-sub" data-i18n="brandSub">Metrix AI</span>
+          </span>
         </a>
 
-        <div class="mode-switch" role="tablist" aria-label="Режим">
-          <button type="button" class="active" data-mode="marketplace" role="tab" aria-selected="true">
-            Продукты
+        <div class="mode-switch mode-switch-wide" role="tablist" aria-label="Mode">
+          <button type="button" class="active" data-mode="workers" role="tab" aria-selected="true" data-i18n="mode_workers">
+            Воркеры
           </button>
-          <button type="button" data-mode="request" role="tab" aria-selected="false">
+          <button type="button" data-mode="tasks" role="tab" aria-selected="false" data-i18n="mode_tasks">
+            Business Tasks
+          </button>
+          <button type="button" data-mode="generate" role="tab" aria-selected="false" class="mode-fire" data-i18n="mode_generate">
+            Сгенерировать 🔥
+          </button>
+          <button type="button" data-mode="consult" role="tab" aria-selected="false" data-i18n="mode_consult">
             Консультация
           </button>
         </div>
 
         <div class="nav-links">
-          <a href="#offer">Оффер</a>
-          <a href="#niches">Ниши</a>
-          <a href="#problems">Проблемы</a>
-          <a href="#products">Флагманы</a>
-          <a href="#pricing">Цены</a>
+          <div class="lang-switch" role="group" aria-label="Language">
+            <button type="button" data-lang="ru" class="lang-btn active">RU</button>
+            <button type="button" data-lang="en" class="lang-btn">EN</button>
+          </div>
           <a href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">@karimmetrix</a>
         </div>
       </div>
     </nav>
 
     <main id="top">
-      <header class="hero wrap">
-        <div class="hero-badge">Идеи бесплатно · внедрение после подтверждения</div>
-        <h1>Проблема → решение<br /><em>→ документ.</em></h1>
-        <p class="hero-lead" id="master-offer-sub"></p>
-        <p class="hero-sub2" id="master-offer-sub2"></p>
+      <header class="hero wrap hero-compact">
+        <div class="hero-badge" data-i18n="tagline">Воркеры · бизнес-задачи · генерация бизнеса</div>
+        <h1>
+          <span data-i18n="hero_title">Система, которая собирает бизнес</span>
+          <br /><em data-i18n="hero_em">как работу по ТЗ</em>
+        </h1>
+        <p class="hero-lead" data-i18n="hero_lead"></p>
+        <p class="hero-sub2" data-i18n="hero_sub"></p>
         <div class="hero-actions">
-          <button type="button" class="btn btn-primary" data-mode-jump="request">Получить консультацию</button>
-          <button type="button" class="btn btn-ghost" data-scroll="#niches">Ниши клиентов</button>
-          <button type="button" class="btn btn-ghost" data-scroll="#problems">Проблемы</button>
+          <button type="button" class="btn btn-primary" data-mode-jump="generate" data-i18n="cta_generate">
+            Сгенерировать бизнес 🔥
+          </button>
+          <button type="button" class="btn btn-ghost" data-mode-jump="tasks" data-i18n="cta_tasks">Business Tasks</button>
+          <button type="button" class="btn btn-ghost" data-mode-jump="workers" data-i18n="cta_worker">Войти как воркер</button>
         </div>
-        <div class="industry-strip" id="industry-strip" aria-label="Ниши"></div>
       </header>
-
-      <section class="section wrap" id="offer">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow">Продукт</div>
-            <h2>Система поддержки решений</h2>
-            <p class="how-lead">
-              Упрощает путь к доходу: зафиксировали проблему, выбрали решение, получили документ и метрики —
-              то, что рынок может купить, или что выполнит конечный агент.
-            </p>
-          </div>
-        </div>
-        <div class="product-tangible" id="product-tangible">
-          <div class="tangible-card">
-            <div class="eyebrow">На входе</div>
-            <h3>Проблема своими словами</h3>
-            <p>Бизнес, цифры если есть, где болит.</p>
-          </div>
-          <div class="tangible-card">
-            <div class="eyebrow">Внутри</div>
-            <h3>Решение + метрики</h3>
-            <p>Один трек, одна success-метрика, что не делаем.</p>
-          </div>
-          <div class="tangible-card">
-            <div class="eyebrow">На выходе</div>
-            <h3>Документ</h3>
-            <p>Оффер, ТЗ, чеклист — продажа или handoff агенту.</p>
-          </div>
-        </div>
-        <div class="brand-mark-block">
-          <img
-            src="assets/ai-asset-management-decisions.jpg"
-            alt="Metrix AI"
-            width="320"
-            height="320"
-            loading="lazy"
-            class="brand-mark-img"
-          />
-          <div>
-            <div class="eyebrow">Metrix AI</div>
-            <h3>Не кот в мешке</h3>
-            <p>Экспертные идеи бесплатно. Оплата за внедрение с живым общением после подтверждения. Без подписок, без роялти.</p>
-            <button type="button" class="btn btn-primary" data-mode-jump="request">Начать с консультации</button>
-          </div>
-        </div>
-      </section>
 
       <section class="section wrap" id="niches">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Ниши</div>
-            <h2>Где работают клиенты</h2>
-            <p>Конкретные направления. Карточки короткие — без длинных описаний.</p>
+            <div class="eyebrow" data-i18n="niches">Живые ниши</div>
+            <h2 data-i18n="niches">Живые ниши</h2>
           </div>
         </div>
         <div class="niche-grid niche-grid-compact" id="niche-grid"></div>
-        <div class="niche-full-list wrap-inner" id="niche-full-list"></div>
       </section>
 
-      <section class="section wrap" id="problems">
+      <!-- WORKERS -->
+      <section class="section wrap mode-panel active" id="mode-workers" data-panel="workers">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Проблемы</div>
-            <h2>Частые запросы и ответ</h2>
-            <p>Все карточки сразу — без слайдера.</p>
+            <div class="eyebrow">Workers</div>
+            <h2 data-i18n="workers_title">Лента воркера</h2>
+            <p class="how-lead" data-i18n="workers_lead"></p>
           </div>
         </div>
-        <div class="problem-grid" id="problem-grid"></div>
-      </section>
-
-      <section class="section wrap mode-panel active" id="mode-marketplace" data-panel="marketplace">
-        <div class="section-head" id="products">
-          <div>
-            <div class="eyebrow">Флагманы</div>
-            <h2>С чего начать</h2>
-            <p id="home-catalog-note">Нажмите карточку. Ядро — поддержка решений на пути к доходу.</p>
+        <div class="panel-clean" id="worker-panel">
+          <div class="panel-col">
+            <div class="eyebrow">Path</div>
+            <ol class="clean-list" id="worker-path">
+              <li>Открыть задачу</li>
+              <li>Сделать milestone</li>
+              <li>Сдать proof</li>
+              <li>Получить release</li>
+            </ol>
+            <button type="button" class="btn btn-primary" id="btn-create-sample-task" data-i18n="take_task">
+              Взять задачу
+            </button>
+          </div>
+          <div class="panel-col panel-col-wide">
+            <div class="eyebrow">Open tasks</div>
+            <div id="worker-tasks" class="task-list"></div>
+            <div id="worker-task-detail" class="task-detail" hidden></div>
+          </div>
+          <div class="panel-col">
+            <div class="eyebrow">Trust</div>
+            <p class="muted-sm" id="worker-trust-note">
+              Escrow + proof. Off-platform «на честном слове» не защищено. Cut прозрачен до старта.
+            </p>
+            <div id="worker-rep" class="rep-chip">rep · —</div>
           </div>
         </div>
-        <div class="grid grid-flagship" id="program-grid"></div>
       </section>
 
-      <section class="section wrap" id="how">
+      <!-- BUSINESS TASKS -->
+      <section class="section wrap mode-panel" id="mode-tasks" data-panel="tasks" hidden>
         <div class="section-head">
           <div>
-            <div class="eyebrow">Путь</div>
-            <h2 id="how-it-works-title">Как это работает</h2>
-            <p id="how-it-works-lead" class="how-lead"></p>
+            <div class="eyebrow">Services</div>
+            <h2 data-i18n="tasks_title">Business Tasks</h2>
+            <p class="how-lead" data-i18n="tasks_lead"></p>
           </div>
         </div>
-        <div class="how-grid" id="how-it-works-body"></div>
+        <div class="svc-grid" id="svc-grid"></div>
+        <div id="svc-demo" class="svc-demo" hidden>
+          <div class="svc-demo-inner">
+            <div class="eyebrow" data-i18n="demo">Демо</div>
+            <h3 id="svc-demo-title">—</h3>
+            <ul id="svc-demo-lines"></ul>
+            <p class="price-note" id="svc-demo-price"></p>
+            <div class="cr-cta-row">
+              <button type="button" class="btn btn-primary" id="svc-demo-continue" data-i18n="continue">Продолжить</button>
+              <button type="button" class="btn btn-ghost" id="svc-demo-close">OK</button>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <section class="section wrap mode-panel" id="mode-request" data-panel="request" hidden>
+      <!-- GENERATE BUSINESS -->
+      <section class="section wrap mode-panel" id="mode-generate" data-panel="generate" hidden>
         <div class="section-head">
           <div>
-            <div class="eyebrow">Консультация + tech-TZ</div>
-            <h2>Опишите бизнес</h2>
-            <p>5–20 предложений. Ниша обязательна. Идеи и tech-TZ — бесплатно. Внедрение — после подтверждения.</p>
+            <div class="eyebrow">🔥</div>
+            <h2 data-i18n="generate_title">Сгенерировать бизнес</h2>
+            <p class="how-lead" data-i18n="generate_lead"></p>
           </div>
         </div>
+        <form class="form-card form-card-slim" id="gen-form" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="gen-industry" data-i18n="industry_label">Ниша</label>
+              <select id="gen-industry" name="industry"></select>
+            </div>
+            <div class="field field-span">
+              <label for="gen-business" data-i18n="business_label">Суть бизнеса *</label>
+              <textarea id="gen-business" name="business" required rows="5" data-i18n-ph="business_ph"></textarea>
+            </div>
+            <div class="field field-span" id="gen-choices" hidden>
+              <div class="eyebrow" data-i18n="plan">План (как по ТЗ)</div>
+              <div id="gen-choice-cards" class="choice-cards"></div>
+            </div>
+            <p class="form-error" id="gen-error" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-lg" id="gen-submit" data-i18n="run">Запустить синтез</button>
+          </div>
+        </form>
 
+        <div id="gen-result" class="gen-result" hidden>
+          <div class="gen-result-head">
+            <div class="eyebrow" data-i18n="result">Результат</div>
+            <h3 id="gen-msg">—</h3>
+            <p id="gen-gate" class="gate-chip"></p>
+          </div>
+          <div class="panel-clean panel-result">
+            <div class="panel-col">
+              <div class="eyebrow" data-i18n="plan">План</div>
+              <div id="gen-plan"></div>
+              <div class="eyebrow" style="margin-top:1rem" data-i18n="open_q">Вопросы</div>
+              <ul id="gen-questions" class="clean-list"></ul>
+            </div>
+            <div class="panel-col">
+              <div class="eyebrow" data-i18n="panel">Панель</div>
+              <div id="gen-panel" class="mini-panel"></div>
+              <div class="eyebrow" style="margin-top:1rem" data-i18n="quality">Качество</div>
+              <pre id="gen-quality" class="fw-pre slim"></pre>
+            </div>
+            <div class="panel-col">
+              <div class="eyebrow" data-i18n="expert_base">Экспертная база</div>
+              <pre id="gen-expert" class="fw-pre slim"></pre>
+              <div class="eyebrow" style="margin-top:1rem" data-i18n="code_pack">Код-пакет</div>
+              <pre id="gen-code" class="fw-pre slim"></pre>
+            </div>
+          </div>
+          <div class="cr-cta-row">
+            <button type="button" class="btn btn-ghost" data-mode-jump="workers">Workers</button>
+            <a class="btn btn-ghost" href="panel/index.html">Control panel UI</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONSULT (classic) -->
+      <section class="section wrap mode-panel" id="mode-consult" data-panel="consult" hidden>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow" data-i18n="mode_consult">Консультация</div>
+            <h2 data-i18n="mode_consult">Консультация</h2>
+            <p data-i18n="hero_sub"></p>
+          </div>
+        </div>
         <form class="form-card" id="request-form" novalidate>
           <div class="form-grid">
             <div class="field">
-              <label for="req-industry">Ниша <span class="req">*</span></label>
+              <label for="req-industry">Ниша</label>
               <select id="req-industry" name="industry" required>
-                <option value="">Выберите…</option>
+                <option value="">…</option>
               </select>
             </div>
             <div class="field">
               <label for="req-track">Трек</label>
               <select id="req-track" name="track">
-                <option value="">Все три</option>
+                <option value="">All</option>
               </select>
             </div>
             <div class="field">
-              <label for="req-x">X nickname</label>
-              <input id="req-x" name="x" type="text" autocomplete="username" placeholder="@handle" />
+              <label for="req-x">X</label>
+              <input id="req-x" name="x" type="text" placeholder="@handle" />
             </div>
             <div class="field">
               <label for="req-telegram">Telegram</label>
-              <input id="req-telegram" name="telegram" type="text" autocomplete="username" placeholder="@username" />
+              <input id="req-telegram" name="telegram" type="text" placeholder="@username" />
             </div>
-            <div class="field">
-              <label for="req-business">Ваш бизнес <span class="req">*</span></label>
-              <textarea
-                id="req-business"
-                name="business"
-                required
-                placeholder="Кому продаёте, как зарабатываете, где болит, какие цифры есть."
-              ></textarea>
+            <div class="field field-span">
+              <label for="req-business">Бизнес *</label>
+              <textarea id="req-business" name="business" required rows="4"></textarea>
             </div>
             <p class="form-error" id="form-error" role="alert"></p>
             <p class="form-success" id="form-success" role="status"></p>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.6rem">
-              <button type="submit" class="btn btn-primary">Получить консультацию</button>
-              <button type="button" class="btn btn-ghost" id="btn-tech-write">Tech-TZ бесплатно</button>
-              <a class="btn btn-ghost" href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">DM on X</a>
-            </div>
-            <p class="hint" id="contact-note" hidden></p>
+            <button type="submit" class="btn btn-primary" data-i18n="mode_consult">Консультация</button>
           </div>
         </form>
-
         <div id="consult-result" class="consult-result" hidden>
           <div class="consult-result-head">
-            <div class="eyebrow">Результат консультации</div>
             <h3 id="cr-headline">—</h3>
             <p id="cr-meta" class="cr-meta"></p>
             <p id="cr-blurb" class="cr-blurb"></p>
@@ -223,52 +265,53 @@
             <div class="cr-links" id="cr-links"></div>
           </div>
           <div class="cr-cta-row">
-            <button type="button" class="btn btn-primary btn-lg" id="btn-start-free-work">
-              Начать работу бесплатно
-            </button>
-            <button type="button" class="btn btn-ghost" id="btn-new-consult">Новая консультация</button>
+            <button type="button" class="btn btn-primary" id="btn-start-free-work">Free work</button>
+            <button type="button" class="btn btn-ghost" id="btn-new-consult">New</button>
           </div>
         </div>
-
         <div id="free-work-panel" class="free-work-panel" hidden>
           <div class="fw-head">
-            <div class="eyebrow">Free work</div>
-            <h3 id="fw-title">Дальнейшие действия</h3>
+            <h3 id="fw-title">Free work</h3>
             <p id="fw-quality" class="fw-quality"></p>
           </div>
           <div class="fw-phases" id="fw-phases"></div>
           <div class="fw-card" id="fw-clarify-card">
-            <h4>Уточнения</h4>
-            <p class="hint">Только то, чего не хватает для сборки.</p>
+            <h4>Clarify</h4>
             <div id="fw-clarify-form"></div>
-            <button type="button" class="btn btn-primary" id="btn-submit-clarify">Отправить</button>
+            <button type="button" class="btn btn-primary" id="btn-submit-clarify">Send</button>
           </div>
           <div class="fw-card" id="fw-checklist-card">
-            <h4>Чеклист</h4>
             <ul id="fw-checklist"></ul>
             <p id="fw-success-metric" class="fw-metric"></p>
           </div>
           <div class="fw-card fw-tech" id="fw-tech-card">
-            <h4>Tech write</h4>
             <pre id="fw-tech-md" class="fw-pre"></pre>
           </div>
-          <div class="cr-cta-row">
-            <button type="button" class="btn btn-ghost" id="btn-advance-phase">Следующая фаза →</button>
-            <a class="btn btn-ghost" href="https://x.com/karimmetrix" target="_blank" rel="noopener">@karimmetrix</a>
+          <button type="button" class="btn btn-ghost" id="btn-advance-phase">Next phase →</button>
+        </div>
+      </section>
+
+      <section class="section wrap" id="how">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow" data-i18n="how">Как это работает</div>
+            <h2 id="how-it-works-title" data-i18n="how">Как это работает</h2>
+            <p id="how-it-works-lead" class="how-lead"></p>
           </div>
         </div>
+        <div class="how-grid" id="how-it-works-body"></div>
       </section>
 
       <section class="section wrap" id="pricing">
         <div class="package-banner package-banner-slim">
           <div>
-            <div class="eyebrow" style="margin-bottom: 0.35rem">Цены</div>
-            <h3 id="pkg-title">Цены</h3>
-            <p id="pkg-why"></p>
+            <div class="eyebrow" data-i18n="pricing">Цены</div>
+            <h3 data-i18n="fair_price">Недорого / адекватный прайс</h3>
+            <p id="pkg-why" data-i18n="pricing_note"></p>
           </div>
           <div class="pricing-actions">
-            <button type="button" class="btn btn-primary" data-mode-jump="request">Консультация</button>
-            <button type="button" class="btn btn-gold" data-mode-jump="techwrite">Tech-TZ</button>
+            <button type="button" class="btn btn-primary" data-mode-jump="generate" data-i18n="cta_generate">🔥</button>
+            <button type="button" class="btn btn-ghost" data-mode-jump="tasks" data-i18n="cta_tasks">Tasks</button>
           </div>
         </div>
       </section>
@@ -277,30 +320,29 @@
     <footer class="footer">
       <div class="wrap footer-inner">
         <div>
-          <strong style="color: var(--text)">Metrix AI</strong>
-          <span> · без подписок · без роялти</span>
+          <strong style="color: var(--text)" data-i18n="footer">Metrix AI · Global Ru Workers</strong>
         </div>
         <div>
           <a href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">@karimmetrix</a>
           ·
-          <a href="#top">Наверх</a>
+          <a href="#top">↑</a>
         </div>
       </div>
     </footer>
 
-    <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true">
       <div class="modal">
         <header>
           <div>
-            <div class="card-meta" id="modal-tags" style="margin-bottom: 0.5rem"></div>
+            <div class="card-meta" id="modal-tags"></div>
             <h3 id="modal-title"></h3>
           </div>
           <button type="button" class="modal-close" id="modal-close" aria-label="Close">✕</button>
         </header>
         <div id="modal-body"></div>
         <div class="modal-actions">
-          <button type="button" class="btn btn-primary" id="modal-request">Консультация</button>
-          <button type="button" class="btn btn-ghost" id="modal-close-2">Закрыть</button>
+          <button type="button" class="btn btn-primary" id="modal-request" data-mode-jump="generate">Generate</button>
+          <button type="button" class="btn btn-ghost" id="modal-close-2">Close</button>
         </div>
       </div>
     </div>
@@ -317,6 +359,7 @@
         };
       })();
     </script>
+    <script src="js/i18n.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
   </body>

@@ -19,6 +19,8 @@ pilot_private/
 backend/workspace/
 backend/data/requests/
 backend/data/free_work/
+backend/data/knowledge_base/
+backend/data/workers/
 docs/_probe*
 docs/screenshot_*.png
 client-package-latest.html

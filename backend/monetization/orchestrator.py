@@ -37,6 +37,8 @@ class MonetizationOrchestrator:
             industry_name,
             promo_fit=float(scores.get("promo_fit", 0.5)),
             phrases=phrases,
+            domain=str((scores or {}).get("_domain", "") or ""),
+            lang="ru",
         )
         mm = self.mm.simulate(
             idea_title,

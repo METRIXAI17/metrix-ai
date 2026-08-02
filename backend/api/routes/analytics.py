@@ -32,6 +32,11 @@ from backend.core.circle_system.support_system import SupportSystem
 from backend.core.circle_system.knowledge_libs import ExpertKnowledgePlatform
 from backend.core.circle_system.niche_answer_base import NicheAnswerBase
 from backend.core.circle_system.free_work_flow import FreeWorkFlow
+from backend.core.knowledge_synthesis import KnowledgeSynthesisEngine, run_knowledge_synthesis
+from backend.core.business_gen import BusinessGenerator, BUSINESS_SERVICES, service_demo
+from backend.core.business_gen.services_catalog import list_services
+from backend.core.workers import PayoutTrustLayer
+from backend.monetization.distribution import DistributionEngine
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
@@ -514,3 +519,161 @@ def free_work_advance(work_id: str) -> dict[str, Any]:
 @router.get("/free-work/{work_id}")
 def free_work_get(work_id: str) -> dict[str, Any]:
     return FreeWorkFlow().get(work_id)
+
+
+# ── Knowledge synthesis · business gen · workers · distribution (2026-08-02) ──
+
+
+class KnowledgeSynthBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    industry: str = "ai-agencies"
+    lang: str = "ru"
+    answers: dict = Field(default_factory=dict)
+    choices: dict = Field(default_factory=dict)
+    numbers: dict = Field(default_factory=dict)
+    project_name: str = ""
+
+
+class BusinessGenBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    industry: str = "automation-builders"
+    lang: str = "ru"
+    answers: dict = Field(default_factory=dict)
+    choices: dict = Field(default_factory=dict)
+    numbers: dict = Field(default_factory=dict)
+    project_name: str = ""
+
+
+class WorkerTaskBody(BaseModel):
+    title: str = Field(..., min_length=3)
+    niche: str = "general"
+    worker_id: str = "open"
+    client_ref: str = ""
+    purse_units: float = 100.0
+    platform_cut: float | None = None
+
+
+class WorkerProofBody(BaseModel):
+    task_id: str
+    milestone_id: str
+    proof: dict = Field(default_factory=dict)
+
+
+class WorkerReleaseBody(BaseModel):
+    task_id: str
+    milestone_id: str
+
+
+class DistributionBody(BaseModel):
+    industry: str = "ai-agencies"
+    industry_name: str = ""
+    idea_title: str = "Metrix pilot"
+    domain: str = ""
+    promo_fit: float = 0.55
+    lang: str = "ru"
+
+
+@router.post("/knowledge-synthesis")
+def knowledge_synthesis_run(body: KnowledgeSynthBody) -> dict[str, Any]:
+    """Multi-layer knowledge synthesis: side engines · planner · methods · expert base."""
+    return run_knowledge_synthesis(
+        body.business,
+        industry_id=body.industry,
+        lang=body.lang,
+        answers=body.answers or None,
+        choices=body.choices or None,
+        numbers={k: float(v) for k, v in (body.numbers or {}).items() if _is_number(v)},
+        project_name=body.project_name,
+    )
+
+
+@router.post("/business-generate")
+def business_generate_run(body: BusinessGenBody) -> dict[str, Any]:
+    """
+    Generate business system: autonomous pack + expert base + control panel.
+    Asks TZ-style choices; self-tests; forecasts human reaction; pre-corrects.
+    """
+    return BusinessGenerator().generate(
+        body.business,
+        industry_id=body.industry,
+        lang=body.lang,
+        answers=body.answers or None,
+        choices=body.choices or None,
+        numbers={k: float(v) for k, v in (body.numbers or {}).items() if _is_number(v)},
+        project_name=body.project_name,
+    )
+
+
+@router.get("/business-services")
+def business_services(lang: str = "ru") -> dict[str, Any]:
+    """10 Business Tasks services + short wow demos (no hard prices)."""
+    return {
+        "surface": "Global Ru Workers · Business Tasks",
+        "pricing_language": "fair / adequate / non-hype — no inflated info-marketer prices",
+        "services": list_services(lang),
+        "count": len(BUSINESS_SERVICES),
+    }
+
+
+@router.get("/business-services/{service_id}/demo")
+def business_service_demo(service_id: str, lang: str = "ru") -> dict[str, Any]:
+    return service_demo(service_id, lang=lang)
+
+
+@router.post("/distribution")
+def distribution_plan(body: DistributionBody) -> dict[str, Any]:
+    """3D distribution: brand · platforms · networking."""
+    from backend.config import INDUSTRIES
+
+    ind = INDUSTRIES.get(body.industry) or {}
+    name = body.industry_name or ind.get("name") or body.industry
+    plan = DistributionEngine().build(
+        industry_id=body.industry,
+        industry_name=name,
+        idea_title=body.idea_title,
+        domain=body.domain,
+        promo_fit=body.promo_fit,
+        lang=body.lang,
+    )
+    return {"module": "DistributionEngine", "plan": plan.to_dict()}
+
+
+@router.post("/workers/tasks")
+def workers_create_task(body: WorkerTaskBody) -> dict[str, Any]:
+    """Create escrow-style worker task (safe payout trust)."""
+    return PayoutTrustLayer().create_task(
+        title=body.title,
+        niche=body.niche,
+        worker_id=body.worker_id,
+        client_ref=body.client_ref,
+        purse_units=body.purse_units,
+        platform_cut=body.platform_cut,
+    )
+
+
+@router.post("/workers/proof")
+def workers_submit_proof(body: WorkerProofBody) -> dict[str, Any]:
+    return PayoutTrustLayer().submit_proof(body.task_id, body.milestone_id, body.proof or {})
+
+
+@router.post("/workers/release")
+def workers_release(body: WorkerReleaseBody) -> dict[str, Any]:
+    return PayoutTrustLayer().release_milestone(body.task_id, body.milestone_id)
+
+
+@router.get("/workers/dashboard")
+def workers_dashboard(worker_id: str = "open") -> dict[str, Any]:
+    return PayoutTrustLayer().worker_dashboard(worker_id)
+
+
+@router.get("/workers/rationale")
+def workers_payout_rationale() -> dict[str, Any]:
+    return PayoutTrustLayer().rationale()
+
+
+def _is_number(v: Any) -> bool:
+    try:
+        float(v)
+        return True
+    except (TypeError, ValueError):
+        return False

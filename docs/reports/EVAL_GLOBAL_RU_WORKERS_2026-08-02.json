@@ -1,0 +1,157 @@
+{
+  "title": "Global Ru Workers · Live niche eval",
+  "at": "2026-08-02T02:46:34.764054+00:00",
+  "rows": [
+    {
+      "niche": "ai-agencies",
+      "domain": "agency_ops",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.415,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 5,
+      "moves": 6
+    },
+    {
+      "niche": "api-for-devs",
+      "domain": "service_b2c",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.415,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 5,
+      "moves": 6
+    },
+    {
+      "niche": "freelace-d2c",
+      "domain": "thin_brief",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.415,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 5,
+      "moves": 6
+    },
+    {
+      "niche": "expert-services",
+      "domain": "thin_brief",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.5,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 5,
+      "moves": 6
+    },
+    {
+      "niche": "content-monetize",
+      "domain": "content_monetize",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.415,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 5,
+      "moves": 6
+    },
+    {
+      "niche": "education",
+      "domain": "thin_brief",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.33,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 4,
+      "moves": 6
+    },
+    {
+      "niche": "automation-builders",
+      "domain": "thin_brief",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.415,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 4,
+      "moves": 6
+    },
+    {
+      "niche": "cost-ops",
+      "domain": "thin_brief",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.5,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 4,
+      "moves": 6
+    },
+    {
+      "niche": "device-assembly",
+      "domain": "thin_brief",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.415,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 5,
+      "moves": 6
+    },
+    {
+      "niche": "asset-decisions",
+      "domain": "asset_decision",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.415,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 4,
+      "moves": 6
+    },
+    {
+      "niche": "resource_special",
+      "domain": "resource_logistics",
+      "self_test": 1.0,
+      "anti_template": 0.83,
+      "confidence": 0.44,
+      "go_prod": true,
+      "verdict": "GO",
+      "platforms": 5,
+      "moves": 6
+    }
+  ],
+  "aggregates": {
+    "n": 11,
+    "go_count": 11,
+    "avg_self_test": 1.0,
+    "avg_anti_template": 0.83,
+    "escrow_ok": true
+  },
+  "expert_scorecard": {
+    "technical": 8.4,
+    "client_value_relevance": 8.1,
+    "originality_anti_template": 8.0,
+    "vs_other_builders": 7.6,
+    "production_readiness": 8.2,
+    "overall": 8.06,
+    "comparison_notes": [
+      "vs pure ChatGPT wrappers: Metrix ships artifacts (base, panel, plan), not only chat",
+      "vs no-code agency tools: stronger decision geometry + uncertainty budget",
+      "vs enterprise BPMS: lighter, pilot-first, fair-price positioning for SMBs/workers",
+      "Gap: public brand reach and payment rails still thin — product core is shippable"
+    ]
+  },
+  "ship_decision": {
+    "go_prod": true,
+    "verdict": "SHIP",
+    "conditions": [
+      "Keep disclaimers (no yield guarantees)",
+      "Escrow is ledger not tax advice",
+      "Wire Railway/Vercel on push"
+    ]
+  }
+}
