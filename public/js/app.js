@@ -128,9 +128,13 @@
     if (sub2) {
       sub2.textContent = t("hero_sub");
       sub2.hidden = !t("hero_sub");
+      sub2.classList.add("hero-sub-shimmer");
     }
-    const pkg = $("#pkg-why");
-    if (pkg) pkg.textContent = t("pricing_why");
+    const disc = $("#pricing-discount");
+    if (disc) {
+      disc.textContent = t("pricing_discount");
+      disc.hidden = !t("pricing_discount");
+    }
     const lead = $("#how-it-works-lead");
     if (lead) lead.textContent = t("how_lead");
   }

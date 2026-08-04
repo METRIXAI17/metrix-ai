@@ -24,10 +24,10 @@ window.METRIX_DATA = {
       nav_pricing: "Pricing",
       nav_system: "System",
       hero_badge: "Instant ideas · optional pay on implementation approval",
-      hero_h1a: "Your growth / yield core",
-      hero_h1b: "for online and offline business.",
+      hero_h1a: "One window to deploy",
+      hero_h1b: "workflows and original projects.",
       hero_sub:
-        "Instant expert ideas. Optional payment only when you approve implementation. For growth specialists and System & Yield Engineers — stand out, or shape offline like your client’s reality.",
+        "Instant expert ideas — right away. Optional payment only when you approve implementation.",
       cta_consult: "Consult + Tech-TZ",
       cta_niches: "10 niches",
       cta_tasks: "Business Tasks",
@@ -87,11 +87,10 @@ window.METRIX_DATA = {
       fw_tech: "Tech write",
       fw_next: "Next phase →",
       pricing_title: "Pricing",
-      pricing_why:
-        "Ideas free. Four clear tariffs: Core · Client cooperation · Marketing · External capital. Optional payment when you approve implementation. No subscriptions. No marketing/funding automation in the public product yet — surface directions only for those two layers.",
-      pricing_lead: "Four beautiful, honest tariffs. Stack when ready.",
-      pricing_note:
-        "Marketing automation and fundraising backends ship after partner approval. Here you get the best short directions.",
+      pricing_why: "",
+      pricing_lead: "",
+      pricing_note: "",
+      pricing_discount: "20% off repeat purchases in each category",
       tariff_cta: "Start with consult",
       tariff_popular: "Recommended",
       footer_tag: " · optional pay on approval · experiment without fear",
@@ -165,10 +164,10 @@ window.METRIX_DATA = {
       nav_pricing: "Цены",
       nav_system: "Система",
       hero_badge: "Моментальные идеи · опциональная оплата за утверждение внедрения",
-      hero_h1a: "Ваше ядро growth / yield",
-      hero_h1b: "для онлайн- и офлайн-бизнеса.",
+      hero_h1a: "Единое окно для разворачивания",
+      hero_h1b: "воркфлоу и создания оригинальных проектов.",
       hero_sub:
-        "Моментальные экспертные идеи. Опциональная оплата только при утверждении внедрения. Для growth-специалистов и System & Yield Engineer — выделиться на рынке или собрать офлайн как у клиента.",
+        "Моментальные экспертные идеи — сразу. Опциональная оплата только при утверждении внедрения.",
       cta_consult: "Консультация + Тех-ТЗ",
       cta_niches: "10 ниш",
       cta_tasks: "Бизнес-таски",
@@ -228,11 +227,10 @@ window.METRIX_DATA = {
       fw_tech: "Тех-письмо",
       fw_next: "Следующая фаза →",
       pricing_title: "Цены",
-      pricing_why:
-        "Идеи бесплатно. Четыре тарифа: Ядро · Кооперация с клиентом · Маркетинг · Внешнее финансирование. Опциональная оплата при утверждении внедрения. Без подписок. Бэкенды маркетинга и привлечения капитала — после согласования с партнёром; здесь — лучший краткий вариант направлений.",
-      pricing_lead: "Четыре честных красивых тарифа. Собирайте стеком, когда готовы.",
-      pricing_note:
-        "Автоматизация маркетинга и фандрайзинга появятся после согласования. Сейчас — сильные краткие направления.",
+      pricing_why: "",
+      pricing_lead: "",
+      pricing_note: "",
+      pricing_discount: "Скидка на повторные покупки в каждой категории — 20%",
       tariff_cta: "Начать с консультации",
       tariff_popular: "Рекомендуем",
       footer_tag: " · опциональная оплата за утверждение · экспериментировать можно не боясь",
@@ -353,13 +351,13 @@ window.METRIX_DATA = {
 
   howSteps: {
     en: [
-      { n: "01", title: "Brief", text: "Growth specialist or owner describes online/offline business in plain words." },
+      { n: "01", title: "Brief", text: "Describe the business and the request in your own words." },
       { n: "02", title: "Core map", text: "Identity, asset structure in the panel, what to connect vs DIY." },
       { n: "03", title: "Coop & assist", text: "Client-pack config + implementation assistant + tester-strategist path." },
       { n: "04", title: "Approve pay", text: "Optional payment only when you approve implementation. Multi-pass forecast first." },
     ],
     ru: [
-      { n: "01", title: "Бриф", text: "Growth-специалист или владелец описывает онлайн/офлайн бизнес своими словами." },
+      { n: "01", title: "Бриф", text: "Опишите бизнес и запрос своими словами." },
       { n: "02", title: "Карта ядра", text: "Идентичность, структура активов в панели, что подключить vs сделать самому." },
       { n: "03", title: "Кооп и ассист", text: "Конфиг пакета клиентов + ассистент внедрения + тестировщик-стратег." },
       { n: "04", title: "Утверждение", text: "Опциональная оплата только при утверждении внедрения. Сначала мульти-прогон." },
@@ -450,6 +448,7 @@ window.METRIX_DATA = {
           "Online & offline core generation",
           "Multi-pass implementation forecast",
           "Optional pay only on approval",
+          "20% off repeat purchases in this category",
         ],
       },
       {
@@ -465,6 +464,7 @@ window.METRIX_DATA = {
           "Shared scoreboard per pack",
           "Final per-client tuning notes",
           "Implementation assistant path",
+          "20% off repeat purchases in this category",
         ],
       },
       {
@@ -478,8 +478,8 @@ window.METRIX_DATA = {
           "Promotion angle from ops facts",
           "Channel directions (surface)",
           "Signal / offer framing",
-          "Best short directions (no auto-ads backend yet)",
           "Works after Core or with Core",
+          "20% off repeat purchases in this category",
         ],
       },
       {
@@ -493,8 +493,7 @@ window.METRIX_DATA = {
           "Capital narrative directions",
           "Readiness checklist for partners",
           "What to prove before raise",
-          "No public fundraising automation yet",
-          "Ships fully after partner approval",
+          "20% off repeat purchases in this category",
         ],
       },
     ],
@@ -512,6 +511,7 @@ window.METRIX_DATA = {
           "Генерация ядра онлайн и офлайн",
           "Мульти-прогон прогноза внедрения",
           "Опциональная оплата только при утверждении",
+          "Скидка 20% на повторные покупки в этой категории",
         ],
       },
       {
@@ -527,6 +527,7 @@ window.METRIX_DATA = {
           "Общее табло на пак",
           "Заметки конечной настройки на клиента",
           "Путь ассистента внедрения",
+          "Скидка 20% на повторные покупки в этой категории",
         ],
       },
       {
@@ -540,8 +541,8 @@ window.METRIX_DATA = {
           "Угол продвижения из ops-фактов",
           "Направления каналов (поверхность)",
           "Фрейминг сигнала / оффера",
-          "Лучшие краткие направления (без auto-ads backend пока)",
           "После Ядра или вместе с Ядром",
+          "Скидка 20% на повторные покупки в этой категории",
         ],
       },
       {
@@ -555,8 +556,7 @@ window.METRIX_DATA = {
           "Направления capital narrative",
           "Чеклист готовности для партнёров",
           "Что доказать до raise",
-          "Публичной автоматизации фандрайзинга пока нет",
-          "Полный контур — после согласования с партнёром",
+          "Скидка 20% на повторные покупки в этой категории",
         ],
       },
     ],

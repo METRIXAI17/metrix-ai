@@ -178,11 +178,52 @@ textarea {
 }
 
 .hero-sub2 {
-  margin-top: 0.65rem;
-  color: var(--accent);
+  margin-top: 0.75rem;
+  font-weight: 400;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 42rem;
+  letter-spacing: 0.01em;
+}
+
+/* Thin blue→teal shimmer on hero subtitle (2 sentences) */
+.hero-sub-shimmer {
+  background: linear-gradient(
+    105deg,
+    #38bdf8 0%,
+    #2dd4bf 28%,
+    #5eead4 52%,
+    #38bdf8 72%,
+    #67e8f9 100%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: hero-shimmer 7s ease-in-out infinite;
+  font-weight: 400;
+  font-size: 0.92rem;
+}
+
+@keyframes hero-shimmer {
+  0% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: 0% center;
+  }
+}
+
+.pricing-discount {
+  margin-top: 0.55rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  font-size: 1rem;
-  max-width: 48ch;
+  color: var(--accent);
+  letter-spacing: 0.01em;
 }
 
 .nav-links {
