@@ -144,13 +144,18 @@
         </div>
         <div class="matryoshka-layout">
           <div class="matryoshka-stage" id="matryoshka-stage" aria-label="System layers">
+            <div class="matryoshka-orb" aria-hidden="true"></div>
             <div class="matryoshka-rings" id="matryoshka-rings"></div>
-            <div class="matryoshka-core-glow" aria-hidden="true"></div>
+            <div class="matryoshka-legend" id="matryoshka-legend" role="tablist" aria-label="Layers"></div>
           </div>
           <div class="matryoshka-panel" id="matryoshka-panel">
-            <div class="eyebrow" data-i18n="layer_hover_hint">Hover a layer</div>
+            <div class="matryoshka-panel-top">
+              <span class="matryoshka-index" id="matryoshka-index">05</span>
+              <div class="eyebrow" data-i18n="layer_hover_hint">Hover a layer</div>
+            </div>
             <h3 id="matryoshka-title">—</h3>
             <p id="matryoshka-text" class="how-lead"></p>
+            <div class="matryoshka-panel-accent" id="matryoshka-accent" aria-hidden="true"></div>
           </div>
         </div>
       </section>
@@ -551,7 +556,7 @@
         };
       })();
     </script>
-    <script src="js/data.js?v=20260804-mu-copy2"></script>
-    <script src="js/app.js?v=20260804-mu-copy2"></script>
+    <script src="js/data.js?v=20260804-matryoshka"></script>
+    <script src="js/app.js?v=20260804-matryoshka"></script>
   </body>
 </html>

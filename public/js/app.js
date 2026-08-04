@@ -485,45 +485,170 @@
   }
 
   function renderMatryoshka() {
-    const rings = $("#matryoshka-rings");
+    const host = $("#matryoshka-rings");
+    const legend = $("#matryoshka-legend");
     const title = $("#matryoshka-title");
     const text = $("#matryoshka-text");
-    if (!rings || !D.getSystemLayers) return;
+    const indexEl = $("#matryoshka-index");
+    const accent = $("#matryoshka-accent");
+    if (!host || !D.getSystemLayers) return;
+
     const layers = D.getSystemLayers();
-    // outer → center: sizes from large to small
-    const sizes = [100, 82, 64, 48, 32];
-    rings.innerHTML = layers
+    // Designer palette: outer → core (violet → cyan → teal)
+    const palette = [
+      { stroke: "#a78bfa", glow: "rgba(167, 139, 250, 0.55)" }, // capital
+      { stroke: "#c4b5fd", glow: "rgba(196, 181, 253, 0.5)" }, // marketing
+      { stroke: "#38bdf8", glow: "rgba(56, 189, 248, 0.55)" }, // coop
+      { stroke: "#5eead4", glow: "rgba(94, 234, 212, 0.55)" }, // assist
+      { stroke: "#2dd4bf", glow: "rgba(45, 212, 191, 0.7)" }, // core
+    ];
+    // Radii for concentric rings (viewBox 0 0 400 400, center 200,200)
+    const radii = [172, 138, 104, 72, 42];
+    const strokeW = [22, 20, 18, 16, 28];
+    const cx = 200;
+    const cy = 200;
+
+    // SVG rings: pointer-events: stroke so outer disks don't block inner rings
+    const ringEls = layers
       .map((layer, i) => {
-        const sz = sizes[i] != null ? sizes[i] : 100 - i * 16;
-        return `<button type="button" class="matryoshka-ring" data-layer="${escapeHtml(
-          layer.id
-        )}" style="--ring-size:${sz}%; --ring-i:${i}" aria-label="${escapeHtml(
-          layer.label
-        )}"><span class="matryoshka-ring-label">${escapeHtml(
-          layer.short || layer.label
-        )}</span></button>`;
+        const p = palette[i] || palette[0];
+        const r = radii[i] != null ? radii[i] : 160 - i * 30;
+        const sw = strokeW[i] != null ? strokeW[i] : 18;
+        const isCore = layer.id === "core" || i === layers.length - 1;
+        if (isCore) {
+          return `
+            <g class="mx-ring-group" data-layer="${escapeHtml(layer.id)}" data-i="${i}">
+              <circle class="mx-core-disc" cx="${cx}" cy="${cy}" r="${r - 2}"
+                fill="url(#mxCoreFill)" stroke="${p.stroke}" stroke-width="2.5" />
+              <circle class="mx-core-pulse" cx="${cx}" cy="${cy}" r="${Math.max(18, r - 14)}"
+                fill="url(#mxCoreGlow)" />
+              <text class="mx-core-letter" x="${cx}" y="${cy + 8}" text-anchor="middle">M</text>
+              <circle class="mx-ring-hit mx-ring-hit-core" cx="${cx}" cy="${cy}" r="${r + 6}"
+                fill="transparent" stroke="transparent" stroke-width="1"
+                data-layer="${escapeHtml(layer.id)}" tabindex="0" role="button"
+                aria-label="${escapeHtml(layer.label)}" />
+            </g>`;
+        }
+        return `
+          <g class="mx-ring-group" data-layer="${escapeHtml(layer.id)}" data-i="${i}" style="--mx-glow:${p.glow}; --mx-stroke:${p.stroke}">
+            <circle class="mx-ring-track" cx="${cx}" cy="${cy}" r="${r}"
+              fill="none" stroke="rgba(148,163,184,0.12)" stroke-width="${sw}" />
+            <circle class="mx-ring-arc" cx="${cx}" cy="${cy}" r="${r}"
+              fill="none" stroke="${p.stroke}" stroke-width="${sw}"
+              stroke-linecap="round" />
+            <text class="mx-ring-label" x="${cx}" y="${cy - r}" text-anchor="middle"
+              dy="-0.35em">${escapeHtml(layer.short || layer.label)}</text>
+            <circle class="mx-ring-hit" cx="${cx}" cy="${cy}" r="${r}"
+              fill="none" stroke="transparent" stroke-width="${sw + 14}"
+              data-layer="${escapeHtml(layer.id)}" tabindex="0" role="button"
+              aria-label="${escapeHtml(layer.label)}" />
+          </g>`;
       })
       .join("");
 
-    const show = (layer) => {
+    host.innerHTML = `
+      <svg class="matryoshka-svg" viewBox="0 0 400 400" role="img" aria-label="Metrix layers">
+        <defs>
+          <radialGradient id="mxCoreFill" cx="40%" cy="35%" r="70%">
+            <stop offset="0%" stop-color="#134e4a"/>
+            <stop offset="55%" stop-color="#0c1a22"/>
+            <stop offset="100%" stop-color="#070a0f"/>
+          </radialGradient>
+          <radialGradient id="mxCoreGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(94,234,212,0.55)"/>
+            <stop offset="100%" stop-color="rgba(94,234,212,0)"/>
+          </radialGradient>
+          <filter id="mxSoftGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="mxStageFade" cx="50%" cy="50%" r="50%">
+            <stop offset="60%" stop-color="rgba(7,10,15,0)"/>
+            <stop offset="100%" stop-color="rgba(7,10,15,0.55)"/>
+          </radialGradient>
+        </defs>
+        <circle cx="200" cy="200" r="196" fill="rgba(12,18,28,0.55)" stroke="rgba(94,234,212,0.12)" stroke-width="1"/>
+        <circle cx="200" cy="200" r="196" fill="url(#mxStageFade)"/>
+        ${ringEls}
+      </svg>`;
+
+    if (legend) {
+      legend.innerHTML = layers
+        .map((layer, i) => {
+          const p = palette[i] || palette[0];
+          const num = String(layers.length - i).padStart(2, "0");
+          return `<button type="button" class="matryoshka-chip" data-layer="${escapeHtml(
+            layer.id
+          )}" style="--chip:${p.stroke}" role="tab" aria-selected="false">
+            <span class="matryoshka-chip-dot"></span>
+            <span class="matryoshka-chip-n">${num}</span>
+            <span class="matryoshka-chip-t">${escapeHtml(layer.short || layer.label)}</span>
+          </button>`;
+        })
+        .join("");
+    }
+
+    const show = (layer, i) => {
       if (!layer) return;
-      rings.querySelectorAll(".matryoshka-ring").forEach((el) => {
-        el.classList.toggle("is-active", el.dataset.layer === layer.id);
+      const idx = i != null ? i : layers.findIndex((l) => l.id === layer.id);
+      host.querySelectorAll(".mx-ring-group").forEach((g) => {
+        g.classList.toggle("is-active", g.dataset.layer === layer.id);
       });
+      host.querySelectorAll(".mx-ring-hit").forEach((el) => {
+        el.setAttribute("aria-pressed", el.dataset.layer === layer.id ? "true" : "false");
+      });
+      if (legend) {
+        legend.querySelectorAll(".matryoshka-chip").forEach((chip) => {
+          const on = chip.dataset.layer === layer.id;
+          chip.classList.toggle("is-active", on);
+          chip.setAttribute("aria-selected", on ? "true" : "false");
+        });
+      }
       if (title) title.textContent = layer.label;
       if (text) text.textContent = layer.text;
+      if (indexEl) {
+        indexEl.textContent = String(layers.length - (idx >= 0 ? idx : 0)).padStart(2, "0");
+      }
+      if (accent) {
+        const p = palette[idx >= 0 ? idx : 0] || palette[0];
+        accent.style.setProperty("--layer-accent", p.stroke);
+      }
+      const panel = $("#matryoshka-panel");
+      if (panel) {
+        const p = palette[idx >= 0 ? idx : 0] || palette[0];
+        panel.style.setProperty("--layer-accent", p.stroke);
+        panel.classList.add("is-lit");
+      }
     };
 
-    // default center (last = core)
-    const core = layers[layers.length - 1] || layers[0];
-    show(core);
+    const bindLayer = (el, layer, i) => {
+      if (!el || !layer) return;
+      el.addEventListener("mouseenter", () => show(layer, i));
+      el.addEventListener("focus", () => show(layer, i));
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        show(layer, i);
+      });
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          show(layer, i);
+        }
+      });
+    };
 
-    rings.querySelectorAll(".matryoshka-ring").forEach((btn) => {
-      const layer = layers.find((l) => l.id === btn.dataset.layer);
-      btn.addEventListener("mouseenter", () => show(layer));
-      btn.addEventListener("focus", () => show(layer));
-      btn.addEventListener("click", () => show(layer));
+    layers.forEach((layer, i) => {
+      const hit = host.querySelector(`.mx-ring-hit[data-layer="${layer.id}"]`);
+      bindLayer(hit, layer, i);
+      if (legend) {
+        const chip = legend.querySelector(`.matryoshka-chip[data-layer="${layer.id}"]`);
+        bindLayer(chip, layer, i);
+      }
     });
+
+    // Default: core (innermost)
+    const coreIdx = layers.length - 1;
+    show(layers[coreIdx] || layers[0], coreIdx);
   }
 
   function renderPricing() {
