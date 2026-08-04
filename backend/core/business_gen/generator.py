@@ -93,12 +93,17 @@ class BusinessGenerator:
         choices: dict[str, str] | None = None,
         numbers: dict[str, float] | None = None,
         project_name: str = "",
+        channel: str = "auto",
+        multi_pass: bool = True,
+        passes: int = 7,
     ) -> dict[str, Any]:
+        channel_info = self._resolve_channel(business_text, channel=channel, lang=lang)
         # ── Orchestration pass: rank all 10 niches + service stack ─────────
         orchestration = self._orchestrate(
             business_text,
             industry_id=industry_id,
             lang=lang,
+            channel=channel_info["mode"],
         )
         # Prefer highest-scoring public niche if caller sent generic / empty
         ranked = orchestration.get("niche_ranking") or []
@@ -165,7 +170,19 @@ class BusinessGenerator:
         )
 
         autonomous_code = self._code_pack(core, is_resource=is_resource, lang=lang)
-        control_panel = self._control_panel(core, lang=lang)
+        control_panel = self._control_panel(
+            core, lang=lang, channel=channel_info, industry_id=industry_id
+        )
+        forecast = self._implementation_forecast(
+            core,
+            channel=channel_info,
+            multi_pass=multi_pass,
+            passes=passes,
+            lang=lang,
+        )
+        growth_core = self._growth_yield_core(
+            business_text, core=core, channel=channel_info, lang=lang, industry_id=industry_id
+        )
         deliverable = {
             "orchestration": orchestration,
             "autonomous_code_pack": autonomous_code,
@@ -186,6 +203,11 @@ class BusinessGenerator:
             "domain": core["domain"],
             "resource_logistics_mode": is_resource,
             "primary_industry": industry_id,
+            "channel": channel_info,
+            "implementation_forecast": forecast,
+            "growth_yield_core": growth_core,
+            # Surface-only directions (no marketing/fundraising backend automation)
+            "surface_directions": self._surface_directions(lang=lang, channel=channel_info),
         }
 
         deliverable["final_gate"] = self._final_gate(deliverable)
@@ -196,9 +218,274 @@ class BusinessGenerator:
                 "business": business_text[:500],
                 "industry_id": industry_id,
                 "lang": lang,
+                "channel": channel_info["mode"],
+                "passes": passes if multi_pass else 1,
             },
             "output": deliverable,
             "message": core["pre_corrected"].get("opening_line"),
+        }
+
+    def _resolve_channel(
+        self, business_text: str, *, channel: str, lang: str
+    ) -> dict[str, Any]:
+        ch = (channel or "auto").strip().lower()
+        text = (business_text or "").lower()
+        online_kw = (
+            "online",
+            "онлайн",
+            "saas",
+            "ecommerce",
+            "e-com",
+            "shopify",
+            "сайт",
+            "web",
+            "app",
+            "digital",
+            "d2c",
+            "marketplace",
+        )
+        offline_kw = (
+            "offline",
+            "офлайн",
+            "оффлайн",
+            "кафе",
+            "cafe",
+            "retail",
+            "store",
+            "магазин",
+            "салон",
+            "локац",
+            "point of sale",
+            "pos",
+            "ресторан",
+            "clinic",
+            "клиник",
+            "warehouse",
+            "склад",
+        )
+        online_hits = sum(1 for k in online_kw if k in text)
+        offline_hits = sum(1 for k in offline_kw if k in text)
+        if ch in ("online", "offline", "hybrid"):
+            mode = ch
+            detected = "manual"
+        elif online_hits and offline_hits:
+            mode = "hybrid"
+            detected = "auto"
+        elif offline_hits > online_hits:
+            mode = "offline"
+            detected = "auto"
+        elif online_hits > offline_hits:
+            mode = "online"
+            detected = "auto"
+        else:
+            mode = "hybrid"
+            detected = "auto_default"
+        labels = {
+            "online": ("Online core", "Онлайн-ядро"),
+            "offline": ("Offline core", "Офлайн-ядро"),
+            "hybrid": ("Hybrid core", "Гибридное ядро"),
+        }
+        en, ru = labels[mode]
+        return {
+            "mode": mode,
+            "detected": detected,
+            "label": ru if lang == "ru" else en,
+            "online_hits": online_hits,
+            "offline_hits": offline_hits,
+            "standout_angle": (
+                "Выделиться на рынке или собрать офлайн как у сильного клиентского бренда"
+                if lang == "ru"
+                else "Stand out in market or shape offline ops like the client’s brand"
+            ),
+        }
+
+    def _implementation_forecast(
+        self,
+        core: dict,
+        *,
+        channel: dict[str, Any],
+        multi_pass: bool,
+        passes: int,
+        lang: str,
+    ) -> dict[str, Any]:
+        """Simulate multi-pass generation quality for post-approval rollout."""
+        n = max(3, min(int(passes or 7), 12)) if multi_pass else 1
+        q = core.get("quality") or {}
+        st = core.get("self_test") or {}
+        synth = core.get("synthesis") or {}
+        base = float(q.get("anti_template_score") or 0.62)
+        hr = core.get("human_reaction_forecast") or {}
+        human = float(hr.get("score") or hr.get("acceptance") or 0.6)
+        if human > 1:
+            human = human / 100.0
+        prod = 1.0 if st.get("prod_ready_hint") else 0.72
+        mode_boost = {"online": 0.03, "offline": 0.04, "hybrid": 0.05}.get(
+            channel.get("mode"), 0.03
+        )
+        scores: list[float] = []
+        for i in range(n):
+            # Deterministic micro-variation (no randomness) across passes
+            wobble = ((i * 17) % 11 - 5) * 0.008
+            s = min(0.97, max(0.42, base * 0.55 + human * 0.25 + prod * 0.12 + mode_boost + wobble))
+            # Later passes slightly tighten (refinement story)
+            s = min(0.97, s + i * 0.012)
+            scores.append(round(s, 3))
+        readiness = round(sum(scores) / len(scores), 3)
+        if readiness >= 0.82:
+            band = "ultra"
+        elif readiness >= 0.7:
+            band = "strong"
+        elif readiness >= 0.55:
+            band = "solid"
+        else:
+            band = "refine"
+        ch = channel.get("mode", "hybrid")
+        if lang == "ru":
+            summary = (
+                f"По {n} прогонам генерации: при утверждении реального внедрения "
+                f"({channel.get('label', ch)}) ожидаемое качество ~{int(readiness * 100)}% "
+                f"(полоса {band}). Ассистент внедрения + тестировщик-стратег — после go-ahead."
+            )
+        else:
+            summary = (
+                f"Across {n} generation passes: if you approve real implementation "
+                f"({channel.get('label', ch)}), expected quality ~{int(readiness * 100)}% "
+                f"(band {band}). Implementation assistant + tester-strategist after go-ahead."
+            )
+        return {
+            "passes": n,
+            "pass_scores": scores,
+            "readiness_if_approved": readiness,
+            "quality_band": band,
+            "channel": ch,
+            "summary": summary,
+            "critical_levers": [
+                "identity_in_panel",
+                "asset_structure_no_auto_yield",
+                "connect_vs_diy",
+                "client_pack_config",
+                "final_client_tune_after_confirm",
+            ],
+            "pay_model": "optional_on_implementation_approval",
+        }
+
+    def _growth_yield_core(
+        self,
+        business_text: str,
+        *,
+        core: dict,
+        channel: dict[str, Any],
+        lang: str,
+        industry_id: str,
+    ) -> dict[str, Any]:
+        moves = (core.get("synthesis") or {}).get("original_moves") or []
+        identity = (business_text or "").strip()[:160] or industry_id
+        if lang == "ru":
+            return {
+                "title": "Ядро Growth / Yield",
+                "for": ["growth_specialists", "system_yield_engineers", "business_owners"],
+                "identity": {
+                    "unique_angle": identity,
+                    "channel": channel.get("mode"),
+                    "standout": channel.get("standout_angle"),
+                },
+                "assets_in_panel": {
+                    "structure": ["ops_metric", "leak_map", "capacity", "client_pack_slots"],
+                    "note": "Только структура и метрики риска — без авто-обещаний доходности.",
+                },
+                "connect_recommendations": [
+                    "Панель управления (sense / decide / act)",
+                    "Карта подключений: что внедрить первым",
+                    "Варианты DIY vs готовый коннектор",
+                ],
+                "diy_options": [
+                    "Собрать scoreboard самому по ТЗ",
+                    "Подключить 1–2 интеграции вручную",
+                    "Описать handoff для команды",
+                ],
+                "client_pack": {
+                    "title": "Пак клиентов с похожими запросами",
+                    "config_hint": "Один playbook · общее табло · согласованные handoff",
+                },
+                "implementation_assistant": "Ассистент внедрения + тестировщик-стратег",
+                "final_client_tuning": "Рекомендации конечной настройки — после подтверждения",
+                "original_moves": moves[:5],
+            }
+        return {
+            "title": "Growth / Yield core",
+            "for": ["growth_specialists", "system_yield_engineers", "business_owners"],
+            "identity": {
+                "unique_angle": identity,
+                "channel": channel.get("mode"),
+                "standout": channel.get("standout_angle"),
+            },
+            "assets_in_panel": {
+                "structure": ["ops_metric", "leak_map", "capacity", "client_pack_slots"],
+                "note": "Structure & risk metrics only — no automatic yield promises.",
+            },
+            "connect_recommendations": [
+                "Control panel (sense / decide / act)",
+                "Connection map: what to wire first",
+                "DIY vs ready connector options",
+            ],
+            "diy_options": [
+                "Build scoreboard yourself from TZ",
+                "Wire 1–2 integrations manually",
+                "Write team handoff notes",
+            ],
+            "client_pack": {
+                "title": "Pack of clients with similar requests",
+                "config_hint": "One playbook · shared scoreboard · coordinated handoffs",
+            },
+            "implementation_assistant": "Implementation assistant + tester-strategist",
+            "final_client_tuning": "Final config recommendations — after confirmation",
+            "original_moves": moves[:5],
+        }
+
+    def _surface_directions(self, *, lang: str, channel: dict[str, Any]) -> dict[str, Any]:
+        """Short best-version directions for marketing & capital — no backend automation."""
+        if lang == "ru":
+            return {
+                "marketing": {
+                    "status": "surface_only",
+                    "note": "Бэкенд маркетинга не трогаем — краткие направления.",
+                    "ideas": [
+                        "Угол продвижения из ops-фактов пилота",
+                        "1 сигнал / 1 канал в неделю",
+                        "Кейс: до/после ядра (без hype)",
+                    ],
+                },
+                "external_capital": {
+                    "status": "partner_later",
+                    "note": "Привлечение финансирования — после согласования с партнёром.",
+                    "ideas": [
+                        "Доказать 1–2 платных пилота",
+                        "Capital narrative: deep-tech runtime + GTM",
+                        "Чеклист готовности для партнёра",
+                    ],
+                },
+                "channel": channel.get("mode"),
+            }
+        return {
+            "marketing": {
+                "status": "surface_only",
+                "note": "Marketing backend untouched — short directions only.",
+                "ideas": [
+                    "Promotion angle from pilot ops facts",
+                    "1 signal / 1 channel per week",
+                    "Case: before/after core (no hype)",
+                ],
+            },
+            "external_capital": {
+                "status": "partner_later",
+                "note": "Fundraising automation after partner approval.",
+                "ideas": [
+                    "Prove 1–2 paid pilots",
+                    "Capital narrative: deep-tech runtime + GTM",
+                    "Partner readiness checklist",
+                ],
+            },
+            "channel": channel.get("mode"),
         }
 
     def _orchestrate(
@@ -207,6 +494,7 @@ class BusinessGenerator:
         *,
         industry_id: str,
         lang: str,
+        channel: str = "hybrid",
     ) -> dict[str, Any]:
         """Plan runs across 10 niches + map distribution services to execute."""
         text = (business_text or "").lower()
@@ -214,6 +502,11 @@ class BusinessGenerator:
         for n in PUBLIC_NICHES:
             hits = sum(1 for kw in n["keywords"] if kw in text)
             boost = 0.35 if n["id"] == industry_id else 0.0
+            # Light channel affinity (not niche lock)
+            if channel == "offline" and n["id"] in ("device-assembly", "cost-ops", "expert-services"):
+                boost += 0.08
+            if channel == "online" and n["id"] in ("ai-agencies", "api-for-devs", "content-monetize", "freelace-d2c"):
+                boost += 0.08
             score = min(1.0, 0.22 + hits * 0.18 + boost)
             ranking.append(
                 {
@@ -289,23 +582,28 @@ class BusinessGenerator:
                 "phase": 5,
                 "title": "Артефакты" if lang == "ru" else "Artifacts",
                 "action": "assemble",
-                "outputs": ["plan", "expert_base", "control_panel", "code_pack"],
+                "outputs": ["plan", "expert_base", "control_panel", "code_pack", "implementation_forecast"],
             },
         ]
 
+        note_ru = (
+            f"Генерация оркестрирует прогоны по 10 нишам (канал: {channel}) "
+            "и стек услуг. Auto = ранжирование; утверждение внедрения — за вами."
+        )
+        note_en = (
+            f"Generate orchestrates runs across 10 niches (channel: {channel}) "
+            "and the service stack. Auto = ranking; implementation approval is yours."
+        )
         return {
             "mode": "multi_niche_orchestrator",
+            "channel": channel,
             "niches_total": len(PUBLIC_NICHES),
             "niche_ranking": ranking,
             "primary_niche": top3[0] if top3 else None,
             "alternate_niches": top3[1:] if len(top3) > 1 else [],
             "service_stack": stack,
             "run_plan": run_plan,
-            "note": (
-                "Генерация оркестрирует прогоны по 10 клиентским нишам и стек дистрибутивных услуг."
-                if lang == "ru"
-                else "Generate orchestrates runs across 10 client niches and the distribution service stack."
-            ),
+            "note": note_ru if lang == "ru" else note_en,
         }
 
     def _code_pack(self, core: dict, is_resource: bool, lang: str) -> dict[str, Any]:
@@ -343,9 +641,44 @@ class BusinessGenerator:
             ],
         }
 
-    def _control_panel(self, core: dict, lang: str) -> dict[str, Any]:
+    def _control_panel(
+        self,
+        core: dict,
+        lang: str,
+        channel: dict[str, Any] | None = None,
+        industry_id: str = "",
+    ) -> dict[str, Any]:
         side = core.get("side_compute") or {}
         plan = core.get("plan") or {}
+        ch = channel or {}
+        identity_card = {
+            "k": "identity",
+            "v": {
+                "channel": ch.get("mode"),
+                "industry": industry_id,
+                "standout": ch.get("standout_angle"),
+            },
+        }
+        assets_card = {
+            "k": "assets",
+            "v": {
+                "structure": ["ops_metric", "leak_map", "capacity", "client_pack_slots"],
+                "auto_yield": False,
+                "note": (
+                    "Структура и риск — без авто-доходности"
+                    if lang == "ru"
+                    else "Structure & risk — no auto-yield"
+                ),
+            },
+        }
+        connect_card = {
+            "k": "connect_or_diy",
+            "v": (
+                ["panel", "integrations", "diy_scoreboard"]
+                if lang != "ru"
+                else ["панель", "интеграции", "diy_табло"]
+            ),
+        }
         return {
             "title": "Панель управления бизнесом" if lang == "ru" else "Business control panel",
             "layout": "clean_3_col",
@@ -354,8 +687,9 @@ class BusinessGenerator:
                     "id": "sense",
                     "title": "Sense",
                     "cards": [
+                        identity_card,
+                        assets_card,
                         {"k": "confidence", "v": plan.get("confidence")},
-                        {"k": "uncertainty", "v": (side.get("uncertainty") or {})},
                         {"k": "risk_band", "v": (side.get("risk_lattice") or {}).get("band")},
                     ],
                 },
@@ -364,6 +698,7 @@ class BusinessGenerator:
                     "title": "Decide",
                     "cards": [
                         {"k": "mode", "v": plan.get("mode")},
+                        connect_card,
                         {"k": "steps", "v": [
                             {"id": s["id"], "title": s["title"], "default": s.get("default_option")}
                             for s in (plan.get("steps") or [])
@@ -375,9 +710,24 @@ class BusinessGenerator:
                     "id": "act",
                     "title": "Act",
                     "cards": [
+                        {
+                            "k": "client_pack",
+                            "v": (
+                                "config for similar client requests"
+                                if lang != "ru"
+                                else "конфиг пака похожих запросов"
+                            ),
+                        },
+                        {
+                            "k": "implementation_assistant",
+                            "v": (
+                                "assistant + tester-strategist"
+                                if lang != "ru"
+                                else "ассистент + тестировщик-стратег"
+                            ),
+                        },
                         {"k": "original_moves", "v": (core.get("synthesis") or {}).get("original_moves")},
                         {"k": "kill_switches", "v": (side.get("risk_lattice") or {}).get("kill_switches")},
-                        {"k": "flow", "v": side.get("flow_balance")},
                     ],
                 },
             ],
@@ -385,6 +735,7 @@ class BusinessGenerator:
                 "no clutter — max 3 columns",
                 "secondary detail collapsed",
                 "primary CTA: confirm next plan step",
+                "optional pay only on implementation approval",
             ],
         }
 

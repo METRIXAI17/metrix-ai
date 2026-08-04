@@ -5,37 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Metrix AI — one window for workflows and original projects. Instant expert ideas. Pay after your successful result."
+      content="Metrix AI — growth/yield core for online and offline business. Instant expert ideas. Optional payment on implementation approval."
     />
     <meta name="theme-color" content="#0c1219" />
-    <meta property="og:title" content="Metrix AI — workflows & original projects" />
+    <meta property="og:title" content="Metrix AI — growth / yield core" />
     <meta
       property="og:description"
-      content="Not a pig in a poke. Instant expert ideas. Pay after your successful result. Experiment without fear."
+      content="Not a pig in a poke. Instant expert ideas. Optional pay when you approve implementation. For growth specialists and System & Yield Engineers."
     />
     <meta property="og:image" content="assets/metrix-brand-m.jpg" />
-    <title>Metrix AI — one window for workflows</title>
+    <title>Metrix AI — growth / yield core</title>
     <link rel="stylesheet" href="css/styles.css" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230c1219'/%3E%3Cpath fill='%235eead4' d='M10 50V14l11.5 22.5L32 16l10.5 20.5L54 14v36h-9.5V28.5L36 48h-8L19.5 28.5V50H10z'/%3E%3C/svg%3E"
-    />
+    <link rel="icon" href="assets/metrix-brand-m.jpg" type="image/jpeg" />
+    <link rel="apple-touch-icon" href="assets/metrix-brand-m.jpg" />
   </head>
   <body>
     <nav class="nav" aria-label="Main">
       <div class="nav-inner">
         <a href="#top" class="logo" id="logo-home">
-          <span class="logo-mark logo-mark-brand" aria-hidden="true" title="Metrix AI">
-            <svg class="logo-m-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path
-                class="logo-m-path"
-                fill="currentColor"
-                d="M12 88V16h10l4 0 18 36 12-24 12 24 18-36h10v72H74V40L62 66H50L38 40v48H12z"
-              />
-              <path class="logo-m-cut" d="M20 28h6l10 20-4 8-12-24z" />
-              <path class="logo-m-cut" d="M80 28h-6L64 48l4 8 12-28z" />
-              <path class="logo-m-cut" d="M46 44l4-8 4 8-4 10-4-10z" />
-            </svg>
+          <span class="logo-mark logo-mark-brand" title="Metrix AI">
+            <img
+              src="assets/metrix-brand-m.jpg"
+              alt="Metrix AI"
+              class="logo-m-img"
+              width="40"
+              height="40"
+              decoding="async"
+            />
           </span>
           <span class="logo-text">Metrix <span>AI</span></span>
         </a>
@@ -57,8 +53,9 @@
 
         <div class="nav-links">
           <a href="#offer" data-i18n="nav_product">Product</a>
+          <a href="#system-map" data-i18n="nav_system">System</a>
           <a href="#niches" data-i18n="nav_niches">Niches</a>
-          <a href="#flagship-details" data-i18n="nav_flagships">Flagships</a>
+          <a href="#flagship-details" data-i18n="nav_flagships">Layers</a>
           <a href="#how" data-i18n="nav_path">Path</a>
           <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
           <div class="lang-switch" role="group" aria-label="Language">
@@ -113,7 +110,7 @@
         <div class="brand-mark-block">
           <img
             src="assets/metrix-brand-m.jpg"
-            alt="Metrix AI"
+            alt="Metrix AI brand monogram M"
             width="320"
             height="320"
             loading="lazy"
@@ -123,11 +120,37 @@
             <div class="eyebrow">Metrix AI</div>
             <h3 data-i18n="not_pig">Not a pig in a poke</h3>
             <p data-i18n="not_pig_p">
-              Instant expert ideas. Pay for implementation with live talk after confirmation. Experiment without fear.
+              Instant expert ideas. Optional payment for implementation approval after confirmation.
             </p>
+            <p class="hint assets-auto-note" data-i18n="assets_note"></p>
+            <p class="hint assets-auto-note" data-i18n="auto_note"></p>
             <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
               Consult + Tech-TZ
             </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Matryoshka system map -->
+      <section class="section wrap" id="system-map">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow" data-i18n="eyebrow_system">System map</div>
+            <h2 data-i18n="system_title">Metrix layers</h2>
+            <p class="how-lead" data-i18n="system_lead">
+              Nested like a matryoshka. Hover a ring for the professional brief.
+            </p>
+          </div>
+        </div>
+        <div class="matryoshka-layout">
+          <div class="matryoshka-stage" id="matryoshka-stage" aria-label="System layers">
+            <div class="matryoshka-rings" id="matryoshka-rings"></div>
+            <div class="matryoshka-core-glow" aria-hidden="true"></div>
+          </div>
+          <div class="matryoshka-panel" id="matryoshka-panel">
+            <div class="eyebrow" data-i18n="layer_hover_hint">Hover a layer</div>
+            <h3 id="matryoshka-title">—</h3>
+            <p id="matryoshka-text" class="how-lead"></p>
           </div>
         </div>
       </section>
@@ -221,6 +244,15 @@
                 placeholder="Describe the essence in your own words — niches are chosen automatically…"
               ></textarea>
             </div>
+            <div class="field field-span">
+              <label for="gen-channel" data-i18n="gen_channel_label">Channel mode</label>
+              <select id="gen-channel" name="channel">
+                <option value="auto" data-i18n="gen_channel_auto">Auto-detect</option>
+                <option value="online" data-i18n="gen_channel_online">Online</option>
+                <option value="offline" data-i18n="gen_channel_offline">Offline</option>
+                <option value="hybrid" data-i18n="gen_channel_hybrid">Hybrid</option>
+              </select>
+            </div>
             <div class="field field-full field-span" id="gen-choices" hidden>
               <div class="eyebrow" data-i18n="gen_plan">Plan (like a TZ)</div>
               <div id="gen-choice-cards" class="choice-cards"></div>
@@ -242,6 +274,11 @@
             <div class="eyebrow" data-i18n="gen_result">Result</div>
             <h3 id="gen-msg">—</h3>
             <p id="gen-gate" class="gate-chip"></p>
+          </div>
+          <div class="gen-forecast-block" id="gen-forecast-block">
+            <div class="eyebrow" data-i18n="gen_forecast">Implementation forecast</div>
+            <p class="how-lead" data-i18n="gen_forecast_lead" style="margin-bottom: 0.75rem"></p>
+            <div id="gen-forecast" class="forecast-grid"></div>
           </div>
           <div class="gen-orch-block" id="gen-orch-block">
             <div class="eyebrow" data-i18n="gen_orch">Orchestration · 10 niches</div>
@@ -446,11 +483,20 @@
       </section>
 
       <section class="section wrap" id="pricing">
-        <div class="package-banner package-banner-slim">
+        <div class="section-head">
           <div>
-            <div class="eyebrow" style="margin-bottom: 0.35rem" data-i18n="nav_pricing">Pricing</div>
-            <h3 id="pkg-title" data-i18n="pricing_title">Pricing</h3>
-            <p id="pkg-why"></p>
+            <div class="eyebrow" data-i18n="nav_pricing">Pricing</div>
+            <h2 id="pkg-title" data-i18n="pricing_title">Pricing</h2>
+            <p class="how-lead" data-i18n="pricing_lead">Four beautiful, honest tariffs.</p>
+            <p id="pkg-why" class="pricing-why"></p>
+          </div>
+        </div>
+        <div class="pricing-grid" id="pricing-grid"></div>
+        <p class="hint pricing-partner-note" data-i18n="pricing_note" style="margin-top: 1rem"></p>
+        <div class="package-banner package-banner-slim" style="margin-top: 1.25rem">
+          <div>
+            <div class="eyebrow" style="margin-bottom: 0.35rem">Metrix AI</div>
+            <h3 data-i18n="not_pig">Not a pig in a poke</h3>
           </div>
           <div class="pricing-actions">
             <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
@@ -505,7 +551,7 @@
         };
       })();
     </script>
-    <script src="js/data.js?v=20260802-gen-hl"></script>
-    <script src="js/app.js?v=20260802-gen-hl"></script>
+    <script src="js/data.js?v=20260804-mu-ultra"></script>
+    <script src="js/app.js?v=20260804-mu-ultra"></script>
   </body>
 </html>

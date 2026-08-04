@@ -574,6 +574,9 @@ class BusinessGenBody(BaseModel):
     choices: dict = Field(default_factory=dict)
     numbers: dict = Field(default_factory=dict)
     project_name: str = ""
+    channel: str = "auto"  # auto | online | offline | hybrid
+    multi_pass: bool = True
+    passes: int = 7
 
 
 class WorkerTaskBody(BaseModel):
@@ -633,6 +636,9 @@ def business_generate_run(body: BusinessGenBody) -> dict[str, Any]:
         choices=body.choices or None,
         numbers={k: float(v) for k, v in (body.numbers or {}).items() if _is_number(v)},
         project_name=body.project_name,
+        channel=body.channel or "auto",
+        multi_pass=bool(body.multi_pass),
+        passes=max(3, min(int(body.passes or 7), 12)),
     )
 
 

@@ -2,6 +2,7 @@
  * Metrix AI — public UI
  * EN default · RU/EN parent layer (no mixed chrome)
  * Modes: marketplace | request | tasks | generate
+ * Layers: matryoshka · 4 tariffs · online/offline gen forecast
  */
 (function () {
   const D = window.METRIX_DATA;
@@ -136,12 +137,34 @@
 
   function renderAll() {
     fillRequestSelects();
+    fillChannelSelect();
     renderNicheGrid();
     renderFlagshipDetails();
     renderFlagships();
     renderHowItWorks();
     renderAudienceSplit();
+    renderMatryoshka();
+    renderPricing();
     paintMarquee(state.marqueeIndex || 0);
+  }
+
+  function fillChannelSelect() {
+    const el = $("#gen-channel");
+    if (!el) return;
+    const cur = el.value || "auto";
+    const opts = [
+      ["auto", "gen_channel_auto"],
+      ["online", "gen_channel_online"],
+      ["offline", "gen_channel_offline"],
+      ["hybrid", "gen_channel_hybrid"],
+    ];
+    el.innerHTML = opts
+      .map(
+        ([v, key]) =>
+          `<option value="${escapeHtml(v)}">${escapeHtml(t(key))}</option>`
+      )
+      .join("");
+    el.value = cur;
   }
 
   function bindLang() {
@@ -434,12 +457,17 @@
         $("#pricing")?.scrollIntoView({ behavior: "smooth" });
         return;
       }
+      if (f?.cta === "generate") {
+        setMode("generate");
+        return;
+      }
       // Consult + Tech-TZ is one path (product track when techwrite)
       setMode("request");
       if (f) {
         const tr = $("#req-track");
         if (tr) {
           if (f.cta === "techwrite" || f.track === "product") tr.value = "product";
+          else if (f.track === "promotion") tr.value = "promotion";
           else if (f.track && f.track !== "models") tr.value = f.track;
           else if (f.track === "models") tr.value = "models";
         }
@@ -450,6 +478,81 @@
         }
       }
     });
+  }
+
+  function renderMatryoshka() {
+    const rings = $("#matryoshka-rings");
+    const title = $("#matryoshka-title");
+    const text = $("#matryoshka-text");
+    if (!rings || !D.getSystemLayers) return;
+    const layers = D.getSystemLayers();
+    // outer → center: sizes from large to small
+    const sizes = [100, 82, 64, 48, 32];
+    rings.innerHTML = layers
+      .map((layer, i) => {
+        const sz = sizes[i] != null ? sizes[i] : 100 - i * 16;
+        return `<button type="button" class="matryoshka-ring" data-layer="${escapeHtml(
+          layer.id
+        )}" style="--ring-size:${sz}%; --ring-i:${i}" aria-label="${escapeHtml(
+          layer.label
+        )}"><span class="matryoshka-ring-label">${escapeHtml(
+          layer.short || layer.label
+        )}</span></button>`;
+      })
+      .join("");
+
+    const show = (layer) => {
+      if (!layer) return;
+      rings.querySelectorAll(".matryoshka-ring").forEach((el) => {
+        el.classList.toggle("is-active", el.dataset.layer === layer.id);
+      });
+      if (title) title.textContent = layer.label;
+      if (text) text.textContent = layer.text;
+    };
+
+    // default center (last = core)
+    const core = layers[layers.length - 1] || layers[0];
+    show(core);
+
+    rings.querySelectorAll(".matryoshka-ring").forEach((btn) => {
+      const layer = layers.find((l) => l.id === btn.dataset.layer);
+      btn.addEventListener("mouseenter", () => show(layer));
+      btn.addEventListener("focus", () => show(layer));
+      btn.addEventListener("click", () => show(layer));
+    });
+  }
+
+  function renderPricing() {
+    const grid = $("#pricing-grid");
+    if (!grid || !D.getPricingTiers) return;
+    const tiers = D.getPricingTiers();
+    grid.innerHTML = tiers
+      .map((tier) => {
+        const items = (tier.includes || [])
+          .map((x) => `<li>${escapeHtml(x)}</li>`)
+          .join("");
+        const badge = tier.popular
+          ? `<span class="tariff-badge">${escapeHtml(t("tariff_popular"))}</span>`
+          : "";
+        return `
+      <article class="tariff-card${tier.popular ? " tariff-popular" : ""}" data-tariff="${escapeHtml(
+          tier.id
+        )}">
+        ${badge}
+        <div class="tariff-head">
+          <div class="eyebrow">${escapeHtml(tier.id)}</div>
+          <h3>${escapeHtml(tier.name)}</h3>
+          <div class="tariff-price">${escapeHtml(tier.price)}</div>
+          <p class="tariff-period">${escapeHtml(tier.period || "")}</p>
+          <p class="tariff-tagline">${escapeHtml(tier.tagline || "")}</p>
+        </div>
+        <ul class="tariff-list">${items}</ul>
+        <button type="button" class="btn ${
+          tier.popular ? "btn-primary" : "btn-ghost"
+        } tariff-cta" data-mode-jump="request">${escapeHtml(t("tariff_cta"))}</button>
+      </article>`;
+      })
+      .join("");
   }
 
   function renderHowItWorks() {
@@ -684,6 +787,9 @@
               industry: "generic",
               project_name: headline,
               lang: lang(),
+              channel: ($("#gen-channel")?.value || "auto"),
+              multi_pass: true,
+              passes: 7,
               choices: state.genChoices,
             }),
           }
@@ -750,6 +856,8 @@
       gEl.classList.toggle("warn", !gate.go_prod);
     }
 
+    paintForecast(out);
+
     // Orchestration: 10 niches + service stack
     const orch = out.orchestration || {};
     const noteEl = $("#gen-orch-note");
@@ -795,10 +903,10 @@
     $("#gen-panel").innerHTML = (panel.columns || [])
       .map((col) => {
         const cards = (col.cards || [])
-          .slice(0, 3)
+          .slice(0, 4)
           .map((c) => {
             let v = c.v;
-            if (typeof v === "object") v = JSON.stringify(v).slice(0, 100);
+            if (typeof v === "object") v = JSON.stringify(v).slice(0, 120);
             return `<div class="mp-card">${escapeHtml(c.k)}: ${escapeHtml(v)}</div>`;
           })
           .join("");
@@ -812,6 +920,8 @@
         self_test: out.self_test,
         synthesis: out.synthesis_highlights,
         primary_industry: out.primary_industry,
+        channel: out.channel,
+        implementation_forecast: out.implementation_forecast,
       },
       null,
       2
@@ -830,6 +940,81 @@
     );
     $("#gen-code").textContent = JSON.stringify(out.autonomous_code_pack || {}, null, 2);
     root.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function paintForecast(out) {
+    const host = $("#gen-forecast");
+    if (!host) return;
+    const fc = out.implementation_forecast || {};
+    const L = lang();
+    const isEn = L === "en";
+    // Graceful fallback if API not yet upgraded
+    const passes = fc.passes || 7;
+    const scores = Array.isArray(fc.pass_scores) ? fc.pass_scores : [];
+    const readiness =
+      fc.readiness_if_approved != null
+        ? fc.readiness_if_approved
+        : Math.min(
+            0.97,
+            0.55 +
+              (Number((out.quality || {}).anti_template_score) || 0.5) * 0.35 +
+              (out.final_gate?.go_prod ? 0.08 : 0)
+          );
+    const channel = (out.channel && out.channel.mode) || fc.channel || "hybrid";
+    const band =
+      fc.quality_band ||
+      (readiness >= 0.82 ? "ultra" : readiness >= 0.7 ? "strong" : readiness >= 0.55 ? "solid" : "refine");
+    const summary =
+      fc.summary ||
+      (isEn
+        ? `After ${passes} generation passes, estimated implementation quality if you approve real rollout (${channel}): ${(
+            readiness * 100
+          ).toFixed(0)}% — band ${band}.`
+        : `После ${passes} прогонов генерации оценка качества реального внедрения при утверждении (${channel}): ${(
+            readiness * 100
+          ).toFixed(0)}% — полоса ${band}.`);
+    const cards = [
+      {
+        k: isEn ? "Passes" : "Прогоны",
+        v: String(passes),
+      },
+      {
+        k: isEn ? "Channel" : "Канал",
+        v: String(channel),
+      },
+      {
+        k: isEn ? "If approved" : "Если утвердить",
+        v: `${Math.round(readiness * 100)}% · ${band}`,
+      },
+      {
+        k: isEn ? "Assist" : "Ассист",
+        v: isEn
+          ? "Implementation assistant + tester-strategist"
+          : "Ассистент внедрения + тестировщик-стратег",
+      },
+    ];
+    const scoreStrip =
+      scores.length > 0
+        ? `<div class="forecast-scores">${scores
+            .map(
+              (s, i) =>
+                `<span class="forecast-score-chip" title="pass ${i + 1}">${escapeHtml(
+                  String(Math.round(Number(s) * 100))
+                )}%</span>`
+            )
+            .join("")}</div>`
+        : "";
+    host.innerHTML =
+      `<p class="forecast-summary">${escapeHtml(summary)}</p>` +
+      scoreStrip +
+      `<div class="forecast-cards">${cards
+        .map(
+          (c) =>
+            `<div class="forecast-card"><div class="eyebrow">${escapeHtml(
+              c.k
+            )}</div><strong>${escapeHtml(c.v)}</strong></div>`
+        )
+        .join("")}</div>`;
   }
 
   // ── Business Tasks ────────────────────────────────────────────────────────

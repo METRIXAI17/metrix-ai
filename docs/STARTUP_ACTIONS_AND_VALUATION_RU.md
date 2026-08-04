@@ -90,24 +90,27 @@ Go-to-market & brand: **ранние** (X joined Apr 2026, мало постов
 | Defensibility of data loop | **5** | System log + firmware; ещё мало live data |
 | **Итого взвешенно** | **~5.2 / 10** | Strong tech, weak GTM |
 
-### Денежные ориентиры (сценарно)
+### Денежные ориентиры (сценарно) — обновлено 2026-08-04
 
-| Сценарий | 6 мес | Условие |
-|----------|-------|---------|
-| **Conservative** | $0–8k revenue | 0–2 pilots, brand still building |
-| **Base** | **$15–40k** | 4–8 pilots (~$500–800) + 1–2 main ($2490) |
-| **Upside** | $60–120k | 15+ pilots, 4+ main, 1 white-label runtime license |
+Тарифы public surface: **Core $790 · Client coop $1,190 · Marketing $690 · External capital from $1,490**.  
+Оплата: **опционально при утверждении внедрения**.
+
+| Сценарий | 6 мес revenue | Условие |
+|----------|---------------|---------|
+| **Conservative** | **$0–12k** | 0–2 Core/Coop pilots, brand early, weak outbound |
+| **Base** | **$20–55k** | 5–10 paid units (Core/Coop/Marketing mix) + 1–2 larger packs |
+| **Upside** | $70–140k | 15+ units, partner capital path live, 1 white-label |
 
 **Excel Deep Tech design 750k ₽** (~$8–9k) — ориентир **project-style** solution design, не SaaS ARR.  
 SaaS-like valuation сейчас **не применима** без recurring; ближе к **services+IP hybrid**.
 
-### «Стоимость» на сегодня (качественно)
+### «Стоимость» на сегодня (качественно) — 2026-08-04
 
-| Подход | Диапазон | Почему |
-|--------|----------|--------|
-| Asset / rebuild cost | **$40–120k** | Сколько стоило бы воссоздать runtime + docs |
-| Pre-seed story (if raising) | **$0.4–1.2M post** только при narrative + 1 pilot LOI | Иначе early friends/family |
-| Strategic (agency/tool buyer) | **$80–250k** asset deal | Если tech + brand pack + niches clean |
+| Подход | Conservative | Base | Почему |
+|--------|--------------|------|--------|
+| Asset / rebuild cost | **$80–180k** | **$120–220k** | Runtime + 4-tariff packaging + circle/generate maturity |
+| Pre-seed story (if raising) | **$0.25–0.5M post** | **$0.35–0.9M post** | Только при narrative + LOI / pilot proof |
+| Strategic (agency/tool buyer) | **$80–180k** | **$150–320k** | Tech + brand lockup + niches + clearer GTM surface |
 
 **Честная формула сейчас:**
 
