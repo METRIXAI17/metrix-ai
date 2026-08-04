@@ -371,13 +371,13 @@ window.METRIX_DATA = {
         id: "capital",
         label: "External capital",
         short: "Capital",
-        text: "Short direction ideas for partner capital and funding narrative. Full financing backend lands after partner approval — not active automation here.",
+        text: "What capital needs to read: unit proof, pilot evidence, and a calm ops story. Structure the ask around readiness — evidence first, narrative second.",
       },
       {
         id: "marketing",
         label: "Marketing",
         short: "Promo",
-        text: "Business promotion layer: angle, channels, signal — separate from ops. Marketing automation backend ships later; here — clear professional directions.",
+        text: "Promotion as its own layer: angle, channels, signal — separate from ops. Professional directions for the next visible move.",
       },
       {
         id: "coop",
@@ -403,13 +403,13 @@ window.METRIX_DATA = {
         id: "capital",
         label: "Внешнее финансирование",
         short: "Капитал",
-        text: "Краткие направления для партнёрского капитала и narrative. Полный бэкенд финансирования — после согласования с партнёром; здесь без автоматизации.",
+        text: "Что должен увидеть капитал: unit-доказательства, факты пилота и спокойная ops-история. Запрос строится вокруг готовности — сначала доказательства, потом narrative.",
       },
       {
         id: "marketing",
         label: "Маркетинг",
         short: "Промо",
-        text: "Слой продвижения бизнеса: угол, каналы, сигнал — отдельно от ops. Автоматизация маркетинга позже; здесь — профессиональные направления.",
+        text: "Продвижение как отдельный слой: угол, каналы, сигнал — отдельно от ops. Профессиональные направления следующего видимого хода.",
       },
       {
         id: "coop",
@@ -566,7 +566,7 @@ window.METRIX_DATA = {
     en: [
       { id: "core", title: "Growth / Yield core", text: "Unique identity and asset structure in the control panel. Recommendations for what to connect and what to build yourself. Online and offline. Built for growth specialists and System & Yield Engineers." },
       { id: "coop", title: "Client cooperation", text: "Configuration for packs of clients with similar requests — coordinated interaction, shared playbook, less chaos across accounts." },
-      { id: "promo", title: "Business promotion", text: "Separate promotion layer: angle and channels from real ops, not empty content. Full marketing automation arrives after partner approval." },
+      { id: "promo", title: "Business promotion", text: "Separate promotion layer: angle and channels from real ops, not empty content. Professional directions for the next visible move." },
       { id: "assist", title: "Implementation assistant", text: "Assistant for roll-out + tester-strategist. Multi-pass runs forecast quality if you approve real implementation offline or online." },
       { id: "tune", title: "Client-final tuning", text: "Recommendations for final configuration for a specific client — after confirmation, not before." },
       { id: "assets", title: "Assets (clarified)", text: "Asset structure and risk metrics only. No automatic yield promises. Auto = ranking niches/stack; you still approve." },
@@ -574,7 +574,7 @@ window.METRIX_DATA = {
     ru: [
       { id: "core", title: "Ядро Growth / Yield", text: "Уникальная идентичность и структура активов в панели управления. Рекомендации: что подключить, что сделать самому. Онлайн и офлайн. Для growth-специалистов и System & Yield Engineer." },
       { id: "coop", title: "Кооперация с клиентом", text: "Конфигурация под пак клиентов с похожими запросами — согласованное взаимодействие, общий playbook, меньше хаоса по аккаунтам." },
-      { id: "promo", title: "Продвижение бизнеса", text: "Отдельный слой продвижения: угол и каналы из реальных ops, не пустой контент. Полная автоматизация маркетинга — после согласования с партнёром." },
+      { id: "promo", title: "Продвижение бизнеса", text: "Отдельный слой продвижения: угол и каналы из реальных ops, не пустой контент. Профессиональные направления следующего видимого хода." },
       { id: "assist", title: "Ассистент внедрения", text: "Ассистент раскатки + тестировщик-стратег. Мульти-прогоны показывают качество, если вы утвердите реальное внедрение офлайн или онлайн." },
       { id: "tune", title: "Конечная настройка", text: "Рекомендации конечной настройки для конкретного клиента — после подтверждения, не до." },
       { id: "assets", title: "Активы (уточнено)", text: "Только структура активов и метрики риска. Без авто-обещаний доходности. Авто = ранжирование ниш/стека; утверждаете вы." },
@@ -585,7 +585,7 @@ window.METRIX_DATA = {
     en: [
       { id: "core", title: "Growth / Yield core", essence: "Identity + assets in panel · connect or DIY.", detail: "Your growth/yield core for online and offline. Unique structure, connection map, DIY paths.", track: "product", accent: "#5eead4", sticker: "Core", cta: "request" },
       { id: "coop", title: "Client packs", essence: "Config for similar client requests.", detail: "Coordinated pack playbook, handoffs, scoreboard.", track: "product", accent: "#67e8f9", sticker: "Coop", cta: "request" },
-      { id: "promo", title: "Promotion", essence: "Business promotion as its own layer.", detail: "Angle from ops facts. Short directions now; automation after partner.", track: "promotion", accent: "#c4b5fd", sticker: "Promo", cta: "pricing" },
+      { id: "promo", title: "Promotion", essence: "Business promotion as its own layer.", detail: "Angle from ops facts. Professional directions for the next move.", track: "promotion", accent: "#c4b5fd", sticker: "Promo", cta: "pricing" },
       { id: "assist", title: "Implement + test", essence: "Assistant + tester-strategist.", detail: "Multi-pass forecast before you approve paid implementation.", track: "models", accent: "#fbbf24", sticker: "Assist", cta: "request" },
       { id: "tune", title: "Client tuning", essence: "Final config for a specific client.", detail: "Recommendations after confirmation — per-client polish.", track: "product", accent: "#86efac", sticker: "Tune", cta: "request" },
       { id: "generate", title: "Generate online/offline", essence: "Core gen for web and real-world ops.", detail: "Stand out, or shape offline like the client’s brand. Auto ranks niches.", track: "ops", accent: "#38bdf8", sticker: "Gen", cta: "generate" },
@@ -594,7 +594,7 @@ window.METRIX_DATA = {
     ru: [
       { id: "core", title: "Ядро Growth / Yield", essence: "Идентичность + активы в панели · подключить или DIY.", detail: "Ваше growth/yield core для онлайн и офлайн. Уникальная структура, карта подключений, пути DIY.", track: "product", accent: "#5eead4", sticker: "Ядро", cta: "request" },
       { id: "coop", title: "Пакеты клиентов", essence: "Конфиг под похожие запросы клиентов.", detail: "Согласованный playbook пака, handoff, табло.", track: "product", accent: "#67e8f9", sticker: "Кооп", cta: "request" },
-      { id: "promo", title: "Продвижение", essence: "Продвижение бизнеса — отдельный слой.", detail: "Угол из ops-фактов. Краткие направления сейчас; автоматизация после партнёра.", track: "promotion", accent: "#c4b5fd", sticker: "Промо", cta: "pricing" },
+      { id: "promo", title: "Продвижение", essence: "Продвижение бизнеса — отдельный слой.", detail: "Угол из ops-фактов. Профессиональные направления следующего хода.", track: "promotion", accent: "#c4b5fd", sticker: "Промо", cta: "pricing" },
       { id: "assist", title: "Внедрение + тест", essence: "Ассистент + тестировщик-стратег.", detail: "Мульти-прогон до утверждения платного внедрения.", track: "models", accent: "#fbbf24", sticker: "Ассист", cta: "request" },
       { id: "tune", title: "Настройка клиента", essence: "Конечный конфиг под конкретного клиента.", detail: "Рекомендации после подтверждения — точечная полировка.", track: "product", accent: "#86efac", sticker: "Tune", cta: "request" },
       { id: "generate", title: "Генерация онлайн/офлайн", essence: "Ядро для web и реальных ops.", detail: "Выделиться или собрать офлайн как у клиента. Auto ранжирует ниши.", track: "ops", accent: "#38bdf8", sticker: "Gen", cta: "generate" },

@@ -486,7 +486,6 @@
 
   function renderMatryoshka() {
     const host = $("#matryoshka-rings");
-    const legend = $("#matryoshka-legend");
     const title = $("#matryoshka-title");
     const text = $("#matryoshka-text");
     const indexEl = $("#matryoshka-index");
@@ -494,52 +493,102 @@
     if (!host || !D.getSystemLayers) return;
 
     const layers = D.getSystemLayers();
-    // Designer palette: outer → core (violet → cyan → teal)
+    // Soft refined palette — never solid “kindergarten” fills
     const palette = [
-      { stroke: "#a78bfa", glow: "rgba(167, 139, 250, 0.55)" }, // capital
-      { stroke: "#c4b5fd", glow: "rgba(196, 181, 253, 0.5)" }, // marketing
-      { stroke: "#38bdf8", glow: "rgba(56, 189, 248, 0.55)" }, // coop
-      { stroke: "#5eead4", glow: "rgba(94, 234, 212, 0.55)" }, // assist
-      { stroke: "#2dd4bf", glow: "rgba(45, 212, 191, 0.7)" }, // core
+      { stroke: "rgba(167,139,250,0.55)", fill: "rgba(167,139,250,0.04)", active: "rgba(167,139,250,0.72)" },
+      { stroke: "rgba(125,211,252,0.5)", fill: "rgba(56,189,248,0.035)", active: "rgba(125,211,252,0.7)" },
+      { stroke: "rgba(56,189,248,0.52)", fill: "rgba(56,189,248,0.04)", active: "rgba(56,189,248,0.72)" },
+      { stroke: "rgba(94,234,212,0.5)", fill: "rgba(94,234,212,0.04)", active: "rgba(94,234,212,0.7)" },
+      { stroke: "rgba(45,212,191,0.65)", fill: "rgba(45,212,191,0.06)", active: "rgba(94,234,212,0.78)" },
     ];
-    // Radii for concentric rings (viewBox 0 0 400 400, center 200,200)
-    const radii = [172, 138, 104, 72, 42];
-    const strokeW = [22, 20, 18, 16, 28];
-    const cx = 200;
-    const cy = 200;
+    // viewBox wide enough for labels outside the rings
+    const vb = 520;
+    const cx = 248;
+    const cy = 250;
+    // Thin rings, outer → core
+    const radii = [168, 136, 104, 74, 48];
+    // Anchor dots at different angles (degrees) so labels don’t stack
+    const angles = [-28, 42, 118, 198, 268];
 
-    // SVG rings: pointer-events: stroke so outer disks don't block inner rings
+    const polar = (r, deg) => {
+      const a = ((deg - 90) * Math.PI) / 180;
+      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+    };
+
+    // Brand mesh / lattice pattern (subtle metrix geometry)
+    const meshLines = [];
+    for (let i = -4; i <= 4; i++) {
+      const o = i * 22;
+      meshLines.push(
+        `<line x1="${cx - 150}" y1="${cy + o}" x2="${cx + 150}" y2="${cy + o}" />`,
+        `<line x1="${cx + o}" y1="${cy - 150}" x2="${cx + o}" y2="${cy + 150}" />`
+      );
+    }
+    // Diagonal lattice
+    for (let i = -5; i <= 5; i++) {
+      const o = i * 28;
+      meshLines.push(
+        `<line x1="${cx - 140 + o}" y1="${cy - 140}" x2="${cx + 140 + o}" y2="${cy + 140}" />`
+      );
+    }
+
+    // Concentric hairline guides
+    const hairlines = [188, 156, 124, 92, 62]
+      .map(
+        (r) =>
+          `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(94,234,212,0.06)" stroke-width="0.6"/>`
+      )
+      .join("");
+
+    // Ring bands: thin stroke + very light fill between outer and next
     const ringEls = layers
       .map((layer, i) => {
         const p = palette[i] || palette[0];
-        const r = radii[i] != null ? radii[i] : 160 - i * 30;
-        const sw = strokeW[i] != null ? strokeW[i] : 18;
+        const r = radii[i];
+        const rInner = i < radii.length - 1 ? radii[i + 1] : Math.max(20, r - 22);
+        const ang = angles[i] != null ? angles[i] : i * 55 - 30;
+        const pt = polar(r, ang);
+        // label offset outward a bit
+        const lab = polar(r + 28, ang);
         const isCore = layer.id === "core" || i === layers.length - 1;
+        const label = layer.short || layer.label;
+        // text-anchor by side of circle
+        const anchor = pt.x >= cx ? "start" : "end";
+        const lx = pt.x >= cx ? lab.x + 2 : lab.x - 2;
+
         if (isCore) {
           return `
-            <g class="mx-ring-group" data-layer="${escapeHtml(layer.id)}" data-i="${i}">
-              <circle class="mx-core-disc" cx="${cx}" cy="${cy}" r="${r - 2}"
-                fill="url(#mxCoreFill)" stroke="${p.stroke}" stroke-width="2.5" />
-              <circle class="mx-core-pulse" cx="${cx}" cy="${cy}" r="${Math.max(18, r - 14)}"
-                fill="url(#mxCoreGlow)" />
-              <text class="mx-core-letter" x="${cx}" y="${cy + 8}" text-anchor="middle">M</text>
-              <circle class="mx-ring-hit mx-ring-hit-core" cx="${cx}" cy="${cy}" r="${r + 6}"
-                fill="transparent" stroke="transparent" stroke-width="1"
-                data-layer="${escapeHtml(layer.id)}" tabindex="0" role="button"
+            <g class="mx-ring-group mx-core-group" data-layer="${escapeHtml(layer.id)}" data-i="${i}"
+               style="--mx-stroke:${p.stroke};--mx-fill:${p.fill};--mx-active:${p.active}">
+              <circle class="mx-ring-fill" cx="${cx}" cy="${cy}" r="${r}" fill="${p.fill}" />
+              <circle class="mx-ring-line" cx="${cx}" cy="${cy}" r="${r}"
+                fill="none" stroke="${p.stroke}" stroke-width="1.15" />
+              <text class="mx-core-word" x="${cx}" y="${cy + 5}" text-anchor="middle">Metrix</text>
+              <circle class="mx-ring-hit mx-ring-hit-core" cx="${cx}" cy="${cy}" r="${r + 4}"
+                fill="transparent" data-layer="${escapeHtml(layer.id)}" tabindex="0" role="button"
                 aria-label="${escapeHtml(layer.label)}" />
             </g>`;
         }
+
+        // Donut-ish soft fill via larger circle with inner cut isn't easy without mask —
+        // use low-opacity disc + thin rim; hits via thick invisible stroke
         return `
-          <g class="mx-ring-group" data-layer="${escapeHtml(layer.id)}" data-i="${i}" style="--mx-glow:${p.glow}; --mx-stroke:${p.stroke}">
-            <circle class="mx-ring-track" cx="${cx}" cy="${cy}" r="${r}"
-              fill="none" stroke="rgba(148,163,184,0.12)" stroke-width="${sw}" />
-            <circle class="mx-ring-arc" cx="${cx}" cy="${cy}" r="${r}"
-              fill="none" stroke="${p.stroke}" stroke-width="${sw}"
-              stroke-linecap="round" />
-            <text class="mx-ring-label" x="${cx}" y="${cy - r}" text-anchor="middle"
-              dy="-0.35em">${escapeHtml(layer.short || layer.label)}</text>
+          <g class="mx-ring-group" data-layer="${escapeHtml(layer.id)}" data-i="${i}"
+             style="--mx-stroke:${p.stroke};--mx-fill:${p.fill};--mx-active:${p.active}">
+            <circle class="mx-ring-fill" cx="${cx}" cy="${cy}" r="${(r + rInner) / 2}"
+              fill="none" stroke="${p.fill}" stroke-width="${Math.max(8, r - rInner - 2)}" />
+            <circle class="mx-ring-line" cx="${cx}" cy="${cy}" r="${r}"
+              fill="none" stroke="${p.stroke}" stroke-width="1.1" />
+            <circle class="mx-ring-line-inner" cx="${cx}" cy="${cy}" r="${rInner + 1}"
+              fill="none" stroke="${p.stroke}" stroke-width="0.55" opacity="0.35" />
+            <g class="mx-node" transform="translate(${pt.x.toFixed(1)},${pt.y.toFixed(1)})">
+              <circle class="mx-node-dot" r="3.2" />
+              <circle class="mx-node-ring" r="6.5" fill="none" />
+            </g>
+            <text class="mx-node-label" x="${lx.toFixed(1)}" y="${lab.y.toFixed(1)}"
+              text-anchor="${anchor}" dominant-baseline="middle">${escapeHtml(label)}</text>
             <circle class="mx-ring-hit" cx="${cx}" cy="${cy}" r="${r}"
-              fill="none" stroke="transparent" stroke-width="${sw + 14}"
+              fill="none" stroke="transparent" stroke-width="16"
               data-layer="${escapeHtml(layer.id)}" tabindex="0" role="button"
               aria-label="${escapeHtml(layer.label)}" />
           </g>`;
@@ -547,46 +596,46 @@
       .join("");
 
     host.innerHTML = `
-      <svg class="matryoshka-svg" viewBox="0 0 400 400" role="img" aria-label="Metrix layers">
+      <svg class="matryoshka-svg" viewBox="0 0 ${vb} ${vb}" role="img" aria-label="Metrix layers">
         <defs>
-          <radialGradient id="mxCoreFill" cx="40%" cy="35%" r="70%">
-            <stop offset="0%" stop-color="#134e4a"/>
-            <stop offset="55%" stop-color="#0c1a22"/>
-            <stop offset="100%" stop-color="#070a0f"/>
-          </radialGradient>
-          <radialGradient id="mxCoreGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="rgba(94,234,212,0.55)"/>
-            <stop offset="100%" stop-color="rgba(94,234,212,0)"/>
-          </radialGradient>
-          <filter id="mxSoftGlow" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="4" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-          <radialGradient id="mxStageFade" cx="50%" cy="50%" r="50%">
-            <stop offset="60%" stop-color="rgba(7,10,15,0)"/>
+          <clipPath id="mxMeshClip">
+            <circle cx="${cx}" cy="${cy}" r="186"/>
+          </clipPath>
+          <radialGradient id="mxBrandFade" cx="42%" cy="38%" r="68%">
+            <stop offset="0%" stop-color="rgba(94,234,212,0.09)"/>
+            <stop offset="55%" stop-color="rgba(14,22,32,0.2)"/>
             <stop offset="100%" stop-color="rgba(7,10,15,0.55)"/>
           </radialGradient>
+          <pattern id="mxMicroGrid" width="14" height="14" patternUnits="userSpaceOnUse">
+            <path d="M14 0H0V14" fill="none" stroke="rgba(94,234,212,0.07)" stroke-width="0.5"/>
+          </pattern>
+          <linearGradient id="mxArcSoft" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="rgba(56,189,248,0.2)"/>
+            <stop offset="50%" stop-color="rgba(94,234,212,0.12)"/>
+            <stop offset="100%" stop-color="rgba(167,139,250,0.16)"/>
+          </linearGradient>
         </defs>
-        <circle cx="200" cy="200" r="196" fill="rgba(12,18,28,0.55)" stroke="rgba(94,234,212,0.12)" stroke-width="1"/>
-        <circle cx="200" cy="200" r="196" fill="url(#mxStageFade)"/>
+
+        <!-- Soft stage plate, left-weighted composition -->
+        <circle cx="${cx}" cy="${cy}" r="198" fill="url(#mxBrandFade)" />
+        <circle cx="${cx}" cy="${cy}" r="198" fill="url(#mxMicroGrid)" opacity="0.85" />
+
+        <!-- Brand geometry / pattern field -->
+        <g class="mx-mesh" clip-path="url(#mxMeshClip)" opacity="0.55">
+          ${meshLines.join("")}
+        </g>
+        ${hairlines}
+
+        <!-- Decorative brand arcs (not interactive) -->
+        <path class="mx-deco-arc" d="M ${cx - 150} ${cy} A 150 150 0 0 1 ${cx + 106} ${cy - 106}"
+          fill="none" stroke="url(#mxArcSoft)" stroke-width="0.9" stroke-linecap="round"/>
+        <path class="mx-deco-arc" d="M ${cx + 130} ${cy + 40} A 140 140 0 0 1 ${cx - 40} ${cy + 134}"
+          fill="none" stroke="rgba(94,234,212,0.14)" stroke-width="0.7" stroke-linecap="round"/>
+        <path class="mx-deco-arc" d="M ${cx - 90} ${cy - 140} A 160 160 0 0 1 ${cx + 140} ${cy - 50}"
+          fill="none" stroke="rgba(167,139,250,0.12)" stroke-width="0.7" stroke-linecap="round"/>
+
         ${ringEls}
       </svg>`;
-
-    if (legend) {
-      legend.innerHTML = layers
-        .map((layer, i) => {
-          const p = palette[i] || palette[0];
-          const num = String(layers.length - i).padStart(2, "0");
-          return `<button type="button" class="matryoshka-chip" data-layer="${escapeHtml(
-            layer.id
-          )}" style="--chip:${p.stroke}" role="tab" aria-selected="false">
-            <span class="matryoshka-chip-dot"></span>
-            <span class="matryoshka-chip-n">${num}</span>
-            <span class="matryoshka-chip-t">${escapeHtml(layer.short || layer.label)}</span>
-          </button>`;
-        })
-        .join("");
-    }
 
     const show = (layer, i) => {
       if (!layer) return;
@@ -597,27 +646,19 @@
       host.querySelectorAll(".mx-ring-hit").forEach((el) => {
         el.setAttribute("aria-pressed", el.dataset.layer === layer.id ? "true" : "false");
       });
-      if (legend) {
-        legend.querySelectorAll(".matryoshka-chip").forEach((chip) => {
-          const on = chip.dataset.layer === layer.id;
-          chip.classList.toggle("is-active", on);
-          chip.setAttribute("aria-selected", on ? "true" : "false");
-        });
-      }
       if (title) title.textContent = layer.label;
       if (text) text.textContent = layer.text;
       if (indexEl) {
         indexEl.textContent = String(layers.length - (idx >= 0 ? idx : 0)).padStart(2, "0");
       }
-      if (accent) {
-        const p = palette[idx >= 0 ? idx : 0] || palette[0];
-        accent.style.setProperty("--layer-accent", p.stroke);
-      }
+      const p = palette[idx >= 0 ? idx : 0] || palette[0];
       const panel = $("#matryoshka-panel");
       if (panel) {
-        const p = palette[idx >= 0 ? idx : 0] || palette[0];
-        panel.style.setProperty("--layer-accent", p.stroke);
+        panel.style.setProperty("--layer-accent", p.active || p.stroke);
         panel.classList.add("is-lit");
+      }
+      if (accent) {
+        accent.style.setProperty("--layer-accent", p.active || p.stroke);
       }
     };
 
@@ -640,13 +681,16 @@
     layers.forEach((layer, i) => {
       const hit = host.querySelector(`.mx-ring-hit[data-layer="${layer.id}"]`);
       bindLayer(hit, layer, i);
-      if (legend) {
-        const chip = legend.querySelector(`.matryoshka-chip[data-layer="${layer.id}"]`);
-        bindLayer(chip, layer, i);
+      // also allow clicking the label / node via group hit on label text
+      const group = host.querySelector(`.mx-ring-group[data-layer="${layer.id}"]`);
+      if (group) {
+        const labelEl = group.querySelector(".mx-node-label");
+        const nodeEl = group.querySelector(".mx-node");
+        bindLayer(labelEl, layer, i);
+        bindLayer(nodeEl, layer, i);
       }
     });
 
-    // Default: core (innermost)
     const coreIdx = layers.length - 1;
     show(layers[coreIdx] || layers[0], coreIdx);
   }
