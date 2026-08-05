@@ -17,6 +17,15 @@ from backend.core.business_gen.core_deliverable import (
     _detect_profile,
 )
 from backend.core.business_gen.hook_plan import build_hook_plan
+from backend.core.business_gen.rd_reader import convert_to_rd
+from backend.core.business_gen.author_personality import build_author_personality
+from backend.core.business_gen.smart_router import route_generate
+from backend.core.business_gen.skill_memory import (
+    distill_skill_from_run,
+    list_skills,
+    memory_status,
+)
+from backend.core.business_gen.assist_agent import ImplementationAssistAgent
 
 # 10 public client niches (distribution surface)
 PUBLIC_NICHES: list[dict[str, Any]] = [
@@ -267,6 +276,90 @@ class BusinessGenerator:
         )
         deliverable["core_report"] = core_report
 
+        # Author personality product (context engineering / harness stance)
+        personality = build_author_personality(
+            business_text,
+            profile=core_report.get("profile") or profile_early,
+            project_name=project_name or core_report.get("title") or "",
+            answers=core_report.get("inferred_answers") or answers,
+            lang=lang,
+        )
+        deliverable["author_personality"] = personality
+
+        # Skill memory: load prior skills into harness, then distill this run
+        prior_skills = list_skills(limit=8)
+        routing = route_generate(
+            business_text,
+            channel=channel_info.get("mode") or channel,
+            profile=core_report.get("profile") or profile_early,
+            personality=personality,
+            quality=core.get("quality") or {},
+            available_skills=prior_skills,
+            lang=lang,
+        )
+        deliverable["smart_routing"] = routing
+
+        distilled = distill_skill_from_run(
+            business_text=business_text,
+            core_report=core_report,
+            routing=routing,
+            personality=personality,
+            quality=core.get("quality") or {},
+            project_name=project_name or core_report.get("title") or "",
+            lang=lang,
+            persist=True,
+        )
+        deliverable["skill_distilled"] = distilled
+        deliverable["skill_memory"] = {
+            "status": memory_status(),
+            "loaded": routing.get("skills_loaded") or [],
+            "new_skill_id": distilled.get("id"),
+        }
+
+        # R&D reader-converter (primary readable surface — not plain MD dump)
+        rd = convert_to_rd(
+            core_report=core_report,
+            personality=personality,
+            routing=routing,
+            skills=[distilled] + list(routing.get("skills_loaded") or [])[:3],
+            lang=lang,
+        )
+        deliverable["rd_reader"] = rd
+
+        # Enrich free exports with R&D HTML (PDF path)
+        exports = dict(core_report.get("exports") or {})
+        exports["rd_html"] = rd.get("html") or ""
+        exports["rd_markdown"] = rd.get("markdown") or ""
+        exports["free"] = True
+        exports["filenames"] = {
+            **(exports.get("filenames") or {}),
+            "rd_html": "metrix-rd-memo.html",
+            "rd_md": "metrix-rd-memo.md",
+            "csv": (exports.get("filenames") or {}).get("csv") or "metrix-core-cards.csv",
+            "html": "metrix-rd-memo.html",
+            "md": "metrix-rd-memo.md",
+        }
+        exports["note"] = (
+            "FREE: R&D HTML (print→PDF), R&D markdown, cards CSV — no paywall on downloads."
+            if (lang or "").lower().startswith("en")
+            else "БЕСПЛАТНО: R&D HTML (печать→PDF), R&D markdown, cards CSV — скачивание без paywall."
+        )
+        deliverable["exports"] = exports
+        # Keep mirror on core_report for clients reading only that node
+        core_report["exports"] = exports
+        core_report["rd_reader"] = {"features": rd.get("features"), "primary_surface": "rd_html"}
+
+        # Autonomous assist agent (separate product; teaser until approval)
+        agent = ImplementationAssistAgent().build_from_core(
+            core_report,
+            personality=personality,
+            routing=routing,
+            lang=lang,
+            approved=False,
+        )
+        deliverable["assist_agent"] = agent
+        deliverable["assist_offer"] = agent.get("offer")
+
         # Catchy one-screen buy plan
         hook = build_hook_plan(
             project_name=project_name or core_report.get("title") or "",
@@ -292,7 +385,6 @@ class BusinessGenerator:
                         business_text, step.get("default_option"), rec[sid]
                     ):
                         step["default_option"] = rec[sid]
-            # Reflect closed money-path questions in plan surface
             if core_report.get("open_questions") is not None:
                 deliverable["plan"]["open_questions"] = list(
                     core_report.get("open_questions") or []
@@ -302,26 +394,28 @@ class BusinessGenerator:
         value = core_report.get("value_vs_core") or {}
         n_cards = core_report.get("counts", {}).get("total_cards", 0)
         is_en = (lang or "").lower().startswith("en")
+        p_label = personality.get("primary_label") or ""
         if is_en:
             human_lead = (
                 f"{opening} "
-                f"Clean Core report ready ({n_cards} cards). "
-                f"Value ~${value.get('realized_mid_usd', '?')} vs ${value.get('tariff_price_usd', 790)} "
-                f"({value.get('band', '')}). "
-                f"{hook.get('cta', '')}"
+                f"R&D memo ready ({n_cards} cards) · author: {p_label}. "
+                f"Value ~${value.get('realized_mid_usd', '?')} vs $790 · "
+                f"route {routing.get('domain')}/{routing.get('depth')}. "
+                f"FREE downloads · separate Assist Agent after Approve."
             ).strip()
         else:
             human_lead = (
                 f"{opening} "
-                f"Готов чистый отчёт Ядра ({n_cards} карточек). "
-                f"Оценка ценности ~${value.get('realized_mid_usd', '?')} vs тариф $790 "
-                f"({value.get('band', '')}). "
-                f"{hook.get('cta', '')}"
+                f"R&D memo готов ({n_cards} карточек) · автор: {p_label}. "
+                f"Ценность ~${value.get('realized_mid_usd', '?')} vs $790 · "
+                f"маршрут {routing.get('domain')}/{routing.get('depth')}. "
+                f"Скачивание БЕСПЛАТНО · Assist Agent отдельно после Approve."
             ).strip()
 
         return {
             "module": self.name,
             "role": "orchestrator",
+            "version": "2.1.0-rd-harness",
             "input": {
                 "business": business_text[:500],
                 "industry_id": industry_id,
@@ -335,10 +429,14 @@ class BusinessGenerator:
             },
             "output": deliverable,
             "message": human_lead,
-            "core_markdown": core_report.get("markdown"),
+            "core_markdown": rd.get("markdown") or core_report.get("markdown"),
+            "rd_html": rd.get("html"),
+            "rd_markdown": rd.get("markdown"),
             "hook_markdown": hook.get("markdown"),
             "value_vs_core": value,
-            "exports": core_report.get("exports"),
+            "exports": exports,
+            "author_personality": personality,
+            "assist_offer": agent.get("offer"),
         }
 
     def _resolve_channel(

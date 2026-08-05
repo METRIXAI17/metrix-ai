@@ -91,8 +91,10 @@ def test_business_generate_library_core():
     assert cr["profile"]["is_library"] is True
     assert cr["profile"]["profile"] == "knowledge_library"
     assert cr["counts"]["total_cards"] >= 15
-    assert "Ядро:" in cr["markdown"]
-    assert "unit" in cr["markdown"].lower()
+    # R&D reader is primary; core markdown may still exist for legacy
+    rd = out.get("rd_reader") or {}
+    assert rd.get("html") and "R&D" in (rd.get("markdown") or b.get("rd_markdown") or "")
+    assert "unit" in (cr.get("markdown") or "").lower() or "warrant" in (rd.get("markdown") or "").lower()
 
     # 1) Signer numbers → answers (constraint_cash, days) — not 2 open money Q
     ans = cr["inferred_answers"]
@@ -125,16 +127,32 @@ def test_business_generate_library_core():
     assert "Billing" in titles or "Agent" in titles or "API" in titles
     assert all(c.get("niche") for c in cr["architecture_cards"])
 
-    # 5) File exports CSV + print HTML
+    # 5) FREE file exports CSV + R&D HTML
     ex = cr["exports"]
+    assert ex.get("free") is True
     assert "architecture" in ex["cards_csv"] and "A01" in ex["cards_csv"]
-    assert "<html" in ex["print_html"].lower()
+    assert "<html" in (ex.get("rd_html") or ex.get("print_html") or "").lower()
     assert b.get("exports")
 
-    # 6) Implementation assistant path (not CTA-only)
+    # 6) Implementation assistant path + separate assist agent product
     assist = cr["implementation_assistant"]
     assert len(assist["steps"]) >= 5
     assert assist["trigger"] == "implementation_approval"
+    agent = out["assist_agent"]
+    assert agent["offer"]["separate_from_core"] is True
+    assert len(agent["queue"]) >= 4
+    assert agent["status"] == "teaser"
+
+    # Author personality product
+    pers = out["author_personality"]
+    assert pers["primary_axis"]
+    assert pers["product"]["free"] is True
+    assert "context_engineering" in (pers.get("ref_concepts") or [])
+
+    # Smart routing + skill memory
+    assert out["smart_routing"]["domain"]
+    assert out["skill_distilled"]["conceptual_algorithm"]
+    assert out["skill_distilled"]["executive_algorithm"]
 
     # Hook plan for conversion
     hook = out["hook_plan"]
@@ -168,15 +186,37 @@ def test_business_generate_library_en_parity():
         numbers={"cash_ceiling": 1200, "days": 21},
     )
     cr = b["output"]["core_report"]
-    md = cr["markdown"]
-    assert md.startswith("# Core:")
-    assert "Deep architecture cards" in md or "architecture cards" in md.lower()
-    assert "Implementation assistant" in md
-    assert "Live 7-day channel log" in md
+    out = b["output"]
+    rd = out["rd_reader"]
+    assert "R&D" in (rd.get("markdown") or "")
+    assert "Abstract" in (rd.get("markdown") or "") or "warrant" in (rd.get("markdown") or "").lower()
+    assert cr["markdown"].startswith("# Core:") or "architecture" in cr["markdown"].lower()
     assert "1200" in cr["inferred_answers"]["constraint_cash"]
-    hook = b["output"]["hook_plan"]
+    assert out["author_personality"]["lang"] == "en"
+    hook = out["hook_plan"]
     assert hook["lang"] == "en"
     assert "Approve" in hook["cta"] or "Core" in hook["cta"]
+
+
+def test_assist_agent_approve_advance():
+    from backend.core.business_gen.assist_agent import ImplementationAssistAgent
+
+    brief = (
+        "Online architecture card library for IT product builders, niches, offers, "
+        "decision paths and concept testing."
+    )
+    b = BusinessGenerator().generate(
+        brief, industry_id="generic", lang="en", project_name="Lib", channel="online"
+    )
+    teaser = b["output"]["assist_agent"]
+    agent = ImplementationAssistAgent()
+    session = agent.approve_and_start(teaser, lang="en")
+    assert session["approved"] is True
+    assert session["status"] == "running"
+    sid = session["session_id"]
+    adv = agent.advance(sid, note="test")
+    assert adv.get("ok") is True
+    assert adv["session"]["progress"]["done"] >= 1
 
 
 def test_services_catalog():

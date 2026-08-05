@@ -286,21 +286,54 @@
             <h3 id="gen-msg">—</h3>
             <p id="gen-gate" class="gate-chip"></p>
             <p id="gen-value-band" class="how-lead" style="margin-top: 0.5rem"></p>
+            <p id="gen-route-chip" class="route-chip"></p>
           </div>
+
+          <!-- FREE downloads — always visible after generate -->
+          <div class="gen-free-exports" id="gen-free-exports">
+            <div class="free-banner">
+              <span class="free-pill">FREE</span>
+              <strong data-i18n="gen_free_title">Скачать бесплатно</strong>
+              <span class="how-lead" data-i18n="gen_free_hint">R&amp;D memo HTML→PDF · CSV карточек · без paywall</span>
+            </div>
+            <div class="cr-cta-row free-dl-row">
+              <button type="button" class="btn btn-primary" id="gen-dl-rd">↓ R&amp;D PDF (HTML)</button>
+              <button type="button" class="btn btn-ghost" id="gen-dl-csv">↓ Cards CSV · FREE</button>
+              <button type="button" class="btn btn-ghost" id="gen-dl-md">↓ R&amp;D Markdown · FREE</button>
+            </div>
+          </div>
+
+          <!-- Author personality product -->
+          <div class="gen-personality-block" id="gen-personality-block">
+            <div class="eyebrow">Author personality · free product</div>
+            <div id="gen-personality" class="personality-card"></div>
+          </div>
+
+          <!-- R&D Reader (primary visual surface) -->
+          <div class="gen-rd-block" id="gen-rd-block">
+            <div class="eyebrow">R&amp;D Reader · decision warrants</div>
+            <iframe id="gen-rd-frame" class="rd-frame" title="R&amp;D memo" sandbox="allow-same-origin"></iframe>
+          </div>
+
           <div class="gen-hook-block" id="gen-hook-block">
             <div class="eyebrow">Hook plan · buy-ready</div>
-            <div id="gen-hook-plan" class="core-report-md fw-pre" style="white-space: pre-wrap; max-height: 18rem; overflow: auto"></div>
-            <div class="cr-cta-row" style="margin-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem">
-              <button type="button" class="btn btn-primary" id="gen-approve-core">Approve Core · $790</button>
-              <button type="button" class="btn btn-ghost" id="gen-dl-md">↓ Markdown</button>
-              <button type="button" class="btn btn-ghost" id="gen-dl-csv">↓ Cards CSV</button>
-              <button type="button" class="btn btn-ghost" id="gen-dl-html">↓ HTML→PDF</button>
-            </div>
-            <div id="gen-assist-path" class="how-lead" style="margin-top: 0.75rem" hidden></div>
+            <div id="gen-hook-plan" class="core-report-md fw-pre" style="white-space: pre-wrap; max-height: 14rem; overflow: auto"></div>
           </div>
-          <div class="gen-core-report-block" id="gen-core-report-block">
-            <div class="eyebrow">Core · clean report</div>
-            <div id="gen-core-report" class="core-report-md fw-pre" style="white-space: pre-wrap; max-height: 42rem; overflow: auto"></div>
+
+          <!-- Separate Assist Agent product (not mixed with free downloads) -->
+          <div class="gen-assist-offer-block" id="gen-assist-offer-block">
+            <div class="eyebrow">Separate product · Assist Agent</div>
+            <div id="gen-assist-offer" class="assist-offer-card"></div>
+            <div class="cr-cta-row" style="margin-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem">
+              <button type="button" class="btn btn-primary" id="gen-approve-core">Утвердить Ядро · открыть Assist</button>
+              <button type="button" class="btn btn-ghost" id="gen-assist-advance" hidden>Advance agent step →</button>
+            </div>
+            <div id="gen-assist-path" class="assist-path-panel" hidden></div>
+          </div>
+
+          <div class="gen-core-report-block" id="gen-core-report-block" hidden>
+            <div class="eyebrow">Legacy text (optional)</div>
+            <div id="gen-core-report" class="core-report-md fw-pre" style="white-space: pre-wrap; max-height: 12rem; overflow: auto"></div>
           </div>
           <div class="gen-forecast-block" id="gen-forecast-block">
             <div class="eyebrow" data-i18n="gen_forecast">Implementation forecast</div>

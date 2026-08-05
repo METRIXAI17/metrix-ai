@@ -627,6 +627,7 @@ def business_generate_run(body: BusinessGenBody) -> dict[str, Any]:
     """
     Generate business system: autonomous pack + expert base + control panel.
     Asks TZ-style choices; self-tests; forecasts human reaction; pre-corrects.
+    v2.1: R&D reader, author personality, smart routers, skill memory, assist agent.
     """
     return BusinessGenerator().generate(
         body.business,
@@ -640,6 +641,58 @@ def business_generate_run(body: BusinessGenBody) -> dict[str, Any]:
         multi_pass=bool(body.multi_pass),
         passes=max(3, min(int(body.passes or 7), 12)),
     )
+
+
+class AssistApproveBody(BaseModel):
+    """Unlock autonomous implementation assist agent after Core approval."""
+    assist_agent: dict = Field(default_factory=dict)
+    lang: str = "ru"
+
+
+class AssistAdvanceBody(BaseModel):
+    session_id: str
+    note: str = ""
+
+
+@router.post("/assist-agent/approve")
+def assist_agent_approve(body: AssistApproveBody) -> dict[str, Any]:
+    """Approve Core → unlock and persist ImplementationAssistAgent session."""
+    from backend.core.business_gen.assist_agent import ImplementationAssistAgent
+
+    agent = ImplementationAssistAgent()
+    session = agent.approve_and_start(body.assist_agent or {}, lang=body.lang)
+    return {
+        "ok": True,
+        "module": agent.name,
+        "session": session,
+        "session_id": session.get("session_id"),
+        "message": "Assist agent unlocked · executive mode",
+    }
+
+
+@router.post("/assist-agent/advance")
+def assist_agent_advance(body: AssistAdvanceBody) -> dict[str, Any]:
+    """Advance autonomous assist agent one step."""
+    from backend.core.business_gen.assist_agent import ImplementationAssistAgent
+
+    return ImplementationAssistAgent().advance(body.session_id, note=body.note or "")
+
+
+@router.get("/assist-agent/{session_id}")
+def assist_agent_get(session_id: str) -> dict[str, Any]:
+    from backend.core.business_gen.assist_agent import ImplementationAssistAgent
+
+    return ImplementationAssistAgent().get_session(session_id)
+
+
+@router.get("/skill-memory")
+def skill_memory_status() -> dict[str, Any]:
+    from backend.core.business_gen.skill_memory import list_skills, memory_status
+
+    return {
+        "status": memory_status(),
+        "skills": list_skills(limit=12),
+    }
 
 
 @router.get("/business-services")

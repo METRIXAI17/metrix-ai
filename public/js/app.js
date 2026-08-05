@@ -24,6 +24,7 @@
     freeWorkId: null,
     freeWork: null,
     genChoices: {},
+    assistSessionId: null,
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -1048,6 +1049,30 @@
       }
     }
 
+    // Smart route chip (visible)
+    const route = out.smart_routing || {};
+    const routeEl = $("#gen-route-chip");
+    if (routeEl) {
+      routeEl.textContent = route.narrative || route.summary ||
+        (route.path ? route.path.join(" · ") : "");
+    }
+
+    // Author personality product card
+    paintPersonality(out.author_personality || data.author_personality, isEn);
+
+    // R&D Reader — primary visual surface (iframe with HTML)
+    const rd = out.rd_reader || {};
+    const rdHtml = data.rd_html || rd.html || "";
+    const frame = $("#gen-rd-frame");
+    if (frame && rdHtml) {
+      frame.srcdoc = rdHtml;
+      frame.hidden = false;
+    } else if (frame) {
+      frame.srcdoc = `<p style="color:#94a3b8;font-family:system-ui;padding:1rem">${
+        isEn ? "R&D memo unavailable — redeploy API." : "R&D memo недоступен — обновите API."
+      }</p>`;
+    }
+
     // Hook plan — short buy-ready surface
     const hook = out.hook_plan || {};
     const hookEl = $("#gen-hook-plan");
@@ -1057,48 +1082,17 @@
         (isEn ? "Hook plan unavailable — refresh API." : "Hook plan недоступен — обновите API.");
     }
 
-    // Primary: clean markdown Core report (no JSON dump)
+    // Legacy text hidden by default; keep for debug
     const mdEl = $("#gen-core-report");
     if (mdEl) {
-      const md = data.core_markdown || report.markdown || "";
-      mdEl.textContent =
-        md ||
-        (isEn ? "Core report unavailable — refresh API." : "Отчёт Ядра недоступен — обновите API.");
+      mdEl.textContent = data.rd_markdown || data.core_markdown || report.markdown || rd.markdown || "";
     }
 
-    // File exports (CSV / MD / HTML→PDF)
-    bindExportButtons(data, report);
+    // FREE file exports (R&D HTML→PDF, CSV, MD)
+    bindExportButtons(data, report, rd);
 
-    // Assist path hidden until approve
-    const assistEl = $("#gen-assist-path");
-    if (assistEl) {
-      assistEl.hidden = true;
-      assistEl.textContent = "";
-    }
-    const approveBtn = $("#gen-approve-core");
-    if (approveBtn && approveBtn.dataset.bound !== "1") {
-      approveBtn.dataset.bound = "1";
-      approveBtn.addEventListener("click", () => {
-        const assist = report.implementation_assistant || out.core_report?.implementation_assistant || {};
-        const steps = assist.steps || [];
-        if (assistEl) {
-          assistEl.hidden = false;
-          const head = isEn
-            ? "Implementation assistant path (unlocked after approval):"
-            : "Implementation assistant path (открыт после approval):";
-          const body = steps
-            .map((s) => `• ${s.id} ${s.day}: ${s.title} — ${s.action} → ${s.exit}`)
-            .join("\n");
-          assistEl.textContent =
-            `${head}\n${assist.summary || ""}\n${body || (isEn ? "No steps" : "Нет шагов")}\n\n${assist.cta_after || ""}`;
-        }
-        approveBtn.textContent = isEn ? "Approved · assist open" : "Утверждено · assist открыт";
-        approveBtn.disabled = true;
-      });
-    } else if (approveBtn) {
-      approveBtn.disabled = false;
-      approveBtn.textContent = isEn ? "Approve Core · $790" : "Утвердить Ядро · $790";
-    }
+    // Separate Assist Agent product
+    paintAssistOffer(out, data, isEn);
 
     paintForecast(out);
 
@@ -1199,27 +1193,25 @@
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
 
-  function bindExportButtons(data, report) {
+  function bindExportButtons(data, report, rd) {
     const exports = data.exports || report.exports || {};
-    const names = exports.filenames || {
-      csv: "metrix-core-cards.csv",
-      html: "metrix-core-report.html",
-      md: "metrix-core-report.md",
-    };
-    const md = data.core_markdown || report.markdown || "";
+    const names = exports.filenames || {};
+    const rdHtml = data.rd_html || (rd && rd.html) || exports.rd_html || exports.print_html || "";
+    const rdMd = data.rd_markdown || (rd && rd.markdown) || exports.rd_markdown || data.core_markdown || "";
     const map = {
-      "gen-dl-md": () => downloadBlob(names.md || "metrix-core-report.md", md, "text/markdown;charset=utf-8"),
+      "gen-dl-rd": () =>
+        downloadBlob(
+          names.rd_html || names.html || "metrix-rd-memo.html",
+          rdHtml || "<p>R&D empty</p>",
+          "text/html;charset=utf-8"
+        ),
+      "gen-dl-md": () =>
+        downloadBlob(names.rd_md || names.md || "metrix-rd-memo.md", rdMd, "text/markdown;charset=utf-8"),
       "gen-dl-csv": () =>
         downloadBlob(
           names.csv || "metrix-core-cards.csv",
           exports.cards_csv || "",
           "text/csv;charset=utf-8"
-        ),
-      "gen-dl-html": () =>
-        downloadBlob(
-          names.html || "metrix-core-report.html",
-          exports.print_html || `<pre>${md.replace(/</g, "&lt;")}</pre>`,
-          "text/html;charset=utf-8"
         ),
     };
     Object.keys(map).forEach((id) => {
@@ -1227,6 +1219,183 @@
       if (!el) return;
       el.onclick = map[id];
     });
+  }
+
+  function paintPersonality(p, isEn) {
+    const host = $("#gen-personality");
+    if (!host) return;
+    if (!p || !p.primary_label) {
+      host.innerHTML = `<p class="how-lead">${isEn ? "Personality not in response." : "Личность не в ответе."}</p>`;
+      return;
+    }
+    const axes = p.axes || {};
+    const axisHtml = Object.entries(axes)
+      .slice(0, 6)
+      .map(([k, v]) => {
+        const pct = Math.round((Number(v) || 0) * 100);
+        return `<div class="axis-row"><span>${escapeHtml(k)}</span><div class="axis-bar"><i style="width:${pct}%"></i></div><em>${pct}%</em></div>`;
+      })
+      .join("");
+    const goals = (p.goals || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("");
+    const crit = (p.success_criteria || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("");
+    host.innerHTML = `
+      <div class="pers-head">
+        <div>
+          <div class="pers-title">${escapeHtml(p.display_name || "")}</div>
+          <div class="pers-arch">${escapeHtml(p.primary_label)} · + ${escapeHtml(p.secondary_label || "")}</div>
+        </div>
+        <span class="free-pill">FREE</span>
+      </div>
+      <p class="how-lead">${escapeHtml(p.summary || "")}</p>
+      <div class="pers-grid">
+        <div><div class="eyebrow">${isEn ? "Intent" : "Intent"}</div><p>${escapeHtml(p.intent || "")}</p></div>
+        <div><div class="eyebrow">${isEn ? "Goals" : "Цели"}</div><ul class="clean-list">${goals}</ul></div>
+        <div><div class="eyebrow">${isEn ? "Success criteria" : "Критерии успеха"}</div><ul class="clean-list">${crit}</ul></div>
+      </div>
+      <div class="eyebrow" style="margin-top:0.75rem">${isEn ? "Axes" : "Оси"}</div>
+      ${axisHtml}
+      <p class="how-lead" style="margin-top:0.6rem">${escapeHtml(p.trust_surface || "")}</p>
+    `;
+  }
+
+  function paintAssistOffer(out, data, isEn) {
+    const offer = out.assist_offer || data.assist_offer || (out.assist_agent && out.assist_agent.offer) || {};
+    const agent = out.assist_agent || {};
+    const host = $("#gen-assist-offer");
+    if (host) {
+      const does = (offer.what_it_does || [])
+        .map((x) => `<li>${escapeHtml(x)}</li>`)
+        .join("");
+      host.innerHTML = `
+        <div class="assist-offer-head">
+          <strong>${escapeHtml(offer.name || (isEn ? "Implementation executor assistant" : "Ассистент-исполнитель"))}</strong>
+          <span class="sep-pill">${isEn ? "SEPARATE" : "ОТДЕЛЬНО"}</span>
+        </div>
+        <p class="how-lead">${escapeHtml(offer.tagline || "")}</p>
+        <ul class="clean-list">${does}</ul>
+        <p class="how-lead">${escapeHtml(offer.price_note || offer.cta_teaser || "")}</p>
+      `;
+    }
+
+    const assistEl = $("#gen-assist-path");
+    const advanceBtn = $("#gen-assist-advance");
+    if (assistEl) {
+      assistEl.hidden = true;
+      assistEl.innerHTML = "";
+    }
+    if (advanceBtn) advanceBtn.hidden = true;
+
+    const approveBtn = $("#gen-approve-core");
+    if (!approveBtn) return;
+
+    // reset per generate
+    approveBtn.disabled = false;
+    approveBtn.textContent = isEn
+      ? "Approve Core · unlock Assist Agent"
+      : "Утвердить Ядро · открыть Assist Agent";
+
+    if (approveBtn.dataset.bound !== "1") {
+      approveBtn.dataset.bound = "1";
+      approveBtn.addEventListener("click", async () => {
+        const isEn2 = lang() === "en";
+        const last = state.lastGenerate || {};
+        const out2 = last.output || {};
+        const teaser = out2.assist_agent || {};
+        approveBtn.disabled = true;
+        approveBtn.textContent = isEn2 ? "Unlocking…" : "Открываем…";
+        try {
+          const res = await fetch(
+            `${apiBase()}/api/v1/analytics/assist-agent/approve`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ assist_agent: teaser, lang: lang() }),
+            }
+          );
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const payload = await res.json();
+          const session = payload.session || {};
+          state.assistSessionId = session.session_id || payload.session_id;
+          renderAssistSession(session, isEn2);
+          approveBtn.textContent = isEn2
+            ? "Approved · Assist Agent running"
+            : "Утверждено · Assist Agent запущен";
+          if (advanceBtn) {
+            advanceBtn.hidden = false;
+            advanceBtn.onclick = () => advanceAssistAgent(isEn2);
+          }
+        } catch (ex) {
+          // Offline / API lag: unlock local teaser queue
+          const local = teaser;
+          local.approved = true;
+          (local.queue || []).forEach((s) => {
+            if (s.status === "locked") s.status = "ready";
+          });
+          renderAssistSession(local, isEn2);
+          approveBtn.textContent = isEn2
+            ? "Approved · local assist path"
+            : "Утверждено · локальный assist path";
+          if (advanceBtn) advanceBtn.hidden = true;
+        }
+      });
+    }
+  }
+
+  function renderAssistSession(session, isEn) {
+    const assistEl = $("#gen-assist-path");
+    if (!assistEl) return;
+    assistEl.hidden = false;
+    const queue = session.queue || [];
+    const prog = session.progress || {};
+    const next = session.next_actions || [];
+    const steps = queue
+      .map((s) => {
+        const st = s.status || "—";
+        return `<div class="assist-step ${escapeHtml(st)}">
+          <strong>${escapeHtml(s.id)}</strong> · ${escapeHtml(s.title || "")}
+          <span class="st">${escapeHtml(st)}</span>
+          <div class="how-lead">${escapeHtml(s.action || "")}</div>
+          <div class="how-lead">→ ${escapeHtml(s.exit || "")}</div>
+        </div>`;
+      })
+      .join("");
+    const nextHtml = next
+      .map((n) => `<li><strong>${escapeHtml(n.step_id)}</strong> ${escapeHtml(n.do || "")}</li>`)
+      .join("");
+    assistEl.innerHTML = `
+      <div class="assist-unlocked">
+        <span class="free-pill" style="background:rgba(94,234,212,.15);color:var(--accent)">${isEn ? "UNLOCKED" : "ОТКРЫТО"}</span>
+        <span class="how-lead">session ${escapeHtml(session.session_id || "local")} · done ${prog.done || 0}/${prog.total || queue.length}</span>
+      </div>
+      <div class="eyebrow" style="margin-top:0.6rem">${isEn ? "Agent queue" : "Очередь агента"}</div>
+      ${steps}
+      <div class="eyebrow" style="margin-top:0.6rem">${isEn ? "Next actions" : "Следующие действия"}</div>
+      <ul class="clean-list">${nextHtml || `<li>${isEn ? "—" : "—"}</li>`}</ul>
+      <p class="how-lead">${escapeHtml((session.harness && session.harness.oversight) || "")}</p>
+    `;
+  }
+
+  async function advanceAssistAgent(isEn) {
+    const sid = state.assistSessionId;
+    if (!sid) return;
+    try {
+      const res = await fetch(`${apiBase()}/api/v1/analytics/assist-agent/advance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sid, note: "ui_advance" }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const payload = await res.json();
+      if (payload.session) renderAssistSession(payload.session, isEn);
+    } catch (ex) {
+      const el = $("#gen-assist-path");
+      if (el) {
+        el.insertAdjacentHTML(
+          "beforeend",
+          `<p class="how-lead" style="color:var(--danger)">${isEn ? "Advance failed" : "Advance не удался"}: ${escapeHtml(ex.message)}</p>`
+        );
+      }
+    }
   }
 
   function paintForecast(out) {
