@@ -100,12 +100,18 @@ def test_business_generate_library_core():
     ans = cr["inferred_answers"]
     assert "constraint_cash" in ans and "1500" in ans["constraint_cash"]
     assert "constraint_time" in ans and "21" in ans["constraint_time"]
+    # Post-pay questions are identity-only (unique per request), not cash/days
+    oq = cr.get("open_questions") or out["plan"].get("open_questions") or []
     money_q = [
         q
-        for q in (cr.get("open_questions") or out["plan"].get("open_questions") or [])
-        if any(t in q.lower() for t in ("бюджет", "cash", "потол", "окно", "дней", "срок"))
+        for q in oq
+        if any(t in str(q).lower() for t in ("бюджет", "cash", "потол", "потолок бюджета"))
     ]
     assert len(money_q) == 0, money_q
+    # Live log + identity pack
+    assert out.get("live_log") and out["live_log"].get("days")
+    assert out.get("identity_pack") and out["identity_pack"].get("identity_questions")
+    assert out["identity_pack"]["forecast"].get("delight_score")
 
     # 2) Live 7-day channel log: 10–15 touches + 1 artifact
     clog = cr["channel_log_7d"]

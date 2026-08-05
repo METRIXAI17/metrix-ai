@@ -3107,3 +3107,19 @@ textarea {
   margin-top: 1rem;
 }
 .promo-road h4 { margin: 0 0 0.35rem; }
+
+/* Live log */
+.live-log-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.live-log-row {
+  display: flex; gap: 0.65rem; align-items: flex-start;
+  padding: 0.55rem 0.65rem; border-radius: 10px;
+  border: 1px solid var(--border); background: rgba(0,0,0,0.18);
+}
+.live-log-row.done { border-color: rgba(134,239,172,0.35); opacity: 0.9; }
+.live-check {
+  width: 1.6rem; height: 1.6rem; border-radius: 6px;
+  border: 1px solid rgba(94,234,212,0.4); background: transparent;
+  color: var(--accent); cursor: pointer; font-weight: 700;
+}
+.live-log-row.done .live-check { background: rgba(134,239,172,0.2); color: #86efac; }
+.identity-q-list li { margin: 0.45rem 0; }

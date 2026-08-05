@@ -306,6 +306,20 @@
             <button type="button" class="btn btn-ghost" id="gen-dl-md">↓ Текст отчёта</button>
           </div>
 
+          <!-- Живой 7-day log -->
+          <div class="gen-block-card" id="gen-live-log-block">
+            <div class="block-h">
+              <span class="block-num">00</span>
+              <div>
+                <div class="eyebrow">Живой лог · 7 дней</div>
+                <h4 class="block-title">Касания + 1 artifact</h4>
+              </div>
+            </div>
+            <p class="how-lead" id="gen-live-log-meta"></p>
+            <div id="gen-live-log" class="live-log-list"></div>
+            <button type="button" class="btn btn-ghost" id="gen-live-artifact" style="margin-top:0.5rem">Отметить artifact отправлен</button>
+          </div>
+
           <!-- Наполнение -->
           <div class="gen-block-card" id="gen-fill-block">
             <div class="block-h">
@@ -347,12 +361,14 @@
               <button type="button" class="btn btn-ghost" id="gen-assist-advance" hidden>Следующий шаг агента →</button>
             </div>
             <div id="gen-post-pay" class="post-pay-panel" hidden>
-              <div class="eyebrow">После оплаты</div>
+              <div class="eyebrow">После оплаты · авторская уникальность</div>
+              <div id="gen-identity-forecast" class="post-pay-section"></div>
               <div id="gen-personality" class="post-pay-section"></div>
-              <div id="gen-assist-path" class="post-pay-section"></div>
-              <div class="eyebrow" style="margin-top:0.75rem">Уточняющие вопросы</div>
-              <ul id="gen-questions" class="clean-list"></ul>
-              <p class="how-lead">Напишите ответы в DM: <a href="https://x.com/karimmetrix" target="_blank" rel="noopener">@karimmetrix</a></p>
+              <div class="eyebrow" style="margin-top:0.75rem">Вопросы идентичности (уникальные для этого запроса)</div>
+              <ul id="gen-questions" class="clean-list identity-q-list"></ul>
+              <div id="gen-regen-slots" class="how-lead" style="margin-top:0.5rem"></div>
+              <div id="gen-assist-path" class="post-pay-section" style="margin-top:0.75rem"></div>
+              <p class="how-lead">Ответы → DM <a href="https://x.com/karimmetrix" target="_blank" rel="noopener">@karimmetrix</a> · затем новые генерации (gen_v2+)</p>
             </div>
           </div>
 

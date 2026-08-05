@@ -26,6 +26,8 @@
     genChoices: {},
     assistSessionId: null,
     pendingQuestions: [],
+    liveLogId: null,
+    lastIdentityPack: null,
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -1145,6 +1147,11 @@
       rd.markdown ||
       "";
 
+    // 00 Live log
+    paintLiveLog(out.live_log || {}, isEn);
+    state.liveLogId = (out.live_log && out.live_log.id) || null;
+    state.lastIdentityPack = out.identity_pack || data.identity_pack || null;
+
     // 01 Наполнение
     paintFill(out, report, isEn);
 
@@ -1173,8 +1180,11 @@
     if (postPay) postPay.hidden = true;
     wirePostPay(out, data, isEn);
 
-    // Questions stored but only shown after pay
-    state.pendingQuestions = out.plan?.open_questions || report.open_questions || [];
+    // Identity questions only (unique per request) — shown after pay
+    const iq = (out.identity_pack && out.identity_pack.identity_questions) || out.plan?.identity_questions || [];
+    state.pendingQuestions = iq.length
+      ? iq
+      : (out.plan?.open_questions || []).map((t) => ({ text: t, id: "" }));
 
     paintForecast(out);
 
@@ -1292,6 +1302,72 @@
     root.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function paintLiveLog(log, isEn) {
+    const host = $("#gen-live-log");
+    const meta = $("#gen-live-log-meta");
+    if (!host) return;
+    if (!log || !log.days || !log.days.length) {
+      host.innerHTML = `<p class="how-lead">${isEn ? "Live log will appear after generate." : "Живой лог появится после generate."}</p>`;
+      return;
+    }
+    if (meta) {
+      const art = log.artifact || {};
+      meta.textContent = isEn
+        ? `Target ${log.touch_target || "—"} touches · ${log.start_date} → ${log.end_date} · artifact: ${art.name || "—"} · id ${log.id || ""}`
+        : `Цель ${log.touch_target || "—"} касаний · ${log.start_date} → ${log.end_date} · artifact: ${art.name || "—"} · id ${log.id || ""}`;
+    }
+    host.innerHTML = (log.days || [])
+      .map((d, i) => {
+        const done = d.done ? "done" : "";
+        return `<div class="live-log-row ${done}" data-offset="${escapeHtml(String(d.day_offset != null ? d.day_offset : i))}">
+          <button type="button" class="live-check" title="done">✓</button>
+          <div>
+            <strong>${escapeHtml(d.day || "")}</strong> · ${escapeHtml(d.label || "")}
+            <div class="how-lead">${escapeHtml(d.action || "")}</div>
+          </div>
+        </div>`;
+      })
+      .join("");
+    host.onclick = async (e) => {
+      const row = e.target.closest(".live-log-row");
+      if (!row || !state.liveLogId) return;
+      const off = Number(row.dataset.offset);
+      try {
+        const res = await fetch(`${apiBase()}/api/v1/analytics/live-log/tick`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: state.liveLogId, day_offset: off, note: "ui" }),
+        });
+        if (!res.ok) throw new Error("tick");
+        const data = await res.json();
+        if (data.session) paintLiveLog(data.session, isEn);
+      } catch (_) {
+        row.classList.add("done");
+      }
+    };
+    const artBtn = $("#gen-live-artifact");
+    if (artBtn && artBtn.dataset.bound !== "1") {
+      artBtn.dataset.bound = "1";
+      artBtn.addEventListener("click", async () => {
+        if (!state.liveLogId) return;
+        try {
+          const res = await fetch(`${apiBase()}/api/v1/analytics/live-log/tick`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: state.liveLogId, mark_artifact: true }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.session) paintLiveLog(data.session, lang() === "en");
+            artBtn.textContent = lang() === "en" ? "Artifact marked" : "Artifact отмечен";
+          }
+        } catch (_) {
+          artBtn.textContent = "…";
+        }
+      });
+    }
+  }
+
   function paintFill(out, report, isEn) {
     const host = $("#gen-fill-body");
     if (!host) return;
@@ -1338,25 +1414,54 @@
     const btn = $("#gen-approve-core");
     if (!btn) return;
     btn.disabled = false;
-    btn.textContent = isEn ? "I paid · open questions & agent" : "Я оплатил · открыть вопросы и агент";
+    btn.textContent = isEn ? "I paid · open identity & agent" : "Я оплатил · открыть идентичность и агент";
     if (btn.dataset.boundPay === "1") return;
     btn.dataset.boundPay = "1";
     btn.addEventListener("click", async () => {
       const isEn2 = lang() === "en";
+      const last = state.lastGenerate || {};
+      const out2 = last.output || out || {};
       const post = $("#gen-post-pay");
       if (post) post.hidden = false;
-      // personality
-      paintPersonality(out.author_personality || data.author_personality, isEn2);
-      // questions
-      const qs = state.pendingQuestions || [];
+
+      const pack = out2.identity_pack || state.lastIdentityPack || data.identity_pack || {};
+      const fc = pack.forecast || {};
+      const fcEl = $("#gen-identity-forecast");
+      if (fcEl) {
+        const likes = (fc.why_you_will_like_this || [])
+          .map((x) => `<li>${escapeHtml(x)}</li>`)
+          .join("");
+        fcEl.innerHTML = `
+          <h4 style="margin:0 0 0.35rem">${escapeHtml(fc.headline || "")}</h4>
+          <p class="how-lead">${escapeHtml(fc.delight_note || "")}</p>
+          <ul class="clean-list">${likes}</ul>
+          <p class="how-lead">${isEn2 ? "Delight score" : "Насколько «ваше»"}: ${fc.delight_score != null ? Math.round(fc.delight_score * 100) + "%" : "—"}</p>
+        `;
+      }
+      paintPersonality(out2.author_personality || data.author_personality, isEn2);
+
+      const qs = pack.identity_questions || state.pendingQuestions || [];
       const qEl = $("#gen-questions");
       if (qEl) {
         qEl.innerHTML = qs.length
-          ? qs.map((q) => `<li>${escapeHtml(q)}</li>`).join("")
-          : `<li>${isEn2 ? "No extra questions — write goals in DM" : "Доп. вопросов нет — напишите цели в DM"}</li>`;
+          ? qs
+              .map((q) => {
+                const text = typeof q === "string" ? q : q.text || "";
+                const key = typeof q === "object" ? q.unique_key || q.id || "" : "";
+                return `<li><span class="tz-id">${escapeHtml(key)}</span> ${escapeHtml(text)}</li>`;
+              })
+              .join("")
+          : `<li>${isEn2 ? "Write your angle in DM" : "Напишите свой угол в DM"}</li>`;
       }
-      // assist unlock
-      const teaser = out.assist_agent || {};
+      const regen = $("#gen-regen-slots");
+      if (regen) {
+        const gens = (fc.next_generations || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("");
+        regen.innerHTML = gens
+          ? `<div class="eyebrow">${isEn2 ? "Open generation slots" : "Открытые слоты генераций"}</div><ul class="clean-list">${gens}</ul>`
+          : "";
+      }
+
+      const teaser = out2.assist_agent || {};
       try {
         const res = await fetch(`${apiBase()}/api/v1/analytics/assist-agent/approve`, {
           method: "POST",
@@ -1375,7 +1480,14 @@
           }
         } else throw new Error("api");
       } catch (_) {
-        renderAssistSession({ ...teaser, approved: true, queue: (teaser.queue || []).map((s) => ({ ...s, status: "ready" })) }, isEn2);
+        renderAssistSession(
+          {
+            ...teaser,
+            approved: true,
+            queue: (teaser.queue || []).map((s) => ({ ...s, status: "ready" })),
+          },
+          isEn2
+        );
       }
       btn.textContent = isEn2 ? "Opened" : "Открыто";
       btn.disabled = true;

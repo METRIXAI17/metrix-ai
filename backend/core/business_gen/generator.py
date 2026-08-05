@@ -26,6 +26,8 @@ from backend.core.business_gen.skill_memory import (
     memory_status,
 )
 from backend.core.business_gen.assist_agent import ImplementationAssistAgent
+from backend.core.business_gen.identity_engine import build_post_pay_identity_pack
+from backend.core.business_gen.live_log import create_live_log_from_plan
 
 # 10 public client niches (distribution surface)
 PUBLIC_NICHES: list[dict[str, Any]] = [
@@ -378,6 +380,31 @@ class BusinessGenerator:
             "ready": bool(consult_html),
         }
 
+        # Live 7-day channel log (interactive session)
+        live_log = create_live_log_from_plan(
+            core_report.get("channel_log_7d") or {},
+            project_name=project_name or core_report.get("title") or "",
+            run_id=distilled.get("id") or "",
+            lang=lang,
+        )
+        deliverable["live_log"] = live_log
+
+        # Post-pay identity: unique questions + uniqueness forecast (Metrix voice)
+        identity_pack = build_post_pay_identity_pack(
+            business_text,
+            personality=personality,
+            profile=core_report.get("profile") or profile_early,
+            project_name=project_name or core_report.get("title") or "",
+            lang=lang,
+        )
+        deliverable["identity_pack"] = identity_pack
+        # Replace open_questions with identity-only unique Q for post-pay surface
+        identity_q_texts = [q["text"] for q in identity_pack.get("identity_questions") or []]
+        deliverable["plan"] = dict(deliverable.get("plan") or core.get("plan") or {})
+        deliverable["plan"]["open_questions"] = identity_q_texts
+        deliverable["plan"]["identity_questions"] = identity_pack.get("identity_questions") or []
+        core_report["open_questions"] = identity_q_texts
+
         # Autonomous assist agent — after payment messaging
         agent = ImplementationAssistAgent().build_from_core(
             core_report,
@@ -460,6 +487,8 @@ class BusinessGenerator:
             "exports": exports,
             "author_personality": personality,
             "assist_offer": agent.get("offer"),
+            "live_log_id": live_log.get("id"),
+            "identity_pack": identity_pack,
         }
 
     def _resolve_channel(

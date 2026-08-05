@@ -716,6 +716,99 @@ def promotion_pack_run(body: PromotionBody) -> dict[str, Any]:
     return {"module": "PromotionPack", "output": pack, "message": pack.get("summary")}
 
 
+class LiveLogTickBody(BaseModel):
+    session_id: str
+    day_offset: int | None = None
+    day: str | None = None
+    note: str = ""
+    who: str = ""
+    response: str = ""
+    mark_artifact: bool = False
+
+
+@router.get("/live-log/{session_id}")
+def live_log_get(session_id: str) -> dict[str, Any]:
+    from backend.core.business_gen.live_log import get_log
+
+    return get_log(session_id)
+
+
+@router.post("/live-log/tick")
+def live_log_tick(body: LiveLogTickBody) -> dict[str, Any]:
+    """Mark a day/touch done in the live 7-day channel log."""
+    from backend.core.business_gen.live_log import tick_log
+
+    return tick_log(
+        body.session_id,
+        day_offset=body.day_offset,
+        day=body.day,
+        note=body.note or "",
+        who=body.who or "",
+        response=body.response or "",
+        mark_artifact=bool(body.mark_artifact),
+    )
+
+
+class IdentityAnswersBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    project_name: str = ""
+    lang: str = "ru"
+    answers: dict = Field(default_factory=dict)
+    personality: dict = Field(default_factory=dict)
+
+
+@router.post("/identity/pack")
+def identity_pack_preview(body: IdentityAnswersBody) -> dict[str, Any]:
+    """Build unique identity questions + uniqueness forecast for a brief."""
+    from backend.core.business_gen.identity_engine import build_post_pay_identity_pack
+    from backend.core.business_gen.author_personality import build_author_personality
+    from backend.core.business_gen.core_deliverable import _detect_profile
+
+    prof = _detect_profile(body.business)
+    pers = body.personality or build_author_personality(
+        body.business, profile=prof, project_name=body.project_name, lang=body.lang
+    )
+    pack = build_post_pay_identity_pack(
+        body.business,
+        personality=pers,
+        profile=prof,
+        project_name=body.project_name,
+        lang=body.lang,
+        answers=body.answers or None,
+    )
+    return {"module": "PostPayIdentity", "output": pack}
+
+
+@router.post("/identity/answers")
+def identity_answers_submit(body: IdentityAnswersBody) -> dict[str, Any]:
+    """Submit identity answers → refreshed forecast + unlock gen_v2 slots."""
+    from backend.core.business_gen.identity_engine import build_post_pay_identity_pack
+    from backend.core.business_gen.author_personality import build_author_personality
+    from backend.core.business_gen.core_deliverable import _detect_profile
+
+    prof = _detect_profile(body.business)
+    pers = body.personality or build_author_personality(
+        body.business, profile=prof, project_name=body.project_name, lang=body.lang
+    )
+    pack = build_post_pay_identity_pack(
+        body.business,
+        personality=pers,
+        profile=prof,
+        project_name=body.project_name,
+        lang=body.lang,
+        answers=body.answers or None,
+    )
+    return {
+        "ok": True,
+        "output": pack,
+        "next": {
+            "message": pack.get("regen", {}).get("note"),
+            "can_regenerate": True,
+            "suggested": (pack.get("forecast") or {}).get("next_generations") or [],
+        },
+    }
+
+
 @router.get("/business-services")
 def business_services(lang: str = "ru") -> dict[str, Any]:
     """10 Business Tasks services + short wow demos (no hard prices)."""
