@@ -294,17 +294,18 @@
 
           <!-- Deliverable strip -->
           <div class="gen-deliver-strip" id="gen-deliver-strip">
-            <div class="deliver-chip ok" id="chip-fill">Наполнение · готово</div>
-            <div class="deliver-chip ok" id="chip-report">Аналитический отчёт · готов</div>
-            <div class="deliver-chip ok" id="chip-pdf">Основной PDF · готов</div>
-            <div class="deliver-chip later" id="chip-author">Авторская уникальность + агент деплоя · после оплаты</div>
+            <div class="deliver-chip ok" id="chip-fill">Шаги A01–A12 · готовы</div>
+            <div class="deliver-chip ok" id="chip-report">Резюме + техконтекст · готово</div>
+            <div class="deliver-chip later" id="chip-author">Уникальность + агент · после оплаты</div>
+            <div class="deliver-chip later" id="chip-gencore">GenCore v2+ · после answers</div>
           </div>
 
           <div class="cr-cta-row free-dl-row" style="margin: 0.85rem 0">
-            <button type="button" class="btn btn-primary" id="gen-dl-rd">↓ Основной PDF</button>
             <button type="button" class="btn btn-ghost" id="gen-dl-csv">↓ Карточки CSV</button>
-            <button type="button" class="btn btn-ghost" id="gen-dl-md">↓ Текст отчёта</button>
+            <a class="btn btn-ghost" href="/app/ops-panel.html" target="_blank" rel="noopener">Ops panel ↗</a>
           </div>
+          <button type="button" id="gen-dl-rd" hidden></button>
+          <button type="button" id="gen-dl-md" hidden></button>
 
           <!-- Живой 7-day log -->
           <div class="gen-block-card" id="gen-live-log-block">
@@ -320,25 +321,25 @@
             <button type="button" class="btn btn-ghost" id="gen-live-artifact" style="margin-top:0.5rem">Отметить artifact отправлен</button>
           </div>
 
-          <!-- Наполнение -->
+          <!-- Шаги A01–A12 (путь) -->
           <div class="gen-block-card" id="gen-fill-block">
             <div class="block-h">
               <span class="block-num">01</span>
               <div>
-                <div class="eyebrow">Наполнение</div>
-                <h4 class="block-title">Карточки и структура</h4>
+                <div class="eyebrow">Шаги архитектуры</div>
+                <h4 class="block-title">A01–A12 · путь решения (не «наполнение»)</h4>
               </div>
             </div>
             <div id="gen-fill-body" class="block-body"></div>
           </div>
 
-          <!-- Аналитический отчёт -->
+          <!-- Резюме + техконтекст (последний HTML-блок) -->
           <div class="gen-block-card" id="gen-report-block">
             <div class="block-h">
               <span class="block-num">02</span>
               <div>
-                <div class="eyebrow">Аналитический отчёт</div>
-                <h4 class="block-title">Обоснования решений</h4>
+                <div class="eyebrow">Резюме</div>
+                <h4 class="block-title">Консультация + технический контекст</h4>
               </div>
             </div>
             <div id="gen-report-body" class="block-body report-scroll"></div>

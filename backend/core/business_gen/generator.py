@@ -28,6 +28,7 @@ from backend.core.business_gen.skill_memory import (
 from backend.core.business_gen.assist_agent import ImplementationAssistAgent
 from backend.core.business_gen.identity_engine import build_post_pay_identity_pack
 from backend.core.business_gen.live_log import create_live_log_from_plan
+from backend.core.business_gen.gencore import run_gencore
 
 # 10 public client niches (distribution surface)
 PUBLIC_NICHES: list[dict[str, Any]] = [
@@ -139,6 +140,7 @@ class BusinessGenerator:
         channel: str = "auto",
         multi_pass: bool = True,
         passes: int = 7,
+        generation: str = "v1",
     ) -> dict[str, Any]:
         channel_info = self._resolve_channel(business_text, channel=channel, lang=lang)
         # ── Orchestration pass: rank all 10 niches + service stack ─────────
@@ -416,6 +418,21 @@ class BusinessGenerator:
         deliverable["assist_agent"] = agent
         deliverable["assist_offer"] = agent.get("offer")
 
+        # GenCore — second flagship (slots v1–v5; expands with answers)
+        gencore = run_gencore(
+            business_text=business_text,
+            project_name=project_name or core_report.get("title") or "",
+            core_report=core_report,
+            personality=personality,
+            identity_pack=identity_pack,
+            skill_distilled=distilled,
+            skills_loaded=routing.get("skills_loaded") or [],
+            answers=answers,
+            generation=generation or "v1",
+            lang=lang,
+        )
+        deliverable["gencore"] = gencore
+
         hook = build_hook_plan(
             project_name=project_name or core_report.get("title") or "",
             profile=core_report.get("profile") or profile_early,
@@ -489,6 +506,7 @@ class BusinessGenerator:
             "assist_offer": agent.get("offer"),
             "live_log_id": live_log.get("id"),
             "identity_pack": identity_pack,
+            "gencore": gencore,
         }
 
     def _resolve_channel(

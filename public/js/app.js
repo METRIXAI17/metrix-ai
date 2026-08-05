@@ -1372,25 +1372,34 @@
     const host = $("#gen-fill-body");
     if (!host) return;
     const arch = report.architecture_cards || out.core_report?.architecture_cards || [];
-    const offers = report.offer_cards || [];
     const counts = report.counts || {};
-    const top = arch.slice(0, 6);
+    const top = arch.slice(0, 12);
     host.innerHTML = `
-      <p class="how-lead">${isEn ? "Cards assembled for your brief" : "Карточки собраны под ваш бриф"}:
-        ${counts.architecture_cards || arch.length} arch · ${counts.offer_cards || offers.length} offers ·
-        ${counts.concept_tests || 0} tests</p>
+      <p class="how-lead">${
+        isEn
+          ? "Path steps A01–A12 (architecture path — not content dump)"
+          : "Шаги пути A01–A12 (архитектурный маршрут — не «наполнение»)"
+      }: ${counts.architecture_cards || arch.length}</p>
       <div class="fill-grid">
         ${top
           .map(
-            (c) =>
-              `<div class="fill-card"><div class="tz-id">${escapeHtml(c.id || "")}</div><strong>${escapeHtml(
+            (c, i) =>
+              `<div class="fill-card"><div class="tz-id">${escapeHtml(c.id || "A" + String(i + 1).padStart(2, "0"))}</div><strong>${escapeHtml(
                 c.title || ""
               )}</strong><div class="how-lead">${escapeHtml(c.niche || "")}</div><div class="how-lead">${escapeHtml(
-                (c.context || "").slice(0, 120)
+                (c.blocks || c.context || "").slice(0, 100)
               )}</div></div>`
           )
           .join("")}
       </div>`;
+    // GenCore strip
+    const gc = out.gencore || {};
+    const chip = $("#chip-gencore");
+    if (chip && gc.version) {
+      chip.textContent = `GenCore ${gc.generation || "v1"} · ${(gc.skills_in_context != null ? gc.skills_in_context : 0)} skills`;
+      chip.classList.add("ok");
+      chip.classList.remove("later");
+    }
   }
 
   function paintHook(hook, isEn) {

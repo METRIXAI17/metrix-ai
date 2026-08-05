@@ -16,8 +16,12 @@ from typing import Any
 
 try:
     from backend.config import DATA_DIR as _DATA
+    from backend.config import SUPABASE_ENABLED, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 except Exception:  # pragma: no cover
     _DATA = Path(__file__).resolve().parents[2] / "data"
+    SUPABASE_ENABLED = False
+    SUPABASE_URL = ""
+    SUPABASE_SERVICE_ROLE_KEY = ""
 
 LOG_DIR = Path(_DATA) / "live_logs"
 
@@ -75,10 +79,13 @@ def create_live_log_from_plan(
         "rule": plan.get("rule"),
         "lang": _lang(lang),
         "status": "live",
-        "backend": "local_file",
+        "backend": "supabase" if SUPABASE_ENABLED else "local_file",
         "supabase_ready": True,
+        "supabase_enabled": bool(SUPABASE_ENABLED),
     }
     _save(session)
+    if SUPABASE_ENABLED:
+        _supabase_upsert_session(session)
     return session
 
 
@@ -133,6 +140,8 @@ def tick_log(
     if done_n >= len(data.get("days") or []) and data.get("artifact_shipped"):
         data["status"] = "complete"
     _save(data)
+    if SUPABASE_ENABLED:
+        _supabase_upsert_session(data)
     return {"ok": True, "matched": matched, "session": data}
 
 
@@ -141,3 +150,60 @@ def _save(session: dict[str, Any]) -> None:
     session["id"] = sid
     path = _ensure() / f"{sid}.json"
     path.write_text(json.dumps(session, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _supabase_upsert_session(session: dict[str, Any]) -> None:
+    """Best-effort REST upsert. Failures never break generate."""
+    if not SUPABASE_ENABLED:
+        return
+    try:
+        import httpx
+
+        headers = {
+            "apikey": SUPABASE_SERVICE_ROLE_KEY,
+            "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates",
+        }
+        row = {
+            "id": session.get("id"),
+            "project_name": session.get("project_name"),
+            "run_id": session.get("run_id"),
+            "start_date": session.get("start_date"),
+            "end_date": session.get("end_date"),
+            "touch_target": session.get("touch_target"),
+            "touches_done": session.get("touches_done"),
+            "artifact": session.get("artifact") or {},
+            "artifact_shipped": session.get("artifact_shipped"),
+            "channel_name": session.get("channel_name"),
+            "status": session.get("status"),
+            "lang": session.get("lang"),
+        }
+        days = [
+            {
+                "session_id": session.get("id"),
+                "day_offset": d.get("day_offset"),
+                "day": d.get("day"),
+                "label": d.get("label"),
+                "action": d.get("action"),
+                "owner": d.get("owner"),
+                "done": d.get("done"),
+                "note": d.get("note") or "",
+            }
+            for d in session.get("days") or []
+        ]
+        with httpx.Client(timeout=8.0) as client:
+            client.post(
+                f"{SUPABASE_URL}/rest/v1/live_log_sessions",
+                headers=headers,
+                json=row,
+            )
+            if days:
+                client.post(
+                    f"{SUPABASE_URL}/rest/v1/live_log_days",
+                    headers=headers,
+                    json=days,
+                )
+    except Exception:
+        # stay local-file resilient
+        pass

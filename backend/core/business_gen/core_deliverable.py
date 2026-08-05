@@ -611,15 +611,11 @@ def _decision_cards(profile: dict[str, Any], plan: dict[str, Any], lang: str) ->
                 "title": title,
                 "chosen": str(chosen),
                 "resolved_as": resolved,
-                "kill": _d(
-                    lang,
-                    "Откат на предыдущий шаг, если нет proof за 7–14 дней",
-                    "Roll back to previous step if no proof in 7–14 days",
-                ),
+                "kill": "",  # global stop-rule once in analytical resume — not per decision
                 "next": _d(
                     lang,
-                    "Зафиксировать в answers/choices и не расширять scope",
-                    "Lock in answers/choices and do not expand scope",
+                    "Зафиксировать выбор и не расширять scope",
+                    "Lock the choice and do not expand scope",
                 ),
             }
         )

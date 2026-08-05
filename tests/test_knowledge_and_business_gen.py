@@ -112,6 +112,13 @@ def test_business_generate_library_core():
     assert out.get("live_log") and out["live_log"].get("days")
     assert out.get("identity_pack") and out["identity_pack"].get("identity_questions")
     assert out["identity_pack"]["forecast"].get("delight_score")
+    # GenCore wired
+    assert out.get("gencore") and out["gencore"].get("module") == "GenCore"
+    assert "v1_consult" in (out["gencore"].get("slots") or {})
+    # Resume HTML has single stop-rule, steps label
+    html = b.get("consultation_html") or b.get("rd_html") or ""
+    assert "stop" in html.lower() or "Стоп" in html or "Stop" in html
+    assert html.lower().count("falsifier") == 0
 
     # 2) Live 7-day channel log: 10–15 touches + 1 artifact
     clog = cr["channel_log_7d"]

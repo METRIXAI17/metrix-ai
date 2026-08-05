@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Metrix Ops Panel · founder</title>
+  <style>
+    :root {
+      --bg: #070a0f; --card: #111822; --line: rgba(148,163,184,.16);
+      --text: #e8eef7; --muted: #94a3b8; --accent: #5eead4; --a2: #38bdf8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, Segoe UI, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.5; padding: 1.25rem;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 1.35rem; margin: 0 0 .35rem; }
+    .m { color: var(--muted); font-size: .9rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; margin-top: 1rem; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 1rem 1.1rem;
+    }
+    .card h2 { font-size: .95rem; margin: 0 0 .55rem; color: var(--accent); }
+    label { display: block; font-size: .78rem; color: var(--muted); margin: .45rem 0 .2rem; }
+    input, textarea {
+      width: 100%; background: #0a0f16; border: 1px solid var(--line); color: var(--text);
+      border-radius: 10px; padding: .55rem .7rem; font: inherit;
+    }
+    button, .btn {
+      display: inline-block; margin-top: .65rem; margin-right: .4rem;
+      background: rgba(94,234,212,.12); border: 1px solid rgba(94,234,212,.4);
+      color: var(--accent); border-radius: 10px; padding: .5rem .85rem; cursor: pointer; font-weight: 700;
+    }
+    pre {
+      white-space: pre-wrap; background: #0a0f16; border-radius: 10px; padding: .75rem;
+      font-size: .78rem; color: var(--muted); max-height: 280px; overflow: auto;
+    }
+    a { color: var(--a2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Metrix Ops Panel</h1>
+    <p class="m">Личная операционная панель основателя · live log · GenCore · identity. API: Railway. Persist: file / Supabase.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h2>1 · API base</h2>
+        <label>API URL</label>
+        <input id="api" value="https://metrix-ai-production.up.railway.app" />
+        <label>Live log session id</label>
+        <input id="logId" placeholder="log_…" />
+        <button type="button" id="btn-log">Load live log</button>
+        <pre id="logOut">—</pre>
+      </div>
+      <div class="card">
+        <h2>2 · GenCore</h2>
+        <label>Project</label>
+        <input id="proj" placeholder="Architecture Library" />
+        <label>Brief</label>
+        <textarea id="brief" rows="4" placeholder="Business brief…"></textarea>
+        <label>Generation</label>
+        <input id="gen" value="v2" />
+        <button type="button" id="btn-gc">Run GenCore</button>
+        <pre id="gcOut">—</pre>
+      </div>
+      <div class="card">
+        <h2>3 · Identity pack</h2>
+        <button type="button" id="btn-id">Load unique identity Q</button>
+        <pre id="idOut">—</pre>
+      </div>
+      <div class="card">
+        <h2>4 · Clients / external</h2>
+        <p class="m">Для панели клиентов (CRM-light) подключите один из сервисов:</p>
+        <ul class="m">
+          <li><a href="https://supabase.com" target="_blank">Supabase</a> — DB + auth + realtime</li>
+          <li><a href="https://www.appsmith.com" target="_blank">Appsmith</a> — internal ops UI on your API</li>
+          <li><a href="https://retool.com" target="_blank">Retool</a> — admin/client desks</li>
+          <li><a href="https://www.nocodb.com" target="_blank">NocoDB</a> — spreadsheet UI on Postgres</li>
+        </ul>
+        <p class="m">Схема SQL: <code>docs/SUPABASE_LIVE_LOG.md</code> · план: <code>docs/OPS_PANEL_EXTERNAL.md</code></p>
+      </div>
+    </div>
+  </div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const api = () => ($("api").value || "").replace(/\/$/, "");
+    $("btn-log").onclick = async () => {
+      const id = $("logId").value.trim();
+      if (!id) return ($("logOut").textContent = "need session id");
+      try {
+        const r = await fetch(`${api()}/api/v1/analytics/live-log/${encodeURIComponent(id)}`);
+        $("logOut").textContent = JSON.stringify(await r.json(), null, 2);
+      } catch (e) { $("logOut").textContent = String(e); }
+    };
+    $("btn-gc").onclick = async () => {
+      try {
+        const r = await fetch(`${api()}/api/v1/analytics/gencore`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business: $("brief").value || "Architecture design library for IT builders with niches and concept tests",
+            project_name: $("proj").value || "Ops",
+            generation: $("gen").value || "v2",
+            lang: "ru",
+          }),
+        });
+        $("gcOut").textContent = JSON.stringify(await r.json(), null, 2);
+      } catch (e) { $("gcOut").textContent = String(e); }
+    };
+    $("btn-id").onclick = async () => {
+      try {
+        const r = await fetch(`${api()}/api/v1/analytics/identity/pack`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business: $("brief").value || "Architecture design library for IT builders with niches and concept tests",
+            project_name: $("proj").value || "Ops",
+            lang: "ru",
+          }),
+        });
+        $("idOut").textContent = JSON.stringify(await r.json(), null, 2);
+      } catch (e) { $("idOut").textContent = String(e); }
+    };
+  </script>
+</body>
+</html>

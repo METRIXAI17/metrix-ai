@@ -90,7 +90,22 @@ def convert_to_rd(
         }
     )
 
-    # ── Decision warrants (from S1–S4)
+    # ── Global stop rule ONCE (no kill/falsifier spam on every card)
+    global_stop = _d(
+        L,
+        "Стоп-правило (одно на весь пилот): нет измеримого proof за 7–14 дней → откат на предыдущий шаг, без расширения scope.",
+        "Single pilot stop-rule: no measurable proof in 7–14 days → roll back one step, no scope expansion.",
+    )
+    sections.append(
+        {
+            "id": "S1b",
+            "kind": "stop_rule",
+            "title": _d(L, "Стоп-правило пилота", "Pilot stop-rule"),
+            "body": global_stop,
+        }
+    )
+
+    # ── Decision warrants (from S1–S4) — no repeated kill text
     warrants = []
     for d in decisions:
         warrants.append(
@@ -101,13 +116,10 @@ def convert_to_rd(
                 "resolved_as": d.get("resolved_as"),
                 "warrant": _d(
                     L,
-                    f"Обоснование: выбор `{d.get('chosen')}` минимизирует scope creep и даёт измеримый exit за пилот. "
-                    f"Kill: {d.get('kill')}.",
-                    f"Warrant: choosing `{d.get('chosen')}` minimises scope creep and yields a measurable pilot exit. "
-                    f"Kill: {d.get('kill')}.",
+                    f"Почему так: `{d.get('chosen')}` даёт измеримый exit и меньше scope creep.",
+                    f"Why: `{d.get('chosen')}` yields a measurable exit with less scope creep.",
                 ),
-                "evidence_grade": "B",  # structured inference, not field data
-                "falsifier": d.get("kill"),
+                "evidence_grade": "B",
                 "feature": "decision_warrant",
             }
         )
@@ -115,12 +127,12 @@ def convert_to_rd(
         {
             "id": "S2",
             "kind": "decision_warrants",
-            "title": _d(L, "Обоснования решений (warrants)", "Decision warrants"),
+            "title": _d(L, "Обоснования решений", "Decision warrants"),
             "items": warrants,
         }
     )
 
-    # ── Architecture as design claims
+    # ── Architecture STEPS A01–A12 (path steps, not “content dump”)
     claims = []
     for c in arch[:12]:
         claims.append(
@@ -131,22 +143,16 @@ def convert_to_rd(
                 "context": c.get("context"),
                 "instrument_chain": c.get("blocks"),
                 "boundary": c.get("boundary"),
-                "falsifier": c.get("failure"),
                 "proof": c.get("proof"),
                 "evidence_grade": "B" if c.get("niche") else "C",
-                "transfer_risk": _d(
-                    L,
-                    f"Риск переноса с ниши «{c.get('niche')}» на другой ICP без sample.",
-                    f"Transfer risk from niche «{c.get('niche')}» to another ICP without sample.",
-                ),
-                "feature": "instrument_chain",
+                "feature": "path_step",
             }
         )
     sections.append(
         {
             "id": "S3",
-            "kind": "design_claims",
-            "title": _d(L, "Дизайн-утверждения (architecture claims)", "Design claims"),
+            "kind": "path_steps",
+            "title": _d(L, "Шаги архитектуры A01–A12", "Architecture steps A01–A12"),
             "items": claims,
         }
     )
@@ -268,12 +274,23 @@ def convert_to_rd(
         }
     )
 
+    # Drop heavy epistemic $ valuation from client resume (noise)
+    sections = [s for s in sections if s.get("kind") != "epistemic_status"]
+
     md = _render_rd_markdown(title, sections, lang=L)
-    html = _render_rd_html(title, sections, lang=L)
+    html = _render_resume_html(
+        title,
+        sections,
+        lang=L,
+        profile=profile,
+        answers=answers,
+        routing=route,
+        skills=skills or [],
+    )
 
     return {
         "module": "RDReaderConverter",
-        "version": "1.0",
+        "version": "1.1",
         "features": list(RD_FEATURES),
         "title": title,
         "generated_on": date.today().isoformat(),
@@ -281,13 +298,90 @@ def convert_to_rd(
         "sections": sections,
         "markdown": md,
         "html": html,
-        "primary_surface": "rd_html",
+        "primary_surface": "resume_html",
         "note": _d(
             L,
-            "R&D reader — обоснования решений, не сырой MD-отчёт.",
-            "R&D reader — decision warrants, not a raw MD dump.",
+            "Резюме консультации + техконтекст. Стоп-правило — один раз.",
+            "Consultation resume + tech context. Stop-rule once.",
         ),
     }
+
+
+def _render_resume_html(
+    title: str,
+    sections: list[dict[str, Any]],
+    *,
+    lang: str,
+    profile: dict[str, Any],
+    answers: dict[str, str],
+    routing: dict[str, Any],
+    skills: list[dict[str, Any]],
+) -> str:
+    """Compact HTML resume with technical context (last-block surface)."""
+    L = lang
+    stop = next((s for s in sections if s.get("kind") == "stop_rule"), None)
+    warrants = next((s for s in sections if s.get("kind") == "decision_warrants"), None)
+    steps = next((s for s in sections if s.get("kind") in ("path_steps", "design_claims")), None)
+    exp = next((s for s in sections if s.get("kind") == "experiments"), None)
+
+    def items_html(sec: dict | None, limit: int = 6) -> str:
+        if not sec:
+            return ""
+        out = []
+        for it in (sec.get("items") or [])[:limit]:
+            if not isinstance(it, dict):
+                continue
+            head = it.get("title") or it.get("claim") or it.get("id") or it.get("decision_id") or "—"
+            sub = it.get("warrant") or it.get("context") or it.get("hypothesis") or it.get("chosen") or ""
+            out.append(
+                f"<div class='row'><b>{_esc(it.get('id') or it.get('decision_id') or '')}</b> "
+                f"{_esc(head)}<div class='m'>{_esc(sub)}</div></div>"
+            )
+        return "".join(out)
+
+    tech_bits = [
+        f"profile={_esc(profile.get('profile'))}",
+        f"unit={_esc(profile.get('unit_id') or profile.get('unit'))}",
+        f"route={_esc((routing or {}).get('domain'))}/{(routing or {}).get('depth')}",
+        f"cash={_esc(answers.get('constraint_cash'))}",
+        f"window={_esc(answers.get('constraint_time'))}",
+        f"skills_loaded={len(skills or [])}",
+    ]
+    h_title = _d(L, "Резюме консультации", "Consultation resume")
+    return f"""<!DOCTYPE html>
+<html lang="{L}"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>{_esc(h_title)} · {_esc(title)}</title>
+<style>
+body{{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:#0a0f16;color:#e8eef7;padding:1.25rem;line-height:1.45}}
+.wrap{{max-width:820px;margin:0 auto}}
+.hero{{border:1px solid rgba(94,234,212,.28);border-radius:14px;padding:1rem 1.15rem;background:linear-gradient(135deg,rgba(94,234,212,.08),rgba(56,189,248,.05));margin-bottom:1rem}}
+.eyebrow{{color:#5eead4;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700}}
+h1{{font-size:1.25rem;margin:.3rem 0}}
+.m{{color:#94a3b8;font-size:.88rem}}
+.card{{border:1px solid rgba(148,163,184,.14);border-radius:12px;padding:.85rem 1rem;background:#121a24;margin:.65rem 0}}
+.card h3{{margin:0 0 .5rem;font-size:.95rem;color:#5eead4}}
+.row{{padding:.35rem 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:.9rem}}
+.row b{{color:#38bdf8;font-family:ui-monospace,Consolas,monospace;margin-right:.4rem}}
+.tech{{font-family:ui-monospace,Consolas,monospace;font-size:.75rem;color:#94a3b8;word-break:break-word}}
+.stop{{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.06)}}
+</style></head><body><div class="wrap">
+<header class="hero">
+  <div class="eyebrow">{_esc(h_title)}</div>
+  <h1>{_esc(title)}</h1>
+  <p class="m">{_esc(profile.get('metric') or '')}</p>
+</header>
+<div class="card stop"><h3>{_esc((stop or {}).get('title') or 'Stop')}</h3>
+<p class="m">{_esc((stop or {}).get('body') or '')}</p></div>
+<div class="card"><h3>{_d(L, 'Решения S1–S4', 'Decisions S1–S4')}</h3>{items_html(warrants, 4)}</div>
+<div class="card"><h3>{_d(L, 'Шаги A01–A12 (путь, не «наполнение»)', 'Steps A01–A12 (path, not content dump)')}</h3>{items_html(steps, 8)}</div>
+<div class="card"><h3>{_d(L, 'Тесты T1–T3', 'Tests T1–T3')}</h3>{items_html(exp, 3)}</div>
+<div class="card"><h3>{_d(L, 'Технический контекст', 'Technical context')}</h3>
+<pre class="tech">{_esc(' · '.join(tech_bits))}</pre>
+<p class="m">{_d(L, 'Стек: FastAPI · skill_memory · smart_router · live_log · identity · GenCore', 'Stack: FastAPI · skill_memory · smart_router · live_log · identity · GenCore')}</p>
+</div>
+</div></body></html>
+"""
 
 
 def _render_rd_markdown(title: str, sections: list[dict[str, Any]], *, lang: str) -> str:

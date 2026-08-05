@@ -7,6 +7,7 @@ from backend.core.business_gen.hook_plan import build_hook_plan
 from backend.core.business_gen.rd_reader import convert_to_rd
 from backend.core.business_gen.author_personality import build_author_personality
 from backend.core.business_gen.assist_agent import ImplementationAssistAgent
+from backend.core.business_gen.gencore import run_gencore
 
 __all__ = [
     "BusinessGenerator",
@@ -18,4 +19,5 @@ __all__ = [
     "convert_to_rd",
     "build_author_personality",
     "ImplementationAssistAgent",
+    "run_gencore",
 ]

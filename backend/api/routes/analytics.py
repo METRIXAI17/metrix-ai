@@ -577,6 +577,7 @@ class BusinessGenBody(BaseModel):
     channel: str = "auto"  # auto | online | offline | hybrid
     multi_pass: bool = True
     passes: int = 7
+    generation: str = "v1"  # GenCore: v1 | v2 | v3 | v4 | v5
 
 
 class WorkerTaskBody(BaseModel):
@@ -640,7 +641,55 @@ def business_generate_run(body: BusinessGenBody) -> dict[str, Any]:
         channel=body.channel or "auto",
         multi_pass=bool(body.multi_pass),
         passes=max(3, min(int(body.passes or 7), 12)),
+        generation=body.generation or "v1",
     )
+
+
+class GenCoreBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    project_name: str = ""
+    lang: str = "ru"
+    generation: str = "v2"
+    answers: dict = Field(default_factory=dict)
+    # optional: pass prior generate output fragments
+    core_report: dict = Field(default_factory=dict)
+    personality: dict = Field(default_factory=dict)
+    identity_pack: dict = Field(default_factory=dict)
+    skill_distilled: dict = Field(default_factory=dict)
+
+
+@router.post("/gencore")
+def gencore_run(body: GenCoreBody) -> dict[str, Any]:
+    """GenCore flagship: compile gen_v2+ slots from answers / prior consult."""
+    from backend.core.business_gen.gencore import run_gencore
+    from backend.core.business_gen.author_personality import build_author_personality
+    from backend.core.business_gen.identity_engine import build_post_pay_identity_pack
+    from backend.core.business_gen.core_deliverable import _detect_profile
+
+    prof = _detect_profile(body.business)
+    pers = body.personality or build_author_personality(
+        body.business, profile=prof, project_name=body.project_name, lang=body.lang
+    )
+    ident = body.identity_pack or build_post_pay_identity_pack(
+        body.business,
+        personality=pers,
+        profile=prof,
+        project_name=body.project_name,
+        lang=body.lang,
+        answers=body.answers or None,
+    )
+    out = run_gencore(
+        business_text=body.business,
+        project_name=body.project_name,
+        core_report=body.core_report or {"title": body.project_name, "profile": prof},
+        personality=pers,
+        identity_pack=ident,
+        skill_distilled=body.skill_distilled or None,
+        answers=body.answers or None,
+        generation=body.generation or "v2",
+        lang=body.lang,
+    )
+    return {"module": "GenCore", "output": out, "message": out.get("message")}
 
 
 class AssistApproveBody(BaseModel):

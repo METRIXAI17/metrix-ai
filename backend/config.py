@@ -32,6 +32,12 @@ ENV_NAME = os.getenv("METRIX_ENV", "development" if DEBUG else "production")
 PUBLIC_BASE_URL = os.getenv("METRIX_PUBLIC_URL", "").rstrip("/")
 API_PREFIX = "/api/v1"
 
+# Supabase (optional — live log + future ops panel). Never put service role in frontend.
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+SUPABASE_ENABLED = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
+
 
 def public_api_url(path: str) -> str:
     """Build browser-openable URL for an API path (relative if PUBLIC_BASE_URL unset)."""
