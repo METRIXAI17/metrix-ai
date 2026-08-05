@@ -64,6 +64,119 @@ def test_business_generate_go():
     assert len(orch["niche_ranking"]) == 10
     assert orch["service_stack"]
     assert orch["run_plan"]
+    # Human Core report (no JSON-only surface)
+    cr = out["core_report"]
+    assert cr["markdown"] and "# " in cr["markdown"]
+    assert cr["counts"]["architecture_cards"] >= 8
+    assert b.get("core_markdown")
+    assert "realized_mid_usd" in (b.get("value_vs_core") or cr["value_vs_core"])
+
+
+def test_business_generate_library_core():
+    brief = (
+        "Онлайн бизнес с карточками архитектуры, предложениями и работой с нишами, "
+        "принятия решений на пути создания и концептов тестирования. "
+        "Библиотека с архитектурными дизайнами для билдеров ай-ти продуктов."
+    )
+    b = BusinessGenerator().generate(
+        brief,
+        industry_id="generic",
+        lang="ru",
+        project_name="Библиотека архитектурных дизайнов",
+        channel="online",
+        numbers={"cash_ceiling": 1500, "days": 21},
+    )
+    out = b["output"]
+    cr = out["core_report"]
+    assert cr["profile"]["is_library"] is True
+    assert cr["profile"]["profile"] == "knowledge_library"
+    assert cr["counts"]["total_cards"] >= 15
+    assert "Ядро:" in cr["markdown"]
+    assert "unit" in cr["markdown"].lower()
+
+    # 1) Signer numbers → answers (constraint_cash, days) — not 2 open money Q
+    ans = cr["inferred_answers"]
+    assert "constraint_cash" in ans and "1500" in ans["constraint_cash"]
+    assert "constraint_time" in ans and "21" in ans["constraint_time"]
+    money_q = [
+        q
+        for q in (cr.get("open_questions") or out["plan"].get("open_questions") or [])
+        if any(t in q.lower() for t in ("бюджет", "cash", "потол", "окно", "дней", "срок"))
+    ]
+    assert len(money_q) == 0, money_q
+
+    # 2) Live 7-day channel log: 10–15 touches + 1 artifact
+    clog = cr["channel_log_7d"]
+    assert clog["touch_target"] >= 10
+    assert clog["artifact"]["name"]
+    assert "network" not in (clog["rule"] or "").lower() or "не" in (clog["rule"] or "").lower()
+    assert len(clog["days"]) >= 6
+
+    # 3) Calendar kill — T1–T3 with ISO dates
+    tests = cr["concept_tests"]
+    assert len(tests) >= 3
+    for t in tests:
+        assert t.get("start_date") and t.get("kill_date")
+        assert "-" in t["kill_date"]  # ISO
+    assert "kill `" in cr["markdown"] or "kill" in cr["markdown"].lower()
+
+    # 4) Deep niche designs (not library meta only)
+    titles = " ".join(c["title"] for c in cr["architecture_cards"])
+    assert "Billing" in titles or "Agent" in titles or "API" in titles
+    assert all(c.get("niche") for c in cr["architecture_cards"])
+
+    # 5) File exports CSV + print HTML
+    ex = cr["exports"]
+    assert "architecture" in ex["cards_csv"] and "A01" in ex["cards_csv"]
+    assert "<html" in ex["print_html"].lower()
+    assert b.get("exports")
+
+    # 6) Implementation assistant path (not CTA-only)
+    assist = cr["implementation_assistant"]
+    assert len(assist["steps"]) >= 5
+    assert assist["trigger"] == "implementation_approval"
+
+    # Hook plan for conversion
+    hook = out["hook_plan"]
+    assert hook["cta"] and hook["markdown"]
+    assert b.get("hook_markdown")
+    assert hook["price_usd"] == 790
+
+    # Plan should lean product_pack / unit_pack for library
+    steps = {s["id"]: s["default_option"] for s in (out["plan"]["steps"] or [])}
+    assert steps.get("S1_direction") in ("product_pack", "full_stack", "ops_fix")
+    assert steps.get("S2_unit") in ("unit_pack", "unit_order")
+    val = cr["value_vs_core"]
+    assert val["tariff_price_usd"] == 790
+    assert val["realized_mid_usd"] >= 350
+    assert val["realized_mid_usd"] <= 790
+    assert val["gap_usd"] >= 0
+
+
+def test_business_generate_library_en_parity():
+    brief = (
+        "Online business with architecture cards, offers, niche work, "
+        "decision paths and concept testing. "
+        "Library of architectural designs for IT product builders."
+    )
+    b = BusinessGenerator().generate(
+        brief,
+        industry_id="generic",
+        lang="en",
+        project_name="Architecture Design Library",
+        channel="online",
+        numbers={"cash_ceiling": 1200, "days": 21},
+    )
+    cr = b["output"]["core_report"]
+    md = cr["markdown"]
+    assert md.startswith("# Core:")
+    assert "Deep architecture cards" in md or "architecture cards" in md.lower()
+    assert "Implementation assistant" in md
+    assert "Live 7-day channel log" in md
+    assert "1200" in cr["inferred_answers"]["constraint_cash"]
+    hook = b["output"]["hook_plan"]
+    assert hook["lang"] == "en"
+    assert "Approve" in hook["cta"] or "Core" in hook["cta"]
 
 
 def test_services_catalog():

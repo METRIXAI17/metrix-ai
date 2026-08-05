@@ -964,6 +964,10 @@
               multi_pass: true,
               passes: 7,
               choices: state.genChoices,
+              numbers: {
+                cash_ceiling: Number($("#gen-cash")?.value || 1500),
+                days: Number($("#gen-days")?.value || 21),
+              },
             }),
           }
         );
@@ -1019,6 +1023,8 @@
     if (!root) return;
     root.hidden = false;
     const out = data.output || {};
+    const report = out.core_report || {};
+    const value = data.value_vs_core || report.value_vs_core || {};
     $("#gen-msg").textContent = data.message || out.pre_corrected?.opening_line || "—";
     const gate = out.final_gate || {};
     const gEl = $("#gen-gate");
@@ -1027,6 +1033,71 @@
         (gate.go_prod ? t("success_go") : t("success_cond")) +
         (gate.verdict ? " · " + gate.verdict : "");
       gEl.classList.toggle("warn", !gate.go_prod);
+    }
+    const isEn = lang() === "en";
+    const vb = $("#gen-value-band");
+    if (vb) {
+      if (value && value.realized_mid_usd != null) {
+        vb.textContent = isEn
+          ? `Value vs Core $790: ~$${value.realized_value_usd_low}–$${value.realized_value_usd_high}` +
+            ` (mid $${value.realized_mid_usd}) · gap $${value.gap_usd} · ${value.band || ""} · ${value.verdict || ""}`
+          : `Ценность vs Ядро $790: ~$${value.realized_value_usd_low}–$${value.realized_value_usd_high}` +
+            ` (mid $${value.realized_mid_usd}) · gap $${value.gap_usd} · ${value.band || ""} · ${value.verdict || ""}`;
+      } else {
+        vb.textContent = "";
+      }
+    }
+
+    // Hook plan — short buy-ready surface
+    const hook = out.hook_plan || {};
+    const hookEl = $("#gen-hook-plan");
+    if (hookEl) {
+      hookEl.textContent =
+        data.hook_markdown || hook.markdown || report.hook_markdown ||
+        (isEn ? "Hook plan unavailable — refresh API." : "Hook plan недоступен — обновите API.");
+    }
+
+    // Primary: clean markdown Core report (no JSON dump)
+    const mdEl = $("#gen-core-report");
+    if (mdEl) {
+      const md = data.core_markdown || report.markdown || "";
+      mdEl.textContent =
+        md ||
+        (isEn ? "Core report unavailable — refresh API." : "Отчёт Ядра недоступен — обновите API.");
+    }
+
+    // File exports (CSV / MD / HTML→PDF)
+    bindExportButtons(data, report);
+
+    // Assist path hidden until approve
+    const assistEl = $("#gen-assist-path");
+    if (assistEl) {
+      assistEl.hidden = true;
+      assistEl.textContent = "";
+    }
+    const approveBtn = $("#gen-approve-core");
+    if (approveBtn && approveBtn.dataset.bound !== "1") {
+      approveBtn.dataset.bound = "1";
+      approveBtn.addEventListener("click", () => {
+        const assist = report.implementation_assistant || out.core_report?.implementation_assistant || {};
+        const steps = assist.steps || [];
+        if (assistEl) {
+          assistEl.hidden = false;
+          const head = isEn
+            ? "Implementation assistant path (unlocked after approval):"
+            : "Implementation assistant path (открыт после approval):";
+          const body = steps
+            .map((s) => `• ${s.id} ${s.day}: ${s.title} — ${s.action} → ${s.exit}`)
+            .join("\n");
+          assistEl.textContent =
+            `${head}\n${assist.summary || ""}\n${body || (isEn ? "No steps" : "Нет шагов")}\n\n${assist.cta_after || ""}`;
+        }
+        approveBtn.textContent = isEn ? "Approved · assist open" : "Утверждено · assist открыт";
+        approveBtn.disabled = true;
+      });
+    } else if (approveBtn) {
+      approveBtn.disabled = false;
+      approveBtn.textContent = isEn ? "Approve Core · $790" : "Утвердить Ядро · $790";
     }
 
     paintForecast(out);
@@ -1079,7 +1150,10 @@
           .slice(0, 4)
           .map((c) => {
             let v = c.v;
-            if (typeof v === "object") v = JSON.stringify(v).slice(0, 120);
+            if (v == null) v = "—";
+            else if (Array.isArray(v)) v = v.map((x) => (typeof x === "object" ? x.title || x.id || "" : x)).filter(Boolean).join("; ");
+            else if (typeof v === "object") v = Object.entries(v).map(([k, val]) => `${k}: ${val}`).join(", ");
+            v = String(v).slice(0, 160);
             return `<div class="mp-card">${escapeHtml(c.k)}: ${escapeHtml(v)}</div>`;
           })
           .join("");
@@ -1087,32 +1161,72 @@
       })
       .join("");
 
-    $("#gen-quality").textContent = JSON.stringify(
-      {
-        quality: out.quality,
-        self_test: out.self_test,
-        synthesis: out.synthesis_highlights,
-        primary_industry: out.primary_industry,
-        channel: out.channel,
-        implementation_forecast: out.implementation_forecast,
-      },
-      null,
-      2
-    );
+    const q = out.quality || {};
+    const st = out.self_test || {};
+    const qEl = $("#gen-quality");
+    if (qEl) {
+      qEl.textContent =
+        `Уверенность ${q.confidence ?? "—"} · anti-template ${q.anti_template_score ?? "—"} · ` +
+        `commit ${q.commit_ready ? "да" : "нет"} · self-test ${st.passed ?? "?"}/${st.total ?? "?"} · ${st.verdict || ""} · ` +
+        `ниша ${out.primary_industry || "—"} · канал ${(out.channel && out.channel.mode) || "—"}`;
+    }
     const eb = out.expert_base || {};
-    $("#gen-expert").textContent = JSON.stringify(
-      {
-        id: eb.id,
-        name: eb.name,
-        summary: eb.summary,
-        layers: eb.layers,
-        original_moves: eb.original_moves,
-      },
-      null,
-      2
-    );
-    $("#gen-code").textContent = JSON.stringify(out.autonomous_code_pack || {}, null, 2);
+    const eEl = $("#gen-expert");
+    if (eEl) {
+      const moves = (eb.original_moves || report.original_moves || []).slice(0, 3);
+      eEl.textContent =
+        `${eb.name || report.title || "—"} · слои: ${(eb.layers || []).join(", ") || "—"}` +
+        (moves.length ? ` · ходы: ${moves.join(" | ")}` : "");
+    }
+    const pack = out.autonomous_code_pack || {};
+    const cEl = $("#gen-code");
+    if (cEl) {
+      const comps = (pack.components || []).slice(0, 4).join("; ");
+      cEl.textContent = `${pack.title || "Assembly pack"} · ${pack.weight || ""} · ${comps || "—"}`;
+    }
     root.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function downloadBlob(filename, content, mime) {
+    const blob = new Blob([content], { type: mime || "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function bindExportButtons(data, report) {
+    const exports = data.exports || report.exports || {};
+    const names = exports.filenames || {
+      csv: "metrix-core-cards.csv",
+      html: "metrix-core-report.html",
+      md: "metrix-core-report.md",
+    };
+    const md = data.core_markdown || report.markdown || "";
+    const map = {
+      "gen-dl-md": () => downloadBlob(names.md || "metrix-core-report.md", md, "text/markdown;charset=utf-8"),
+      "gen-dl-csv": () =>
+        downloadBlob(
+          names.csv || "metrix-core-cards.csv",
+          exports.cards_csv || "",
+          "text/csv;charset=utf-8"
+        ),
+      "gen-dl-html": () =>
+        downloadBlob(
+          names.html || "metrix-core-report.html",
+          exports.print_html || `<pre>${md.replace(/</g, "&lt;")}</pre>`,
+          "text/html;charset=utf-8"
+        ),
+    };
+    Object.keys(map).forEach((id) => {
+      const el = $("#" + id);
+      if (!el) return;
+      el.onclick = map[id];
+    });
   }
 
   function paintForecast(out) {

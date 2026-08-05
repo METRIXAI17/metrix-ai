@@ -58,6 +58,11 @@ class HumanLightPlanner:
             r"переработ", r"вторсырь", r"отход", r"логист", r"recycl", r"scrap",
             r"склад", r"тонн", r"мусор", r"металлолом", r"plastic", r"waste",
         ]),
+        ("knowledge_library", [
+            r"библиотек", r"library", r"карточ", r"архитект", r"architecture",
+            r"билдер", r"builder", r"концепт", r"design pack", r"marketplace",
+            r"маркетплейс", r"knowledge pack",
+        ]),
         ("service_b2c", [
             r"услуг", r"консьерж", r"b2c", r"клиент", r"запис", r"salon", r"service",
         ]),
@@ -68,7 +73,7 @@ class HumanLightPlanner:
             r"контент", r"аудитор", r"подпис", r"creator", r"youtube", r"блог",
         ]),
         ("asset_decision", [
-            r"актив", r"капитал", r"портфел", r"asset", r"инвест", r"решени",
+            r"актив", r"капитал", r"портфел", r"asset", r"инвест",
         ]),
     ]
 
@@ -122,14 +127,19 @@ class HumanLightPlanner:
         )
 
         # Step 2: unit economics skeleton
+        unit_opts = self._unit_options(domain, lang)
+        default_unit = (
+            approved.get("S2_unit")
+            or (unit_opts[0]["id"] if unit_opts else "unit_order")
+        )
         steps.append(
             PlanStep(
                 id="S2_unit",
                 title="Единица ценности" if lang == "ru" else "Unit of value",
                 intent="Define billable unit + first cash path",
                 needs_human=True,
-                options=self._unit_options(domain, lang),
-                default_option=approved.get("S2_unit") or "unit_order",
+                options=unit_opts,
+                default_option=default_unit,
                 rationale="Единица = якорь метрик и оффера.",
             )
         )
@@ -148,14 +158,19 @@ class HumanLightPlanner:
         )
 
         # Step 4: pilot metric
+        metric_opts = self._metric_options(domain, lang)
+        default_metric = (
+            approved.get("S4_metric")
+            or (metric_opts[0]["id"] if metric_opts else "m_margin")
+        )
         steps.append(
             PlanStep(
                 id="S4_metric",
                 title="Метрика пилота" if lang == "ru" else "Pilot metric",
                 intent="Single success metric + kill criteria",
                 needs_human=True,
-                options=self._metric_options(domain, lang),
-                default_option=approved.get("S4_metric") or "m_margin",
+                options=metric_opts,
+                default_option=default_metric,
                 rationale="Если нельзя измерить за 14–21 день — не пилот.",
             )
         )
@@ -190,7 +205,7 @@ class HumanLightPlanner:
         assumptions = [
             "Клиент владеет рисками и решениями; Metrix даёт ТЗ и опору, не гарантию прибыли.",
             "Пилот = один трек, одна метрика, ограниченное окно.",
-            "Оплата внедрения — после подтверждённой ценности (модель «после вашей оплаты» где применимо).",
+            "Оплата внедрения — опционально и только после утверждения implementation approval.",
         ]
         if domain == "resource_logistics":
             assumptions.append(
@@ -254,6 +269,13 @@ class HumanLightPlanner:
                 {"id": "svc_concierge", "label": "Консьерж-пакет поверх базового слоя"},
                 {"id": "svc_multi", "label": "Мульти-направление (шаблон услуг)"},
             ]
+        if domain == "knowledge_library":
+            return [
+                {"id": "product_pack", "label": "Продукт: библиотека / pack карточек"},
+                {"id": "ops_fix", "label": "Операционка production desk"},
+                {"id": "promo_angle", "label": "Продвижение / угол продажи"},
+                {"id": "full_stack", "label": "Pack + desk + 1 канал (узкий пилот)"},
+            ]
         return [
             {"id": "ops_fix", "label": "Операционка / delivery"},
             {"id": "product_pack", "label": "Продукт / упаковка оффера"},
@@ -267,6 +289,13 @@ class HumanLightPlanner:
                 {"id": "unit_ton", "label": "Тонна / кг фракции"},
                 {"id": "unit_route", "label": "Рейс / маршрут"},
                 {"id": "unit_contract", "label": "Месячный контракт на вывоз"},
+            ]
+        if domain == "knowledge_library":
+            return [
+                {"id": "unit_pack", "label": "Пак карточек / niche pack"},
+                {"id": "unit_order", "label": "Оплаченный design-review заказ"},
+                {"id": "unit_sub", "label": "Подписка (только если already proven)"},
+                {"id": "unit_hour", "label": "Час (не рекомендуется для v0)"},
             ]
         return [
             {"id": "unit_order", "label": "Оплаченный заказ / проект"},
@@ -290,6 +319,13 @@ class HumanLightPlanner:
                 {"id": "m_margin", "label": "Маржа на тонну после логистики"},
                 {"id": "m_util", "label": "Утилизация ёмкости / reйс load factor"},
                 {"id": "m_cycle", "label": "Цикл cash: intake → money (дни)"},
+            ]
+        if domain == "knowledge_library":
+            return [
+                {"id": "m_paid_units", "label": "Платные unit (pack/order) за 21 день"},
+                {"id": "m_margin", "label": "Маржа / unit contribution"},
+                {"id": "m_cycle", "label": "Время до первой оплаты"},
+                {"id": "m_conversion", "label": "Конверсия touch → paid"},
             ]
         return [
             {"id": "m_margin", "label": "Маржа / unit contribution"},

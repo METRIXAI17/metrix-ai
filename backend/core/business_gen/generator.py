@@ -11,6 +11,12 @@ from typing import Any
 
 from backend.core.knowledge_synthesis.synthesis_core import KnowledgeSynthesisEngine
 from backend.core.business_gen.services_catalog import list_services
+from backend.core.business_gen.core_deliverable import (
+    build_core_deliverable,
+    merge_signer_numbers,
+    _detect_profile,
+)
+from backend.core.business_gen.hook_plan import build_hook_plan
 
 # 10 public client niches (distribution surface)
 PUBLIC_NICHES: list[dict[str, Any]] = [
@@ -34,9 +40,19 @@ PUBLIC_NICHES: list[dict[str, Any]] = [
     },
     {
         "id": "expert-services",
-        "keywords": ("expert", "эксперт", "consult", "консульт", "coaching"),
-        "label_ru": "Экспертные услуги",
-        "label_en": "Expert services",
+        "keywords": (
+            "expert",
+            "эксперт",
+            "consult",
+            "консульт",
+            "coaching",
+            "библиотек",
+            "library",
+            "архитект",
+            "карточ",
+        ),
+        "label_ru": "Экспертные услуги / knowledge packs",
+        "label_en": "Expert services / knowledge packs",
     },
     {
         "id": "content-monetize",
@@ -52,9 +68,25 @@ PUBLIC_NICHES: list[dict[str, Any]] = [
     },
     {
         "id": "automation-builders",
-        "keywords": ("automat", "автомат", "no-code", "nocode", "workflow", "воркфлоу"),
-        "label_ru": "Автоматизация и no-code",
-        "label_en": "Automation & no-code",
+        "keywords": (
+            "automat",
+            "автомат",
+            "no-code",
+            "nocode",
+            "workflow",
+            "воркфлоу",
+            "билдер",
+            "builder",
+            "product build",
+            "it-продукт",
+            "ай-ти",
+            "marketplace",
+            "маркетплейс",
+            "концепт",
+            "ниш",
+        ),
+        "label_ru": "Билдеры продуктов / automation",
+        "label_en": "Product builders / automation",
     },
     {
         "id": "cost-ops",
@@ -118,6 +150,7 @@ class BusinessGenerator:
                 industry_id = top
 
         numbers = dict(numbers or {})
+        answers = dict(answers or {})
         text_l = (business_text or "").lower()
         is_resource = any(
             w in text_l
@@ -137,6 +170,12 @@ class BusinessGenerator:
             numbers.setdefault("capacity", 90.0)
             numbers.setdefault("leak", 0.16)
             numbers.setdefault("focus", "logistics")
+
+        # Signer numbers → answers (constraint_cash, days) before planner runs
+        profile_early = _detect_profile(business_text)
+        answers, numbers = merge_signer_numbers(
+            answers, numbers, profile=profile_early, lang=lang
+        )
 
         stages = None
         if is_resource:
@@ -211,6 +250,75 @@ class BusinessGenerator:
         }
 
         deliverable["final_gate"] = self._final_gate(deliverable)
+
+        # Human-first Core report (primary surface — not raw JSON)
+        core_report = build_core_deliverable(
+            business_text,
+            core=core,
+            orchestration=orchestration,
+            channel=channel_info,
+            forecast=forecast,
+            project_name=project_name,
+            industry_id=industry_id,
+            lang=lang,
+            final_gate=deliverable["final_gate"],
+            answers=answers,
+            numbers=numbers,
+        )
+        deliverable["core_report"] = core_report
+
+        # Catchy one-screen buy plan
+        hook = build_hook_plan(
+            project_name=project_name or core_report.get("title") or "",
+            profile=core_report.get("profile") or profile_early,
+            value=core_report.get("value_vs_core") or {},
+            counts=core_report.get("counts") or {},
+            signer_numbers=core_report.get("signer_numbers") or numbers,
+            channel_log=core_report.get("channel_log_7d"),
+            concept_tests=core_report.get("concept_tests"),
+            assist=core_report.get("implementation_assistant"),
+            open_questions=core_report.get("open_questions"),
+            lang=lang,
+        )
+        deliverable["hook_plan"] = hook
+
+        # Prefer profile-aware defaults for library/builders briefs
+        rec = core_report.get("recommended_choices") or {}
+        if rec and deliverable.get("plan"):
+            for step in deliverable["plan"].get("steps") or []:
+                sid = step.get("id")
+                if sid in rec and not (choices or {}).get(sid):
+                    if profile_should_override_default(
+                        business_text, step.get("default_option"), rec[sid]
+                    ):
+                        step["default_option"] = rec[sid]
+            # Reflect closed money-path questions in plan surface
+            if core_report.get("open_questions") is not None:
+                deliverable["plan"]["open_questions"] = list(
+                    core_report.get("open_questions") or []
+                )
+
+        opening = core["pre_corrected"].get("opening_line") or ""
+        value = core_report.get("value_vs_core") or {}
+        n_cards = core_report.get("counts", {}).get("total_cards", 0)
+        is_en = (lang or "").lower().startswith("en")
+        if is_en:
+            human_lead = (
+                f"{opening} "
+                f"Clean Core report ready ({n_cards} cards). "
+                f"Value ~${value.get('realized_mid_usd', '?')} vs ${value.get('tariff_price_usd', 790)} "
+                f"({value.get('band', '')}). "
+                f"{hook.get('cta', '')}"
+            ).strip()
+        else:
+            human_lead = (
+                f"{opening} "
+                f"Готов чистый отчёт Ядра ({n_cards} карточек). "
+                f"Оценка ценности ~${value.get('realized_mid_usd', '?')} vs тариф $790 "
+                f"({value.get('band', '')}). "
+                f"{hook.get('cta', '')}"
+            ).strip()
+
         return {
             "module": self.name,
             "role": "orchestrator",
@@ -220,9 +328,17 @@ class BusinessGenerator:
                 "lang": lang,
                 "channel": channel_info["mode"],
                 "passes": passes if multi_pass else 1,
+                "signer_numbers": {
+                    "cash_ceiling": float(numbers.get("cash_ceiling", 0)),
+                    "days": int(float(numbers.get("days", 21))),
+                },
             },
             "output": deliverable,
-            "message": core["pre_corrected"].get("opening_line"),
+            "message": human_lead,
+            "core_markdown": core_report.get("markdown"),
+            "hook_markdown": hook.get("markdown"),
+            "value_vs_core": value,
+            "exports": core_report.get("exports"),
         }
 
     def _resolve_channel(
@@ -753,6 +869,30 @@ class BusinessGenerator:
                 else "Условный go: усилить originality/matrix или закрыть uncertainty с человеком"
             ),
         }
+
+
+def profile_should_override_default(
+    business_text: str, current: str | None, recommended: str
+) -> bool:
+    """Soft override plan defaults for library/architecture briefs."""
+    t = (business_text or "").lower()
+    libraryish = any(
+        w in t
+        for w in (
+            "библиотек",
+            "library",
+            "карточ",
+            "архитект",
+            "билдер",
+            "builder",
+            "концепт",
+            "ниш",
+        )
+    )
+    if not libraryish:
+        return False
+    # Don't fight explicit non-empty human choices (handled by caller)
+    return bool(recommended) and (not current or current != recommended)
 
 
 def generate_business(business_text: str, **kwargs: Any) -> dict[str, Any]:
