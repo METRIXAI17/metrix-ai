@@ -49,6 +49,9 @@
           <button type="button" data-mode="generate" role="tab" aria-selected="false" class="mode-fire" data-i18n="nav_generate">
             Generate 🔥
           </button>
+          <button type="button" data-mode="promo" role="tab" aria-selected="false" data-i18n="nav_promo">
+            Promo
+          </button>
         </div>
 
         <div class="nav-links">
@@ -282,88 +285,111 @@
 
         <div id="gen-result" class="gen-result" hidden>
           <div class="gen-result-head">
-            <div class="eyebrow" data-i18n="gen_result">Result</div>
+            <div class="eyebrow">Результат консультации</div>
             <h3 id="gen-msg">—</h3>
-            <p id="gen-gate" class="gate-chip"></p>
-            <p id="gen-value-band" class="how-lead" style="margin-top: 0.5rem"></p>
-            <p id="gen-route-chip" class="route-chip"></p>
+            <p id="gen-gate" class="gate-chip" hidden></p>
+            <p id="gen-value-band" class="how-lead" hidden></p>
+            <p id="gen-route-chip" class="route-chip" hidden></p>
           </div>
 
-          <!-- FREE downloads — always visible after generate -->
-          <div class="gen-free-exports" id="gen-free-exports">
-            <div class="free-banner">
-              <span class="free-pill">FREE</span>
-              <strong data-i18n="gen_free_title">Скачать бесплатно</strong>
-              <span class="how-lead" data-i18n="gen_free_hint">R&amp;D memo HTML→PDF · CSV карточек · без paywall</span>
+          <!-- Deliverable strip -->
+          <div class="gen-deliver-strip" id="gen-deliver-strip">
+            <div class="deliver-chip ok" id="chip-fill">Наполнение · готово</div>
+            <div class="deliver-chip ok" id="chip-report">Аналитический отчёт · готов</div>
+            <div class="deliver-chip ok" id="chip-pdf">Основной PDF · готов</div>
+            <div class="deliver-chip later" id="chip-author">Авторская уникальность + агент деплоя · после оплаты</div>
+          </div>
+
+          <div class="cr-cta-row free-dl-row" style="margin: 0.85rem 0">
+            <button type="button" class="btn btn-primary" id="gen-dl-rd">↓ Основной PDF</button>
+            <button type="button" class="btn btn-ghost" id="gen-dl-csv">↓ Карточки CSV</button>
+            <button type="button" class="btn btn-ghost" id="gen-dl-md">↓ Текст отчёта</button>
+          </div>
+
+          <!-- Наполнение -->
+          <div class="gen-block-card" id="gen-fill-block">
+            <div class="block-h">
+              <span class="block-num">01</span>
+              <div>
+                <div class="eyebrow">Наполнение</div>
+                <h4 class="block-title">Карточки и структура</h4>
+              </div>
             </div>
-            <div class="cr-cta-row free-dl-row">
-              <button type="button" class="btn btn-primary" id="gen-dl-rd">↓ R&amp;D PDF (HTML)</button>
-              <button type="button" class="btn btn-ghost" id="gen-dl-csv">↓ Cards CSV · FREE</button>
-              <button type="button" class="btn btn-ghost" id="gen-dl-md">↓ R&amp;D Markdown · FREE</button>
+            <div id="gen-fill-body" class="block-body"></div>
+          </div>
+
+          <!-- Аналитический отчёт -->
+          <div class="gen-block-card" id="gen-report-block">
+            <div class="block-h">
+              <span class="block-num">02</span>
+              <div>
+                <div class="eyebrow">Аналитический отчёт</div>
+                <h4 class="block-title">Обоснования решений</h4>
+              </div>
+            </div>
+            <div id="gen-report-body" class="block-body report-scroll"></div>
+          </div>
+
+          <!-- План дальше -->
+          <div class="gen-block-card hook-card" id="gen-hook-block">
+            <div class="block-h">
+              <span class="block-num">03</span>
+              <div>
+                <div class="eyebrow">Дальше</div>
+                <h4 class="block-title" id="gen-hook-title">Что готово и что после оплаты</h4>
+              </div>
+            </div>
+            <p class="hook-pitch" id="gen-hook-pitch"></p>
+            <div id="gen-hook-cards" class="hook-grid"></div>
+            <div class="cr-cta-row" style="margin-top: 1rem; flex-wrap: wrap; gap: 0.5rem">
+              <a class="btn btn-primary" id="gen-pay-dm" href="https://x.com/karimmetrix" target="_blank" rel="noopener">Оплатить и приступить к ответам · X DM</a>
+              <button type="button" class="btn btn-ghost" id="gen-approve-core">Я оплатил · открыть вопросы и агент</button>
+              <button type="button" class="btn btn-ghost" id="gen-assist-advance" hidden>Следующий шаг агента →</button>
+            </div>
+            <div id="gen-post-pay" class="post-pay-panel" hidden>
+              <div class="eyebrow">После оплаты</div>
+              <div id="gen-personality" class="post-pay-section"></div>
+              <div id="gen-assist-path" class="post-pay-section"></div>
+              <div class="eyebrow" style="margin-top:0.75rem">Уточняющие вопросы</div>
+              <ul id="gen-questions" class="clean-list"></ul>
+              <p class="how-lead">Напишите ответы в DM: <a href="https://x.com/karimmetrix" target="_blank" rel="noopener">@karimmetrix</a></p>
             </div>
           </div>
 
-          <!-- Author personality product -->
-          <div class="gen-personality-block" id="gen-personality-block">
-            <div class="eyebrow">Author personality · free product</div>
-            <div id="gen-personality" class="personality-card"></div>
-          </div>
+          <div id="gen-assist-offer" hidden></div>
+          <div id="gen-hook-plan" hidden></div>
+          <div id="gen-rd-frame" hidden></div>
+          <div id="gen-core-report" hidden></div>
+          <div id="gen-free-exports" hidden></div>
+          <div id="gen-personality-block" hidden></div>
+          <div id="gen-rd-block" hidden></div>
+          <div id="gen-assist-offer-block" hidden></div>
 
-          <!-- R&D Reader (primary visual surface) -->
-          <div class="gen-rd-block" id="gen-rd-block">
-            <div class="eyebrow">R&amp;D Reader · decision warrants</div>
-            <iframe id="gen-rd-frame" class="rd-frame" title="R&amp;D memo" sandbox="allow-same-origin"></iframe>
-          </div>
-
-          <div class="gen-hook-block" id="gen-hook-block">
-            <div class="eyebrow">Hook plan · buy-ready</div>
-            <div id="gen-hook-plan" class="core-report-md fw-pre" style="white-space: pre-wrap; max-height: 14rem; overflow: auto"></div>
-          </div>
-
-          <!-- Separate Assist Agent product (not mixed with free downloads) -->
-          <div class="gen-assist-offer-block" id="gen-assist-offer-block">
-            <div class="eyebrow">Separate product · Assist Agent</div>
-            <div id="gen-assist-offer" class="assist-offer-card"></div>
-            <div class="cr-cta-row" style="margin-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem">
-              <button type="button" class="btn btn-primary" id="gen-approve-core">Утвердить Ядро · открыть Assist</button>
-              <button type="button" class="btn btn-ghost" id="gen-assist-advance" hidden>Advance agent step →</button>
-            </div>
-            <div id="gen-assist-path" class="assist-path-panel" hidden></div>
-          </div>
-
-          <div class="gen-core-report-block" id="gen-core-report-block" hidden>
-            <div class="eyebrow">Legacy text (optional)</div>
-            <div id="gen-core-report" class="core-report-md fw-pre" style="white-space: pre-wrap; max-height: 12rem; overflow: auto"></div>
-          </div>
-          <div class="gen-forecast-block" id="gen-forecast-block">
-            <div class="eyebrow" data-i18n="gen_forecast">Implementation forecast</div>
-            <p class="how-lead" data-i18n="gen_forecast_lead" style="margin-bottom: 0.75rem"></p>
+          <div class="gen-forecast-block" id="gen-forecast-block" hidden>
             <div id="gen-forecast" class="forecast-grid"></div>
           </div>
           <div class="gen-orch-block" id="gen-orch-block">
-            <div class="eyebrow" data-i18n="gen_orch">Orchestration · 10 niches</div>
+            <div class="eyebrow">Ниши</div>
             <p id="gen-orch-note" class="how-lead" style="margin-bottom: 0.75rem"></p>
             <div id="gen-niche-rank" class="niche-rank-row"></div>
-            <div class="eyebrow" style="margin-top: 1rem" data-i18n="gen_stack">Service stack</div>
+            <div class="eyebrow" style="margin-top: 1rem">Стек</div>
             <div id="gen-service-stack" class="svc-stack-row"></div>
           </div>
-          <div class="panel-clean panel-result">
-            <div class="panel-col">
-              <div class="eyebrow" data-i18n="gen_plan">Plan</div>
+          <div class="panel-clean panel-result gen-human-grid">
+            <div class="panel-col gen-card-ui">
+              <div class="eyebrow">План (как по ТЗ)</div>
               <div id="gen-plan"></div>
-              <div class="eyebrow" style="margin-top: 1rem" data-i18n="gen_open_q">Questions</div>
-              <ul id="gen-questions" class="clean-list"></ul>
             </div>
-            <div class="panel-col">
-              <div class="eyebrow" data-i18n="gen_panel">Panel</div>
+            <div class="panel-col gen-card-ui">
+              <div class="eyebrow">Понять · решить · сделать</div>
               <div id="gen-panel" class="mini-panel"></div>
-              <div class="eyebrow" style="margin-top: 1rem" data-i18n="gen_quality">Quality</div>
+              <div class="eyebrow" style="margin-top: 1rem">Качество</div>
               <div id="gen-quality" class="how-lead"></div>
             </div>
-            <div class="panel-col">
-              <div class="eyebrow" data-i18n="gen_expert">Expert base</div>
+            <div class="panel-col gen-card-ui">
+              <div class="eyebrow">Экспертная база</div>
               <div id="gen-expert" class="how-lead"></div>
-              <div class="eyebrow" style="margin-top: 1rem" data-i18n="gen_code">Code pack</div>
+              <div class="eyebrow" style="margin-top: 1rem">Пакет сборки</div>
               <div id="gen-code" class="how-lead"></div>
             </div>
           </div>
@@ -371,6 +397,45 @@
             <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
               Consult + Tech-TZ
             </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section wrap mode-panel" id="mode-promo" data-panel="promo" hidden>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Тариф Marketing · $690</div>
+            <h2>Продвижение · 3 дороги</h2>
+            <p class="how-lead">
+              Площадки · нетворкинг · соцсети. Отдельно — скрипты и идеи продаж в DM.
+              Система читает аналитику из брифа (охват, ER, CAC, конверсия…) и отвечает по делу.
+            </p>
+          </div>
+        </div>
+        <form class="form-card form-card-slim" id="promo-form" novalidate>
+          <div class="form-grid">
+            <div class="field field-full field-span">
+              <label for="promo-headline">Проект / оффер *</label>
+              <input id="promo-headline" type="text" required maxlength="120" placeholder="Напр.: pack карточек для билдеров" />
+            </div>
+            <div class="field field-full field-span">
+              <label for="promo-body">Задача продвижения + цифры *</label>
+              <textarea id="promo-body" required rows="5" placeholder="Кого ищем, что продаём, охват/ER/лиды если есть, где уже пробовали…"></textarea>
+            </div>
+            <p class="form-error" id="promo-error" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-lg" id="promo-submit">Собрать план продвижения</button>
+          </div>
+        </form>
+        <div id="promo-result" class="gen-result" hidden>
+          <h3 id="promo-msg">—</h3>
+          <div id="promo-roads" class="promo-roads"></div>
+          <div class="gen-block-card" style="margin-top:1rem">
+            <div class="eyebrow">Скрипты DM</div>
+            <div id="promo-dms"></div>
+          </div>
+          <div class="gen-block-card" style="margin-top:1rem">
+            <div class="eyebrow">Идеи продаж + аналитика</div>
+            <div id="promo-extra"></div>
           </div>
         </div>
       </section>

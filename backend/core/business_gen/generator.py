@@ -326,30 +326,59 @@ class BusinessGenerator:
         )
         deliverable["rd_reader"] = rd
 
-        # Enrich free exports with R&D HTML (PDF path)
+        # Main consultation PDF = analytical HTML (print→PDF) — not "R&D" branding for client
+        consult_html = rd.get("html") or (core_report.get("exports") or {}).get("print_html") or ""
+        consult_md = rd.get("markdown") or core_report.get("markdown") or ""
+        # Soft-replace R&D labels in client-facing HTML
+        if (lang or "").lower().startswith("en"):
+            consult_html = (
+                consult_html.replace("R&amp;D Reader", "Analytical report")
+                .replace("R&D Memo", "Consultation report")
+                .replace("R&amp;D Memo", "Consultation report")
+                .replace("Laboratory memo", "Consultation report")
+                .replace("FREE DOWNLOAD", "MAIN PDF")
+            )
+        else:
+            consult_html = (
+                consult_html.replace("R&amp;D Reader", "Аналитический отчёт")
+                .replace("R&D Memo", "Консультационный отчёт")
+                .replace("R&amp;D Memo", "Консультационный отчёт")
+                .replace("Лабораторная записка", "Консультационный отчёт")
+                .replace("Лабораторная записка с обоснованиями решений", "Аналитический отчёт с обоснованием решений")
+                .replace("FREE DOWNLOAD", "ОСНОВНОЙ PDF")
+                .replace("БЕСПЛАТНО СКАЧАТЬ", "ОСНОВНОЙ PDF")
+            )
         exports = dict(core_report.get("exports") or {})
-        exports["rd_html"] = rd.get("html") or ""
-        exports["rd_markdown"] = rd.get("markdown") or ""
+        exports["consultation_html"] = consult_html
+        exports["consultation_md"] = consult_md
+        exports["rd_html"] = consult_html  # legacy key
+        exports["rd_markdown"] = consult_md
+        exports["print_html"] = consult_html or exports.get("print_html") or ""
         exports["free"] = True
         exports["filenames"] = {
             **(exports.get("filenames") or {}),
-            "rd_html": "metrix-rd-memo.html",
-            "rd_md": "metrix-rd-memo.md",
-            "csv": (exports.get("filenames") or {}).get("csv") or "metrix-core-cards.csv",
-            "html": "metrix-rd-memo.html",
-            "md": "metrix-rd-memo.md",
+            "pdf_html": "metrix-consultation.pdf.html",
+            "html": "metrix-consultation.pdf.html",
+            "rd_html": "metrix-consultation.pdf.html",
+            "md": "metrix-consultation.md",
+            "rd_md": "metrix-consultation.md",
+            "csv": (exports.get("filenames") or {}).get("csv") or "metrix-cards.csv",
         }
         exports["note"] = (
-            "FREE: R&D HTML (print→PDF), R&D markdown, cards CSV — no paywall on downloads."
+            "Main PDF: open HTML → Print → Save as PDF. Cards CSV included."
             if (lang or "").lower().startswith("en")
-            else "БЕСПЛАТНО: R&D HTML (печать→PDF), R&D markdown, cards CSV — скачивание без paywall."
+            else "Основной PDF: откройте HTML → Печать → Сохранить как PDF. CSV карточек в комплекте."
         )
         deliverable["exports"] = exports
-        # Keep mirror on core_report for clients reading only that node
         core_report["exports"] = exports
-        core_report["rd_reader"] = {"features": rd.get("features"), "primary_surface": "rd_html"}
+        deliverable["analytical_report"] = {
+            "title": "Analytical report" if (lang or "").lower().startswith("en") else "Аналитический отчёт",
+            "html": consult_html,
+            "markdown": consult_md,
+            "ready": bool(consult_html),
+        }
 
-        # Autonomous assist agent (separate product; teaser until approval)
+        # Autonomous assist agent — after payment messaging
         agent = ImplementationAssistAgent().build_from_core(
             core_report,
             personality=personality,
@@ -360,7 +389,6 @@ class BusinessGenerator:
         deliverable["assist_agent"] = agent
         deliverable["assist_offer"] = agent.get("offer")
 
-        # Catchy one-screen buy plan
         hook = build_hook_plan(
             project_name=project_name or core_report.get("title") or "",
             profile=core_report.get("profile") or profile_early,
@@ -372,6 +400,7 @@ class BusinessGenerator:
             assist=core_report.get("implementation_assistant"),
             open_questions=core_report.get("open_questions"),
             lang=lang,
+            personality=personality,
         )
         deliverable["hook_plan"] = hook
 
@@ -390,32 +419,24 @@ class BusinessGenerator:
                     core_report.get("open_questions") or []
                 )
 
-        opening = core["pre_corrected"].get("opening_line") or ""
-        value = core_report.get("value_vs_core") or {}
         n_cards = core_report.get("counts", {}).get("total_cards", 0)
         is_en = (lang or "").lower().startswith("en")
-        p_label = personality.get("primary_label") or ""
+        title_show = project_name or core_report.get("title") or ""
         if is_en:
             human_lead = (
-                f"{opening} "
-                f"R&D memo ready ({n_cards} cards) · author: {p_label}. "
-                f"Value ~${value.get('realized_mid_usd', '?')} vs $790 · "
-                f"route {routing.get('domain')}/{routing.get('depth')}. "
-                f"FREE downloads · separate Assist Agent after Approve."
-            ).strip()
+                f"Consultation ready for «{title_show}»: filling, analytical report and main PDF "
+                f"({n_cards} cards). Author uniqueness + deploy agent — after payment."
+            )
         else:
             human_lead = (
-                f"{opening} "
-                f"R&D memo готов ({n_cards} карточек) · автор: {p_label}. "
-                f"Ценность ~${value.get('realized_mid_usd', '?')} vs $790 · "
-                f"маршрут {routing.get('domain')}/{routing.get('depth')}. "
-                f"Скачивание БЕСПЛАТНО · Assist Agent отдельно после Approve."
-            ).strip()
+                f"Консультация по «{title_show}»: наполнение, аналитический отчёт и основной PDF готовы "
+                f"({n_cards} карточек). Авторская уникальность + агент деплоя — после оплаты."
+            )
 
         return {
             "module": self.name,
             "role": "orchestrator",
-            "version": "2.1.0-rd-harness",
+            "version": "2.2.0-consult-clean",
             "input": {
                 "business": business_text[:500],
                 "industry_id": industry_id,
@@ -429,11 +450,13 @@ class BusinessGenerator:
             },
             "output": deliverable,
             "message": human_lead,
-            "core_markdown": rd.get("markdown") or core_report.get("markdown"),
-            "rd_html": rd.get("html"),
-            "rd_markdown": rd.get("markdown"),
+            "core_markdown": consult_md,
+            "rd_html": consult_html,
+            "rd_markdown": consult_md,
+            "consultation_html": consult_html,
             "hook_markdown": hook.get("markdown"),
-            "value_vs_core": value,
+            "hook_plan": hook,
+            "value_vs_core": core_report.get("value_vs_core") or {},
             "exports": exports,
             "author_personality": personality,
             "assist_offer": agent.get("offer"),
@@ -822,151 +845,237 @@ class BusinessGenerator:
 
     def _code_pack(self, core: dict, is_resource: bool, lang: str) -> dict[str, Any]:
         widgets = (core.get("expert_base") or {}).get("panel_widgets") or []
+        is_ru = lang == "ru"
         components = [
-            "planner_wizard.py — HumanLightPlanner steps S1–S6",
-            "side_engines.py — flow / risk / graph / uncertainty",
-            "expert_base.json — project knowledge pack",
-            "panel/index.html — control surface",
-            "distribution_plan.json — brand/platforms/networks",
+            {
+                "id": "planner",
+                "file": "planner_wizard.py",
+                "role": "S1–S6 шаги выбора" if is_ru else "S1–S6 choice steps",
+                "status": "ready",
+            },
+            {
+                "id": "engines",
+                "file": "side_engines.py",
+                "role": "поток / риск / неопределённость" if is_ru else "flow / risk / uncertainty",
+                "status": "ready",
+            },
+            {
+                "id": "expert",
+                "file": "expert_base.json",
+                "role": "база знаний проекта" if is_ru else "project knowledge base",
+                "status": "ready",
+            },
+            {
+                "id": "panel",
+                "file": "panel/index.html",
+                "role": "панель Sense · Decide · Act" if is_ru else "Sense · Decide · Act panel",
+                "status": "ready",
+            },
+            {
+                "id": "cards",
+                "file": "architecture_cards.csv",
+                "role": "12 deep-карточек + офферы" if is_ru else "12 deep cards + offers",
+                "status": "ready",
+            },
+            {
+                "id": "assist",
+                "file": "assist_agent_session.json",
+                "role": "агент деплоя (после оплаты)" if is_ru else "deploy agent (after payment)",
+                "status": "after_pay",
+            },
+            {
+                "id": "promo",
+                "file": "promotion_pack.json",
+                "role": "3 дороги продвижения + DM-скрипты" if is_ru else "3 promo roads + DM scripts",
+                "status": "ready",
+            },
         ]
         if is_resource:
             components.extend(
                 [
-                    "flow_balance_worker.py — daily capacity tick",
-                    "route_board.md — logistics critical path",
-                    "buyer_dual_list.csv — dual-source hedge",
+                    {
+                        "id": "flow",
+                        "file": "flow_balance_worker.py",
+                        "role": "суточный capacity tick" if is_ru else "daily capacity tick",
+                        "status": "ready",
+                    },
+                    {
+                        "id": "routes",
+                        "file": "route_board.md",
+                        "role": "логистический critical path" if is_ru else "logistics critical path",
+                        "status": "ready",
+                    },
                 ]
             )
+        next_build = [
+            _d_code(is_ru, "Подключить assist session к private room", "Wire assist session to private room"),
+            _d_code(is_ru, "Авто-export PDF без print dialog", "Auto PDF export without print dialog"),
+            _d_code(is_ru, "Синк skill_memory → Grok Build skills", "Sync skill_memory → Grok Build skills"),
+        ]
         return {
-            "title": "Autonomous assembly pack",
+            "title": "Пакет сборки" if is_ru else "Assembly pack",
             "weight": "substantial",
-            "components": components,
+            "components": [c["file"] + " — " + c["role"] for c in components],
+            "components_rich": components,
             "widgets": widgets,
+            "next_build": next_build,
             "grok_build_note": (
-                "Пакет для конечной сборки в Grok Build: компоненты уже согласованы; "
-                "не генерировать с нуля — донастроить ядро автосборки."
-                if lang == "ru"
-                else "Grok Build pack: components pre-agreed; wire assembly core, don't regenerate from scratch."
+                "Пакет для сборки: модули согласованы. Не генерировать с нуля — донастроить и связать."
+                if is_ru
+                else "Build pack: modules agreed. Don’t regenerate from scratch — wire and tune."
             ),
             "entrypoints": [
                 "POST /api/v1/analytics/business-generate",
-                "POST /api/v1/analytics/knowledge-synthesis",
-                "GET /api/v1/analytics/business-services",
+                "POST /api/v1/analytics/promotion-pack",
+                "POST /api/v1/analytics/assist-agent/approve",
             ],
         }
 
-    def _control_panel(
-        self,
-        core: dict,
-        lang: str,
-        channel: dict[str, Any] | None = None,
-        industry_id: str = "",
-    ) -> dict[str, Any]:
-        side = core.get("side_compute") or {}
-        plan = core.get("plan") or {}
-        ch = channel or {}
-        identity_card = {
-            "k": "identity",
-            "v": {
-                "channel": ch.get("mode"),
-                "industry": industry_id,
-                "standout": ch.get("standout_angle"),
-            },
-        }
-        assets_card = {
-            "k": "assets",
-            "v": {
-                "structure": ["ops_metric", "leak_map", "capacity", "client_pack_slots"],
-                "auto_yield": False,
-                "note": (
-                    "Структура и риск — без авто-доходности"
-                    if lang == "ru"
-                    else "Structure & risk — no auto-yield"
-                ),
-            },
-        }
-        connect_card = {
-            "k": "connect_or_diy",
-            "v": (
-                ["panel", "integrations", "diy_scoreboard"]
-                if lang != "ru"
-                else ["панель", "интеграции", "diy_табло"]
-            ),
-        }
-        return {
-            "title": "Панель управления бизнесом" if lang == "ru" else "Business control panel",
-            "layout": "clean_3_col",
-            "columns": [
-                {
-                    "id": "sense",
-                    "title": "Sense",
-                    "cards": [
-                        identity_card,
-                        assets_card,
-                        {"k": "confidence", "v": plan.get("confidence")},
-                        {"k": "risk_band", "v": (side.get("risk_lattice") or {}).get("band")},
-                    ],
-                },
-                {
-                    "id": "decide",
-                    "title": "Decide",
-                    "cards": [
-                        {"k": "mode", "v": plan.get("mode")},
-                        connect_card,
-                        {"k": "steps", "v": [
-                            {"id": s["id"], "title": s["title"], "default": s.get("default_option")}
-                            for s in (plan.get("steps") or [])
-                        ]},
-                        {"k": "open_questions", "v": plan.get("open_questions")},
-                    ],
-                },
-                {
-                    "id": "act",
-                    "title": "Act",
-                    "cards": [
-                        {
-                            "k": "client_pack",
-                            "v": (
-                                "config for similar client requests"
-                                if lang != "ru"
-                                else "конфиг пака похожих запросов"
-                            ),
-                        },
-                        {
-                            "k": "implementation_assistant",
-                            "v": (
-                                "assistant + tester-strategist"
-                                if lang != "ru"
-                                else "ассистент + тестировщик-стратег"
-                            ),
-                        },
-                        {"k": "original_moves", "v": (core.get("synthesis") or {}).get("original_moves")},
-                        {"k": "kill_switches", "v": (side.get("risk_lattice") or {}).get("kill_switches")},
-                    ],
-                },
-            ],
-            "ux_rules": [
-                "no clutter — max 3 columns",
-                "secondary detail collapsed",
-                "primary CTA: confirm next plan step",
-                "optional pay only on implementation approval",
-            ],
-        }
 
-    def _final_gate(self, deliverable: dict) -> dict[str, Any]:
-        st = deliverable.get("self_test") or {}
-        q = deliverable.get("quality") or {}
-        ok = bool(st.get("prod_ready_hint")) and float(q.get("anti_template_score") or 0) >= 0.6
-        return {
-            "go_prod": ok,
-            "score": st.get("score"),
-            "verdict": "GO" if ok else "CONDITIONAL_GO",
-            "note": (
-                "Кандидат в прод: originality + self-test gates"
-                if ok
-                else "Условный go: усилить originality/matrix или закрыть uncertainty с человеком"
-            ),
-        }
+def _d_code(is_ru: bool, ru: str, en: str) -> str:
+    return ru if is_ru else en
+
+
+# re-attach methods that must live on BusinessGenerator (patch after _code_pack edit)
+def _control_panel_impl(
+    self,
+    core: dict,
+    lang: str,
+    channel: dict[str, Any] | None = None,
+    industry_id: str = "",
+) -> dict[str, Any]:
+    side = core.get("side_compute") or {}
+    plan = core.get("plan") or {}
+    ch = channel or {}
+    is_ru = lang == "ru"
+    ch_mode = ch.get("mode") or "auto"
+    standout = ch.get("standout_angle") or ("Угол из брифа" if is_ru else "Angle from brief")
+    conf = plan.get("confidence")
+    conf_s = f"{float(conf):.0%}" if conf is not None else "—"
+    risk = (side.get("risk_lattice") or {}).get("band") or "—"
+    steps = plan.get("steps") or []
+    step_txt = "; ".join(
+        f"{s.get('title')}: {s.get('default_option') or '—'}" for s in steps[:6]
+    ) or "—"
+    moves = (core.get("synthesis") or {}).get("original_moves") or []
+    move_txt = moves[0] if moves else ("—" if not is_ru else "—")
+    kills = (side.get("risk_lattice") or {}).get("kill_switches") or []
+    kill_txt = (
+        "; ".join(str(k) for k in kills[:2])
+        if kills
+        else ("Работа только в scope · без open retainer" if is_ru else "Stay in scope · no open retainers")
+    )
+    return {
+        "title": "Панель: понять · решить · сделать" if is_ru else "Panel: sense · decide · act",
+        "layout": "clean_3_col",
+        "human": True,
+        "columns": [
+            {
+                "id": "sense",
+                "title": "Понять" if is_ru else "Sense",
+                "cards": [
+                    {
+                        "k": "Кто вы" if is_ru else "Who you are",
+                        "v": (
+                            f"Канал {ch_mode}, ниша {industry_id or '—'}. {standout}"
+                            if is_ru
+                            else f"Channel {ch_mode}, niche {industry_id or '—'}. {standout}"
+                        ),
+                    },
+                    {
+                        "k": "Активы" if is_ru else "Assets",
+                        "v": (
+                            "Метрика, карта потерь, ёмкость, клиентский пак. Без авто-доходности."
+                            if is_ru
+                            else "Metric, leak map, capacity, client pack. No auto-yield."
+                        ),
+                    },
+                    {
+                        "k": "Уверенность" if is_ru else "Confidence",
+                        "v": f"{conf_s} · риск {risk}" if is_ru else f"{conf_s} · risk {risk}",
+                    },
+                ],
+            },
+            {
+                "id": "decide",
+                "title": "Решить" if is_ru else "Decide",
+                "cards": [
+                    {
+                        "k": "Режим" if is_ru else "Mode",
+                        "v": plan.get("mode") or "design",
+                    },
+                    {
+                        "k": "Подключить / DIY" if is_ru else "Connect / DIY",
+                        "v": (
+                            "Панель Metrix, при необходимости интеграции, табло в таблице"
+                            if is_ru
+                            else "Metrix panel, integrations if needed, spreadsheet board"
+                        ),
+                    },
+                    {
+                        "k": "Шаги плана" if is_ru else "Plan steps",
+                        "v": step_txt,
+                    },
+                ],
+            },
+            {
+                "id": "act",
+                "title": "Сделать" if is_ru else "Act",
+                "cards": [
+                    {
+                        "k": "Клиентский пак" if is_ru else "Client pack",
+                        "v": (
+                            "Собрать похожие запросы в один пак"
+                            if is_ru
+                            else "Group similar requests into one pack"
+                        ),
+                    },
+                    {
+                        "k": "После оплаты" if is_ru else "After payment",
+                        "v": (
+                            "Авторская уникальность + агент деплоя"
+                            if is_ru
+                            else "Author uniqueness + deploy agent"
+                        ),
+                    },
+                    {
+                        "k": "Ход" if is_ru else "Move",
+                        "v": move_txt if isinstance(move_txt, str) else str(move_txt),
+                    },
+                    {
+                        "k": "Стоп-правила" if is_ru else "Stop rules",
+                        "v": kill_txt,
+                    },
+                ],
+            },
+        ],
+        "ux_rules": [
+            "human language only",
+            "max 3 columns",
+            "questions only after payment",
+        ],
+    }
+
+
+def _final_gate_impl(self, deliverable: dict) -> dict[str, Any]:
+    st = deliverable.get("self_test") or {}
+    q = deliverable.get("quality") or {}
+    ok = bool(st.get("prod_ready_hint")) and float(q.get("anti_template_score") or 0) >= 0.6
+    return {
+        "go_prod": ok,
+        "score": st.get("score"),
+        "verdict": "GO" if ok else "CONDITIONAL_GO",
+        "note": (
+            "Кандидат в прод: originality + self-test gates"
+            if ok
+            else "Условный go: усилить originality/matrix или закрыть uncertainty с человеком"
+        ),
+    }
+
+
+# Bind helpers onto class (methods were extracted during refactor)
+BusinessGenerator._control_panel = _control_panel_impl  # type: ignore[attr-defined]
+BusinessGenerator._final_gate = _final_gate_impl  # type: ignore[attr-defined]
 
 
 def profile_should_override_default(

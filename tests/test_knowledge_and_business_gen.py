@@ -156,9 +156,10 @@ def test_business_generate_library_core():
 
     # Hook plan for conversion
     hook = out["hook_plan"]
-    assert hook["cta"] and hook["markdown"]
+    assert hook["cta"] and (hook.get("cards") or hook.get("markdown"))
     assert b.get("hook_markdown")
     assert hook["price_usd"] == 790
+    assert "x.com/karimmetrix" in (hook.get("x_dm") or "")
 
     # Plan should lean product_pack / unit_pack for library
     steps = {s["id"]: s["default_option"] for s in (out["plan"]["steps"] or [])}
@@ -195,7 +196,7 @@ def test_business_generate_library_en_parity():
     assert out["author_personality"]["lang"] == "en"
     hook = out["hook_plan"]
     assert hook["lang"] == "en"
-    assert "Approve" in hook["cta"] or "Core" in hook["cta"]
+    assert "Pay" in hook["cta"] or "DM" in hook["cta"]
 
 
 def test_assist_agent_approve_advance():

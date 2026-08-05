@@ -11,7 +11,7 @@
     return;
   }
 
-  const MODES = ["marketplace", "request", "tasks", "generate"];
+  const MODES = ["marketplace", "request", "tasks", "generate", "promo"];
 
   const state = {
     mode: "marketplace",
@@ -25,6 +25,7 @@
     freeWork: null,
     genChoices: {},
     assistSessionId: null,
+    pendingQuestions: [],
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -80,6 +81,7 @@
     bindForm();
     bindFreeWork();
     bindGenerate();
+    bindPromo();
     startMarquee();
     loadServices();
 
@@ -924,6 +926,88 @@
       data.tech_write || data.tech_md || JSON.stringify(data, null, 2).slice(0, 2000);
   }
 
+  // ── Promotion mode (third tariff) ─────────────────────────────────────────
+  function bindPromo() {
+    const form = $("#promo-form");
+    if (!form || form.dataset.bound === "1") return;
+    form.dataset.bound = "1";
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const headline = ($("#promo-headline")?.value || "").trim();
+      const body = ($("#promo-body")?.value || "").trim();
+      const err = $("#promo-error");
+      if (err) err.textContent = "";
+      if (headline.length < 3 || body.length < 20) {
+        if (err) err.textContent = t("gen_min_chars") || "Min 20 characters";
+        return;
+      }
+      const btn = $("#promo-submit");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "…";
+      }
+      try {
+        const res = await fetch(`${apiBase()}/api/v1/analytics/promotion-pack`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business: [headline, body].join(". "),
+            project_name: headline,
+            lang: lang(),
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        paintPromo(data);
+      } catch (ex) {
+        if (err) err.textContent = String(ex.message || ex);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = lang() === "en" ? "Build promo plan" : "Собрать план продвижения";
+        }
+      }
+    });
+  }
+
+  function paintPromo(data) {
+    const root = $("#promo-result");
+    if (!root) return;
+    root.hidden = false;
+    const p = data.output || data;
+    $("#promo-msg").textContent = data.message || p.summary || "—";
+    const roads = p.roads || [];
+    $("#promo-roads").innerHTML = roads
+      .map(
+        (r) => `<div class="gen-block-card promo-road">
+          <h4>${escapeHtml(r.title || "")}</h4>
+          <p class="how-lead">${escapeHtml(r.promise || "")}</p>
+          <ol class="clean-list">${(r.steps || []).map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ol>
+          <p class="how-lead"><strong>KPI:</strong> ${escapeHtml(r.kpi || "")}</p>
+          <p class="how-lead"><strong>Kill:</strong> ${escapeHtml(r.kill || "")}</p>
+        </div>`
+      )
+      .join("");
+    $("#promo-dms").innerHTML = (p.dm_scripts || [])
+      .map(
+        (d) =>
+          `<div class="hook-item"><div class="k">${escapeHtml(d.name || d.id)}</div><div>${escapeHtml(
+            d.script || ""
+          )}</div></div>`
+      )
+      .join("");
+    const tips = (p.general_tips || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("");
+    const ideas = (p.sales_ideas || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("");
+    const ans = (p.analytics_answers || [])
+      .map((a) => `<li><strong>${escapeHtml(a.signal)}</strong> — ${escapeHtml(a.answer)}</li>`)
+      .join("");
+    $("#promo-extra").innerHTML = `
+      <div class="eyebrow">Советы</div><ul class="clean-list">${tips}</ul>
+      <div class="eyebrow">Идеи продаж</div><ul class="clean-list">${ideas}</ul>
+      <div class="eyebrow">Аналитика</div><ul class="clean-list">${ans || "<li>—</li>"}</ul>`;
+    root.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   // ── Generate business ─────────────────────────────────────────────────────
   function bindGenerate() {
     const form = $("#gen-form");
@@ -1025,74 +1109,72 @@
     root.hidden = false;
     const out = data.output || {};
     const report = out.core_report || {};
-    const value = data.value_vs_core || report.value_vs_core || {};
-    $("#gen-msg").textContent = data.message || out.pre_corrected?.opening_line || "—";
-    const gate = out.final_gate || {};
-    const gEl = $("#gen-gate");
-    if (gEl) {
-      gEl.textContent =
-        (gate.go_prod ? t("success_go") : t("success_cond")) +
-        (gate.verdict ? " · " + gate.verdict : "");
-      gEl.classList.toggle("warn", !gate.go_prod);
-    }
     const isEn = lang() === "en";
-    const vb = $("#gen-value-band");
-    if (vb) {
-      if (value && value.realized_mid_usd != null) {
-        vb.textContent = isEn
-          ? `Value vs Core $790: ~$${value.realized_value_usd_low}–$${value.realized_value_usd_high}` +
-            ` (mid $${value.realized_mid_usd}) · gap $${value.gap_usd} · ${value.band || ""} · ${value.verdict || ""}`
-          : `Ценность vs Ядро $790: ~$${value.realized_value_usd_low}–$${value.realized_value_usd_high}` +
-            ` (mid $${value.realized_mid_usd}) · gap $${value.gap_usd} · ${value.band || ""} · ${value.verdict || ""}`;
+    const msgEl = $("#gen-msg");
+    if (msgEl) {
+      msgEl.textContent =
+        data.message ||
+        (isEn
+          ? "Consultation ready: filling, analytical report, main PDF."
+          : "Консультация готова: наполнение, аналитический отчёт, основной PDF.");
+    }
+    // Hide valuation / route noise
+    ["gen-gate", "gen-value-band", "gen-route-chip"].forEach((id) => {
+      const el = $("#" + id);
+      if (el) {
+        el.hidden = true;
+        el.textContent = "";
+      }
+    });
+
+    const rd = out.rd_reader || {};
+    const html =
+      data.consultation_html ||
+      data.rd_html ||
+      (out.analytical_report && out.analytical_report.html) ||
+      (out.exports && out.exports.consultation_html) ||
+      (out.exports && out.exports.rd_html) ||
+      (out.exports && out.exports.print_html) ||
+      rd.html ||
+      "";
+    const md =
+      data.rd_markdown ||
+      data.core_markdown ||
+      (out.analytical_report && out.analytical_report.markdown) ||
+      report.markdown ||
+      rd.markdown ||
+      "";
+
+    // 01 Наполнение
+    paintFill(out, report, isEn);
+
+    // 02 Аналитический отчёт (no empty iframe)
+    const reportBody = $("#gen-report-body");
+    if (reportBody) {
+      if (html) {
+        reportBody.innerHTML = `<div class="report-frame-wrap"><iframe class="rd-frame" title="report" sandbox="allow-same-origin"></iframe></div>`;
+        const fr = reportBody.querySelector("iframe");
+        if (fr) fr.srcdoc = html;
+      } else if (md) {
+        reportBody.innerHTML = `<pre class="report-pre">${escapeHtml(md)}</pre>`;
       } else {
-        vb.textContent = "";
+        reportBody.innerHTML = `<p class="how-lead">${isEn ? "Report loading…" : "Отчёт загружается…"}</p>`;
       }
     }
 
-    // Smart route chip (visible)
-    const route = out.smart_routing || {};
-    const routeEl = $("#gen-route-chip");
-    if (routeEl) {
-      routeEl.textContent = route.narrative || route.summary ||
-        (route.path ? route.path.join(" · ") : "");
-    }
+    // 03 Hook cards (designed)
+    paintHook(out.hook_plan || data.hook_plan || {}, isEn);
 
-    // Author personality product card
-    paintPersonality(out.author_personality || data.author_personality, isEn);
+    // Downloads
+    bindExportButtons(data, report, { html, markdown: md });
 
-    // R&D Reader — primary visual surface (iframe with HTML)
-    const rd = out.rd_reader || {};
-    const rdHtml = data.rd_html || rd.html || "";
-    const frame = $("#gen-rd-frame");
-    if (frame && rdHtml) {
-      frame.srcdoc = rdHtml;
-      frame.hidden = false;
-    } else if (frame) {
-      frame.srcdoc = `<p style="color:#94a3b8;font-family:system-ui;padding:1rem">${
-        isEn ? "R&D memo unavailable — redeploy API." : "R&D memo недоступен — обновите API."
-      }</p>`;
-    }
+    // Post-pay locked by default
+    const postPay = $("#gen-post-pay");
+    if (postPay) postPay.hidden = true;
+    wirePostPay(out, data, isEn);
 
-    // Hook plan — short buy-ready surface
-    const hook = out.hook_plan || {};
-    const hookEl = $("#gen-hook-plan");
-    if (hookEl) {
-      hookEl.textContent =
-        data.hook_markdown || hook.markdown || report.hook_markdown ||
-        (isEn ? "Hook plan unavailable — refresh API." : "Hook plan недоступен — обновите API.");
-    }
-
-    // Legacy text hidden by default; keep for debug
-    const mdEl = $("#gen-core-report");
-    if (mdEl) {
-      mdEl.textContent = data.rd_markdown || data.core_markdown || report.markdown || rd.markdown || "";
-    }
-
-    // FREE file exports (R&D HTML→PDF, CSV, MD)
-    bindExportButtons(data, report, rd);
-
-    // Separate Assist Agent product
-    paintAssistOffer(out, data, isEn);
+    // Questions stored but only shown after pay
+    state.pendingQuestions = out.plan?.open_questions || report.open_questions || [];
 
     paintForecast(out);
 
@@ -1126,59 +1208,179 @@
     }
 
     const plan = out.plan || {};
-    $("#gen-plan").innerHTML = (plan.steps || [])
-      .map(
-        (s) =>
-          `<div class="mp-card"><strong>${escapeHtml(s.id)}</strong> ${escapeHtml(s.title)} → <em>${escapeHtml(s.default_option || "—")}</em></div>`
-      )
-      .join("");
-    const qs = plan.open_questions || out.interaction?.open_questions || [];
-    $("#gen-questions").innerHTML = qs.length
-      ? qs.map((q) => `<li>${escapeHtml(q)}</li>`).join("")
-      : "<li>—</li>";
+    const planEl = $("#gen-plan");
+    if (planEl) {
+      planEl.innerHTML = (plan.steps || [])
+        .map(
+          (s) =>
+            `<div class="tz-step"><span class="tz-id">${escapeHtml(s.id || "")}</span><div><strong>${escapeHtml(
+              s.title || ""
+            )}</strong><div class="how-lead">${escapeHtml(s.default_option || "—")}</div></div></div>`
+        )
+        .join("");
+    }
 
     const panel = out.control_panel || {};
-    $("#gen-panel").innerHTML = (panel.columns || [])
-      .map((col) => {
-        const cards = (col.cards || [])
-          .slice(0, 4)
-          .map((c) => {
-            let v = c.v;
-            if (v == null) v = "—";
-            else if (Array.isArray(v)) v = v.map((x) => (typeof x === "object" ? x.title || x.id || "" : x)).filter(Boolean).join("; ");
-            else if (typeof v === "object") v = Object.entries(v).map(([k, val]) => `${k}: ${val}`).join(", ");
-            v = String(v).slice(0, 160);
-            return `<div class="mp-card">${escapeHtml(c.k)}: ${escapeHtml(v)}</div>`;
-          })
-          .join("");
-        return `<div><strong>${escapeHtml(col.title)}</strong>${cards}</div>`;
-      })
-      .join("");
+    const panelEl = $("#gen-panel");
+    if (panelEl) {
+      panelEl.innerHTML = (panel.columns || [])
+        .map((col) => {
+          const cards = (col.cards || [])
+            .slice(0, 4)
+            .map((c) => {
+              let v = c.v;
+              if (v == null) v = "—";
+              else if (Array.isArray(v))
+                v = v
+                  .map((x) => (typeof x === "object" ? x.title || x.id || "" : x))
+                  .filter(Boolean)
+                  .join("; ");
+              else if (typeof v === "object")
+                v = Object.entries(v)
+                  .map(([k, val]) => `${k}: ${val}`)
+                  .join(", ");
+              v = String(v).slice(0, 220);
+              return `<div class="human-card"><div class="k">${escapeHtml(c.k)}</div><div>${escapeHtml(v)}</div></div>`;
+            })
+            .join("");
+          return `<div class="panel-col-inner"><div class="col-title">${escapeHtml(col.title)}</div>${cards}</div>`;
+        })
+        .join("");
+    }
 
     const q = out.quality || {};
     const st = out.self_test || {};
     const qEl = $("#gen-quality");
     if (qEl) {
-      qEl.textContent =
-        `Уверенность ${q.confidence ?? "—"} · anti-template ${q.anti_template_score ?? "—"} · ` +
-        `commit ${q.commit_ready ? "да" : "нет"} · self-test ${st.passed ?? "?"}/${st.total ?? "?"} · ${st.verdict || ""} · ` +
-        `ниша ${out.primary_industry || "—"} · канал ${(out.channel && out.channel.mode) || "—"}`;
+      const conf = q.confidence != null ? Math.round(Number(q.confidence) * 100) + "%" : "—";
+      qEl.textContent = isEn
+        ? `Confidence ${conf} · checks ${st.passed ?? "?"}/${st.total ?? "?"} · ${st.verdict || "ok"} · ${out.primary_industry || "—"}`
+        : `Уверенность ${conf} · проверки ${st.passed ?? "?"}/${st.total ?? "?"} · ${st.verdict || "ok"} · ${out.primary_industry || "—"}`;
     }
     const eb = out.expert_base || {};
     const eEl = $("#gen-expert");
     if (eEl) {
-      const moves = (eb.original_moves || report.original_moves || []).slice(0, 3);
-      eEl.textContent =
-        `${eb.name || report.title || "—"} · слои: ${(eb.layers || []).join(", ") || "—"}` +
-        (moves.length ? ` · ходы: ${moves.join(" | ")}` : "");
+      const moves = (eb.original_moves || report.original_moves || []).slice(0, 2);
+      eEl.innerHTML = `<strong>${escapeHtml(eb.name || report.title || "—")}</strong><div class="how-lead">${escapeHtml(
+        (eb.layers || []).join(" · ") || "—"
+      )}</div>${moves.length ? `<div class="how-lead">${escapeHtml(moves.join(" · "))}</div>` : ""}`;
     }
     const pack = out.autonomous_code_pack || {};
     const cEl = $("#gen-code");
     if (cEl) {
-      const comps = (pack.components || []).slice(0, 4).join("; ");
-      cEl.textContent = `${pack.title || "Assembly pack"} · ${pack.weight || ""} · ${comps || "—"}`;
+      const rich = pack.components_rich || [];
+      if (rich.length) {
+        cEl.innerHTML = rich
+          .slice(0, 6)
+          .map(
+            (c) =>
+              `<div class="code-row"><span class="tz-id">${escapeHtml(c.status || "")}</span> ${escapeHtml(
+                c.file || ""
+              )} — ${escapeHtml(c.role || "")}</div>`
+          )
+          .join("");
+      } else {
+        const comps = (pack.components || []).slice(0, 5);
+        cEl.innerHTML = comps.map((x) => `<div class="code-row">${escapeHtml(x)}</div>`).join("");
+      }
+      if (pack.next_build && pack.next_build.length) {
+        cEl.innerHTML +=
+          `<div class="eyebrow" style="margin-top:0.6rem">${isEn ? "Next build" : "Дальше в сборке"}</div>` +
+          pack.next_build.map((x) => `<div class="how-lead">· ${escapeHtml(x)}</div>`).join("");
+      }
     }
     root.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function paintFill(out, report, isEn) {
+    const host = $("#gen-fill-body");
+    if (!host) return;
+    const arch = report.architecture_cards || out.core_report?.architecture_cards || [];
+    const offers = report.offer_cards || [];
+    const counts = report.counts || {};
+    const top = arch.slice(0, 6);
+    host.innerHTML = `
+      <p class="how-lead">${isEn ? "Cards assembled for your brief" : "Карточки собраны под ваш бриф"}:
+        ${counts.architecture_cards || arch.length} arch · ${counts.offer_cards || offers.length} offers ·
+        ${counts.concept_tests || 0} tests</p>
+      <div class="fill-grid">
+        ${top
+          .map(
+            (c) =>
+              `<div class="fill-card"><div class="tz-id">${escapeHtml(c.id || "")}</div><strong>${escapeHtml(
+                c.title || ""
+              )}</strong><div class="how-lead">${escapeHtml(c.niche || "")}</div><div class="how-lead">${escapeHtml(
+                (c.context || "").slice(0, 120)
+              )}</div></div>`
+          )
+          .join("")}
+      </div>`;
+  }
+
+  function paintHook(hook, isEn) {
+    const title = $("#gen-hook-title");
+    const pitch = $("#gen-hook-pitch");
+    const grid = $("#gen-hook-cards");
+    if (title) title.textContent = hook.headline || (isEn ? "What is ready" : "Что готово");
+    if (pitch) pitch.textContent = hook.pitch || "";
+    if (grid) {
+      const cards = hook.cards || [];
+      grid.innerHTML = cards
+        .map(
+          (c) =>
+            `<div class="hook-item"><div class="k">${escapeHtml(c.k)}</div><div>${escapeHtml(c.v)}</div></div>`
+        )
+        .join("");
+    }
+  }
+
+  function wirePostPay(out, data, isEn) {
+    const btn = $("#gen-approve-core");
+    if (!btn) return;
+    btn.disabled = false;
+    btn.textContent = isEn ? "I paid · open questions & agent" : "Я оплатил · открыть вопросы и агент";
+    if (btn.dataset.boundPay === "1") return;
+    btn.dataset.boundPay = "1";
+    btn.addEventListener("click", async () => {
+      const isEn2 = lang() === "en";
+      const post = $("#gen-post-pay");
+      if (post) post.hidden = false;
+      // personality
+      paintPersonality(out.author_personality || data.author_personality, isEn2);
+      // questions
+      const qs = state.pendingQuestions || [];
+      const qEl = $("#gen-questions");
+      if (qEl) {
+        qEl.innerHTML = qs.length
+          ? qs.map((q) => `<li>${escapeHtml(q)}</li>`).join("")
+          : `<li>${isEn2 ? "No extra questions — write goals in DM" : "Доп. вопросов нет — напишите цели в DM"}</li>`;
+      }
+      // assist unlock
+      const teaser = out.assist_agent || {};
+      try {
+        const res = await fetch(`${apiBase()}/api/v1/analytics/assist-agent/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assist_agent: teaser, lang: lang() }),
+        });
+        if (res.ok) {
+          const payload = await res.json();
+          const session = payload.session || {};
+          state.assistSessionId = session.session_id;
+          renderAssistSession(session, isEn2);
+          const adv = $("#gen-assist-advance");
+          if (adv) {
+            adv.hidden = false;
+            adv.onclick = () => advanceAssistAgent(isEn2);
+          }
+        } else throw new Error("api");
+      } catch (_) {
+        renderAssistSession({ ...teaser, approved: true, queue: (teaser.queue || []).map((s) => ({ ...s, status: "ready" })) }, isEn2);
+      }
+      btn.textContent = isEn2 ? "Opened" : "Открыто";
+      btn.disabled = true;
+      post?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   function downloadBlob(filename, content, mime) {
@@ -1196,23 +1398,37 @@
   function bindExportButtons(data, report, rd) {
     const exports = data.exports || report.exports || {};
     const names = exports.filenames || {};
-    const rdHtml = data.rd_html || (rd && rd.html) || exports.rd_html || exports.print_html || "";
-    const rdMd = data.rd_markdown || (rd && rd.markdown) || exports.rd_markdown || data.core_markdown || "";
+    const pdfHtml =
+      (rd && rd.html) ||
+      data.consultation_html ||
+      data.rd_html ||
+      exports.consultation_html ||
+      exports.rd_html ||
+      exports.print_html ||
+      "";
+    const pdfMd =
+      (rd && rd.markdown) ||
+      data.rd_markdown ||
+      data.core_markdown ||
+      exports.consultation_md ||
+      exports.rd_markdown ||
+      "";
     const map = {
-      "gen-dl-rd": () =>
+      "gen-dl-rd": () => {
+        if (!pdfHtml && !pdfMd) {
+          alert(lang() === "en" ? "PDF not ready — run generate again" : "PDF ещё не готов — запустите генерацию снова");
+          return;
+        }
         downloadBlob(
-          names.rd_html || names.html || "metrix-rd-memo.html",
-          rdHtml || "<p>R&D empty</p>",
+          names.pdf_html || names.html || "metrix-consultation.pdf.html",
+          pdfHtml || `<pre>${pdfMd.replace(/</g, "&lt;")}</pre>`,
           "text/html;charset=utf-8"
-        ),
+        );
+      },
       "gen-dl-md": () =>
-        downloadBlob(names.rd_md || names.md || "metrix-rd-memo.md", rdMd, "text/markdown;charset=utf-8"),
+        downloadBlob(names.md || "metrix-consultation.md", pdfMd || "", "text/markdown;charset=utf-8"),
       "gen-dl-csv": () =>
-        downloadBlob(
-          names.csv || "metrix-core-cards.csv",
-          exports.cards_csv || "",
-          "text/csv;charset=utf-8"
-        ),
+        downloadBlob(names.csv || "metrix-cards.csv", exports.cards_csv || "", "text/csv;charset=utf-8"),
     };
     Object.keys(map).forEach((id) => {
       const el = $("#" + id);
@@ -1225,153 +1441,33 @@
     const host = $("#gen-personality");
     if (!host) return;
     if (!p || !p.primary_label) {
-      host.innerHTML = `<p class="how-lead">${isEn ? "Personality not in response." : "Личность не в ответе."}</p>`;
+      host.innerHTML = `<p class="how-lead">${isEn ? "Author pack after payment." : "Пак автора — после оплаты."}</p>`;
       return;
     }
-    const axes = p.axes || {};
-    const axisHtml = Object.entries(axes)
-      .slice(0, 6)
-      .map(([k, v]) => {
-        const pct = Math.round((Number(v) || 0) * 100);
-        return `<div class="axis-row"><span>${escapeHtml(k)}</span><div class="axis-bar"><i style="width:${pct}%"></i></div><em>${pct}%</em></div>`;
-      })
-      .join("");
-    const goals = (p.goals || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("");
-    const crit = (p.success_criteria || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("");
     host.innerHTML = `
-      <div class="pers-head">
-        <div>
-          <div class="pers-title">${escapeHtml(p.display_name || "")}</div>
-          <div class="pers-arch">${escapeHtml(p.primary_label)} · + ${escapeHtml(p.secondary_label || "")}</div>
-        </div>
-        <span class="free-pill">FREE</span>
-      </div>
-      <p class="how-lead">${escapeHtml(p.summary || "")}</p>
-      <div class="pers-grid">
-        <div><div class="eyebrow">${isEn ? "Intent" : "Intent"}</div><p>${escapeHtml(p.intent || "")}</p></div>
-        <div><div class="eyebrow">${isEn ? "Goals" : "Цели"}</div><ul class="clean-list">${goals}</ul></div>
-        <div><div class="eyebrow">${isEn ? "Success criteria" : "Критерии успеха"}</div><ul class="clean-list">${crit}</ul></div>
-      </div>
-      <div class="eyebrow" style="margin-top:0.75rem">${isEn ? "Axes" : "Оси"}</div>
-      ${axisHtml}
-      <p class="how-lead" style="margin-top:0.6rem">${escapeHtml(p.trust_surface || "")}</p>
+      <div class="eyebrow">${isEn ? "Author uniqueness" : "Авторская уникальность"}</div>
+      <strong>${escapeHtml(p.primary_label)} · ${escapeHtml(p.secondary_label || "")}</strong>
+      <p class="how-lead">${escapeHtml(p.intent || "")}</p>
+      <ul class="clean-list">${(p.success_criteria || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul>
     `;
-  }
-
-  function paintAssistOffer(out, data, isEn) {
-    const offer = out.assist_offer || data.assist_offer || (out.assist_agent && out.assist_agent.offer) || {};
-    const agent = out.assist_agent || {};
-    const host = $("#gen-assist-offer");
-    if (host) {
-      const does = (offer.what_it_does || [])
-        .map((x) => `<li>${escapeHtml(x)}</li>`)
-        .join("");
-      host.innerHTML = `
-        <div class="assist-offer-head">
-          <strong>${escapeHtml(offer.name || (isEn ? "Implementation executor assistant" : "Ассистент-исполнитель"))}</strong>
-          <span class="sep-pill">${isEn ? "SEPARATE" : "ОТДЕЛЬНО"}</span>
-        </div>
-        <p class="how-lead">${escapeHtml(offer.tagline || "")}</p>
-        <ul class="clean-list">${does}</ul>
-        <p class="how-lead">${escapeHtml(offer.price_note || offer.cta_teaser || "")}</p>
-      `;
-    }
-
-    const assistEl = $("#gen-assist-path");
-    const advanceBtn = $("#gen-assist-advance");
-    if (assistEl) {
-      assistEl.hidden = true;
-      assistEl.innerHTML = "";
-    }
-    if (advanceBtn) advanceBtn.hidden = true;
-
-    const approveBtn = $("#gen-approve-core");
-    if (!approveBtn) return;
-
-    // reset per generate
-    approveBtn.disabled = false;
-    approveBtn.textContent = isEn
-      ? "Approve Core · unlock Assist Agent"
-      : "Утвердить Ядро · открыть Assist Agent";
-
-    if (approveBtn.dataset.bound !== "1") {
-      approveBtn.dataset.bound = "1";
-      approveBtn.addEventListener("click", async () => {
-        const isEn2 = lang() === "en";
-        const last = state.lastGenerate || {};
-        const out2 = last.output || {};
-        const teaser = out2.assist_agent || {};
-        approveBtn.disabled = true;
-        approveBtn.textContent = isEn2 ? "Unlocking…" : "Открываем…";
-        try {
-          const res = await fetch(
-            `${apiBase()}/api/v1/analytics/assist-agent/approve`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ assist_agent: teaser, lang: lang() }),
-            }
-          );
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const payload = await res.json();
-          const session = payload.session || {};
-          state.assistSessionId = session.session_id || payload.session_id;
-          renderAssistSession(session, isEn2);
-          approveBtn.textContent = isEn2
-            ? "Approved · Assist Agent running"
-            : "Утверждено · Assist Agent запущен";
-          if (advanceBtn) {
-            advanceBtn.hidden = false;
-            advanceBtn.onclick = () => advanceAssistAgent(isEn2);
-          }
-        } catch (ex) {
-          // Offline / API lag: unlock local teaser queue
-          const local = teaser;
-          local.approved = true;
-          (local.queue || []).forEach((s) => {
-            if (s.status === "locked") s.status = "ready";
-          });
-          renderAssistSession(local, isEn2);
-          approveBtn.textContent = isEn2
-            ? "Approved · local assist path"
-            : "Утверждено · локальный assist path";
-          if (advanceBtn) advanceBtn.hidden = true;
-        }
-      });
-    }
   }
 
   function renderAssistSession(session, isEn) {
     const assistEl = $("#gen-assist-path");
     if (!assistEl) return;
-    assistEl.hidden = false;
     const queue = session.queue || [];
     const prog = session.progress || {};
-    const next = session.next_actions || [];
-    const steps = queue
-      .map((s) => {
-        const st = s.status || "—";
-        return `<div class="assist-step ${escapeHtml(st)}">
-          <strong>${escapeHtml(s.id)}</strong> · ${escapeHtml(s.title || "")}
-          <span class="st">${escapeHtml(st)}</span>
-          <div class="how-lead">${escapeHtml(s.action || "")}</div>
-          <div class="how-lead">→ ${escapeHtml(s.exit || "")}</div>
-        </div>`;
-      })
-      .join("");
-    const nextHtml = next
-      .map((n) => `<li><strong>${escapeHtml(n.step_id)}</strong> ${escapeHtml(n.do || "")}</li>`)
-      .join("");
     assistEl.innerHTML = `
-      <div class="assist-unlocked">
-        <span class="free-pill" style="background:rgba(94,234,212,.15);color:var(--accent)">${isEn ? "UNLOCKED" : "ОТКРЫТО"}</span>
-        <span class="how-lead">session ${escapeHtml(session.session_id || "local")} · done ${prog.done || 0}/${prog.total || queue.length}</span>
-      </div>
-      <div class="eyebrow" style="margin-top:0.6rem">${isEn ? "Agent queue" : "Очередь агента"}</div>
-      ${steps}
-      <div class="eyebrow" style="margin-top:0.6rem">${isEn ? "Next actions" : "Следующие действия"}</div>
-      <ul class="clean-list">${nextHtml || `<li>${isEn ? "—" : "—"}</li>`}</ul>
-      <p class="how-lead">${escapeHtml((session.harness && session.harness.oversight) || "")}</p>
+      <div class="eyebrow">${isEn ? "Deploy agent" : "Агент деплоя"}</div>
+      <p class="how-lead">session ${escapeHtml(session.session_id || "local")} · ${prog.done || 0}/${prog.total || queue.length}</p>
+      ${queue
+        .map(
+          (s) =>
+            `<div class="assist-step ${escapeHtml(s.status || "")}"><strong>${escapeHtml(s.id)}</strong> ${escapeHtml(
+              s.title || ""
+            )}<div class="how-lead">${escapeHtml(s.action || "")}</div></div>`
+        )
+        .join("")}
     `;
   }
 

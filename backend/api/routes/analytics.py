@@ -695,6 +695,27 @@ def skill_memory_status() -> dict[str, Any]:
     }
 
 
+class PromotionBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    project_name: str = ""
+    industry: str = ""
+    lang: str = "ru"
+
+
+@router.post("/promotion-pack")
+def promotion_pack_run(body: PromotionBody) -> dict[str, Any]:
+    """Third mode / Marketing tariff: 3 roads + DM scripts + analytics answers."""
+    from backend.core.business_gen.promotion_pack import build_promotion_pack
+
+    pack = build_promotion_pack(
+        body.business,
+        project_name=body.project_name,
+        industry_id=body.industry,
+        lang=body.lang,
+    )
+    return {"module": "PromotionPack", "output": pack, "message": pack.get("summary")}
+
+
 @router.get("/business-services")
 def business_services(lang: str = "ru") -> dict[str, Any]:
     """10 Business Tasks services + short wow demos (no hard prices)."""
