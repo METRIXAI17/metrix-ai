@@ -336,6 +336,33 @@
       .join("");
   }
 
+  function flagshipCtaLabel(cta) {
+    if (cta === "generate") return t("tariff_cta_generate") || t("cta_generate");
+    if (cta === "promo") return t("tariff_cta_promo") || t("nav_promo");
+    if (cta === "later" || cta === "none") return t("after_one_step") || t("tariff_cta_later");
+    if (cta === "request" || cta === "techwrite" || cta === "consult") {
+      return t("tariff_cta_consult") || t("cta_consult");
+    }
+    return t("details");
+  }
+
+  function applyFlagshipCta(cta) {
+    if (cta === "generate") {
+      setMode("generate");
+      return;
+    }
+    if (cta === "promo") {
+      setMode("promo");
+      return;
+    }
+    if (cta === "pricing") {
+      $("#pricing")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    if (cta === "later" || cta === "none") return;
+    setMode("request");
+  }
+
   function renderFlagships() {
     const grid = $("#program-grid");
     if (!grid) return;
@@ -353,15 +380,19 @@
               <div class="marquee-dots" data-marquee-dots></div>
             </div>`
           : `<p>${escapeHtml(f.essence)}</p>`;
+        const later = f.cta === "later" || f.cta === "none";
+        const footLink = later
+          ? `<span class="card-later-note">${escapeHtml(t("after_one_step") || t("tariff_cta_later"))}</span>`
+          : `<span class="linkish">${escapeHtml(t("details"))}</span>`;
         return `
-      <button type="button" class="card card-flag${f.marquee ? " card-flag-marquee" : ""}" data-flag="${f.id}"
+      <button type="button" class="card card-flag${f.marquee ? " card-flag-marquee" : ""}${later ? " card-flag-later" : ""}" data-flag="${f.id}"
         style="--flag-accent:${accent}">
         ${sticker}
         <h3>${escapeHtml(f.title)}</h3>
         ${marquee}
         <div class="card-foot">
           <span class="tag accent">${escapeHtml(f.track)}</span>
-          <span class="linkish">${escapeHtml(t("details"))}</span>
+          ${footLink}
         </div>
       </button>`;
       })
@@ -442,6 +473,22 @@
         <p style="color:var(--text-muted);font-size:0.95rem;line-height:1.7">${detail}</p>`;
     }
     $("#modal-body").innerHTML = body;
+
+    const primary = $("#modal-request");
+    if (primary) {
+      const later = f.cta === "later" || f.cta === "none";
+      if (later) {
+        primary.hidden = true;
+        primary.disabled = true;
+        primary.classList.add("btn-disabled-later");
+      } else {
+        primary.hidden = false;
+        primary.disabled = false;
+        primary.classList.remove("btn-disabled-later");
+        primary.textContent = flagshipCtaLabel(f.cta);
+      }
+    }
+
     $("#modal").classList.add("open");
     document.body.style.overflow = "hidden";
   }
@@ -460,14 +507,11 @@
       if (e.key === "Escape") close();
     });
     $("#modal-request")?.addEventListener("click", () => {
-      close();
       const f = D.getFlagships().find((x) => x.id === state.selectedFlagship);
-      if (f?.cta === "pricing") {
-        $("#pricing")?.scrollIntoView({ behavior: "smooth" });
-        return;
-      }
-      if (f?.cta === "generate") {
-        setMode("generate");
+      if (f?.cta === "later" || f?.cta === "none") return;
+      close();
+      if (f?.cta === "generate" || f?.cta === "promo" || f?.cta === "pricing") {
+        applyFlagshipCta(f.cta);
         return;
       }
       // Consult + Tech-TZ is one path (product track when techwrite)
@@ -700,6 +744,43 @@
     show(layers[coreIdx] || layers[0], coreIdx);
   }
 
+  function tariffCtaMeta(tier) {
+    const cta = tier.cta || "request";
+    if (cta === "generate") {
+      return {
+        mode: "generate",
+        label: t("tariff_cta_generate") || t("cta_generate"),
+        active: true,
+      };
+    }
+    if (cta === "promo") {
+      return {
+        mode: "promo",
+        label: t("tariff_cta_promo") || t("nav_promo"),
+        active: true,
+      };
+    }
+    if (cta === "later" || cta === "none") {
+      return {
+        mode: "",
+        label: t("tariff_cta_later") || t("after_one_step"),
+        active: false,
+      };
+    }
+    if (cta === "partner") {
+      return {
+        mode: "",
+        label: tier.price || t("tariff_cta_later"),
+        active: false,
+      };
+    }
+    return {
+      mode: "request",
+      label: t("tariff_cta_consult") || t("cta_consult") || t("tariff_cta"),
+      active: true,
+    };
+  }
+
   function renderPricing() {
     const grid = $("#pricing-grid");
     if (!grid || !D.getPricingTiers) return;
@@ -712,6 +793,16 @@
         const badge = tier.popular
           ? `<span class="tariff-badge">${escapeHtml(t("tariff_popular"))}</span>`
           : "";
+        const meta = tariffCtaMeta(tier);
+        const priceClass =
+          tier.priceStyle === "soft" ? "tariff-price tariff-price-soft" : "tariff-price";
+        const ctaHtml = meta.active
+          ? `<button type="button" class="btn ${
+              tier.popular ? "btn-primary" : "btn-ghost"
+            } tariff-cta" data-mode-jump="${escapeHtml(meta.mode)}">${escapeHtml(meta.label)}</button>`
+          : `<span class="tariff-cta tariff-cta-later" aria-disabled="true">${escapeHtml(
+              meta.label
+            )}</span>`;
         return `
       <article class="tariff-card${tier.popular ? " tariff-popular" : ""}" data-tariff="${escapeHtml(
           tier.id
@@ -720,14 +811,12 @@
         <div class="tariff-head">
           <div class="eyebrow">${escapeHtml(tier.id)}</div>
           <h3>${escapeHtml(tier.name)}</h3>
-          <div class="tariff-price">${escapeHtml(tier.price)}</div>
+          <div class="${priceClass}">${escapeHtml(tier.price)}</div>
           <p class="tariff-period">${escapeHtml(tier.period || "")}</p>
           <p class="tariff-tagline">${escapeHtml(tier.tagline || "")}</p>
         </div>
         <ul class="tariff-list">${items}</ul>
-        <button type="button" class="btn ${
-          tier.popular ? "btn-primary" : "btn-ghost"
-        } tariff-cta" data-mode-jump="request">${escapeHtml(t("tariff_cta"))}</button>
+        ${ctaHtml}
       </article>`;
       })
       .join("");
