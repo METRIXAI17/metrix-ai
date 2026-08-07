@@ -21,6 +21,10 @@ backend/data/requests/
 backend/data/free_work/
 backend/data/knowledge_base/
 backend/data/workers/
+backend/data/live_logs/
+backend/data/skill_memory/
+backend/data/assist_sessions/
+backend/data/robotics_sessions/
 docs/_probe*
 docs/screenshot_*.png
 client-package-latest.html

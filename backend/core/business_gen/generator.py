@@ -29,6 +29,14 @@ from backend.core.business_gen.assist_agent import ImplementationAssistAgent
 from backend.core.business_gen.identity_engine import build_post_pay_identity_pack
 from backend.core.business_gen.live_log import create_live_log_from_plan
 from backend.core.business_gen.gencore import run_gencore
+from backend.core.business_gen.client_segmentation import segment_client
+from backend.core.business_gen.expert_base_directions import match_expert_directions
+from backend.core.business_gen.user_paths import select_user_path
+from backend.core.business_gen.originality_inject import enrich_core_sections
+from backend.core.business_gen.acceptance_forecast import forecast_acceptance
+from backend.core.business_gen.implement_model import build_implement_model, redact_paid_surface
+from backend.core.business_gen.robotics_harness import RoboticsHarness
+from backend.core.wayd import stamp_labels, compute_terminal, compose_edges
 
 # 10 public client niches (distribution surface)
 PUBLIC_NICHES: list[dict[str, Any]] = [
@@ -391,7 +399,7 @@ class BusinessGenerator:
         )
         deliverable["live_log"] = live_log
 
-        # Post-pay identity: unique questions + uniqueness forecast (Metrix voice)
+        # Identity: unique questions + uniqueness forecast (Metrix voice)
         identity_pack = build_post_pay_identity_pack(
             business_text,
             personality=personality,
@@ -400,14 +408,128 @@ class BusinessGenerator:
             lang=lang,
         )
         deliverable["identity_pack"] = identity_pack
-        # Replace open_questions with identity-only unique Q for post-pay surface
         identity_q_texts = [q["text"] for q in identity_pack.get("identity_questions") or []]
         deliverable["plan"] = dict(deliverable.get("plan") or core.get("plan") or {})
         deliverable["plan"]["open_questions"] = identity_q_texts
         deliverable["plan"]["identity_questions"] = identity_pack.get("identity_questions") or []
         core_report["open_questions"] = identity_q_texts
 
-        # Autonomous assist agent — after payment messaging
+        # ── wayD spine: segment · path · expert · originality · implement ──
+        segment = segment_client(
+            business_text,
+            industry_id=industry_id,
+            profile=core_report.get("profile") or profile_early,
+            lang=lang,
+        )
+        deliverable["client_segmentation"] = segment
+
+        expert_dirs = match_expert_directions(business_text, lang=lang, top_k=4)
+        deliverable["expert_directions"] = expert_dirs
+
+        user_path = select_user_path(
+            business_text,
+            segment_id=(segment.get("primary") or {}).get("id") or "",
+            lang=lang,
+            sophisticated=True,
+        )
+        deliverable["user_path"] = user_path
+
+        originality = enrich_core_sections(
+            core_report,
+            lang=lang,
+            seed=project_name or core_report.get("title") or business_text[:48],
+        )
+        deliverable["originality"] = originality
+
+        implement_model = build_implement_model(
+            segment=segment,
+            path=user_path,
+            expert=expert_dirs,
+            lang=lang,
+            expose_price=False,  # paid surface hidden on public generate
+        )
+        deliverable["implement_model"] = implement_model
+
+        # Labels + edge mesh (compound functions)
+        wayd_labels = stamp_labels(
+            direction_ids=["product_pack", "unit_pack", "ch_network"],
+            segment_id=(segment.get("primary") or {}).get("id"),
+            path_id=(user_path.get("path") or {}).get("id"),
+            extra=[
+                "L.edge.gencore_x_livelog",
+                "L.edge.segment_x_path",
+                "L.edge.accept_x_originality",
+                "L.edge.robotics_x_implement",
+                "L.edge.expert_x_gencore",
+            ],
+            rails=True,
+        )
+        edge_mesh = compose_edges(
+            [
+                "gencore",
+                "live_log",
+                "client_segmentation",
+                "user_paths",
+                "acceptance_forecast",
+                "originality_inject",
+                "robotics_harness",
+                "implement_model",
+                "expert_base_directions",
+                "wayd",
+            ],
+            quality_boost=float((core.get("quality") or {}).get("score") or 0.55),
+            segment_fit=float(segment.get("segment_fit") or 0.5),
+            path_fit=float(user_path.get("path_fit") or 0.5),
+        )
+        edge_dict = edge_mesh.to_dict()
+
+        # Acceptance forecast (before gencore v6 can consume it; refine after)
+        acceptance = forecast_acceptance(
+            quality=core.get("quality") or {},
+            self_test=core.get("self_test") or {},
+            core_report=core_report,
+            originality=float(originality.get("originality") or 0.5),
+            segment_fit=float(segment.get("segment_fit") or 0.5),
+            path_fit=float(user_path.get("path_fit") or 0.5),
+            path_sophistication=float((user_path.get("path") or {}).get("sophistication") or 0.7),
+            live_log=live_log,
+            implementation_forecast=forecast,
+            lang=lang,
+        )
+        deliverable["acceptance_forecast"] = acceptance
+
+        # Terminal metrics model
+        core_metrics = {}
+        side = core.get("side_compute") or {}
+        if isinstance(side, dict):
+            core_metrics = side.get("core_metrics") or side.get("metrics") or {}
+        terminal = compute_terminal(
+            core_metrics=core_metrics if isinstance(core_metrics, dict) else {},
+            acceptance_p=float(acceptance.get("acceptance_p") or 0.55),
+            originality=float(originality.get("originality") or 0.5),
+            delight=float((identity_pack.get("forecast") or {}).get("delight_score") or 0.55),
+            path_fit=float(user_path.get("path_fit") or 0.5),
+            segment_fit=float(segment.get("segment_fit") or 0.5),
+            edge_count=int(edge_dict.get("edge_count") or 0),
+            edge_strength=float(edge_dict.get("edge_strength") or 0.0),
+            quality=core.get("quality") or {},
+            notes=[
+                f"segment={(segment.get('primary') or {}).get('id')}",
+                f"path={(user_path.get('path') or {}).get('id')}",
+            ],
+        )
+        wayd_bundle = {
+            "model": "wayD",
+            "version": "1.0.0",
+            "labels": wayd_labels,
+            "terminal": terminal.to_dict(),
+            "edges": edge_dict,
+            "unique_functions": edge_dict.get("unique_functions") or [],
+        }
+        deliverable["wayd"] = wayd_bundle
+        deliverable["edge_mesh"] = edge_dict
+
+        # Autonomous assist agent (teaser; paid implement hidden)
         agent = ImplementationAssistAgent().build_from_core(
             core_report,
             personality=personality,
@@ -418,7 +540,7 @@ class BusinessGenerator:
         deliverable["assist_agent"] = agent
         deliverable["assist_offer"] = agent.get("offer")
 
-        # GenCore — second flagship (slots v1–v5; expands with answers)
+        # GenCore — second flagship (slots v1–v6; wayD-native)
         gencore = run_gencore(
             business_text=business_text,
             project_name=project_name or core_report.get("title") or "",
@@ -430,8 +552,58 @@ class BusinessGenerator:
             answers=answers,
             generation=generation or "v1",
             lang=lang,
+            segment=segment,
+            user_path=user_path,
+            expert_directions=expert_dirs,
+            originality=originality,
+            acceptance=acceptance,
+            wayd=wayd_bundle,
+            edge_mesh=edge_dict,
+            implement_model=implement_model,
         )
         deliverable["gencore"] = gencore
+
+        # Re-score acceptance with gencore slots known
+        acceptance = forecast_acceptance(
+            quality=core.get("quality") or {},
+            self_test=core.get("self_test") or {},
+            core_report=core_report,
+            originality=float(originality.get("originality") or 0.5),
+            segment_fit=float(segment.get("segment_fit") or 0.5),
+            path_fit=float(user_path.get("path_fit") or 0.5),
+            path_sophistication=float((user_path.get("path") or {}).get("sophistication") or 0.7),
+            live_log=live_log,
+            gencore=gencore,
+            implementation_forecast=forecast,
+            lang=lang,
+        )
+        deliverable["acceptance_forecast"] = acceptance
+        wayd_bundle["terminal"] = compute_terminal(
+            core_metrics=core_metrics if isinstance(core_metrics, dict) else {},
+            acceptance_p=float(acceptance.get("acceptance_p") or 0.55),
+            originality=float(originality.get("originality") or 0.5),
+            delight=float((identity_pack.get("forecast") or {}).get("delight_score") or 0.55),
+            path_fit=float(user_path.get("path_fit") or 0.5),
+            segment_fit=float(segment.get("segment_fit") or 0.5),
+            edge_count=int(edge_dict.get("edge_count") or 0),
+            edge_strength=float(edge_dict.get("edge_strength") or 0.0),
+            quality=core.get("quality") or {},
+        ).to_dict()
+        deliverable["wayd"] = wayd_bundle
+
+        # Robotics harness (teaser plan)
+        robotics = RoboticsHarness().build_plan(
+            implement_model=implement_model,
+            wayd=wayd_bundle,
+            segment=segment,
+            path=user_path,
+            live_log=live_log,
+            acceptance=acceptance,
+            gencore=gencore,
+            lang=lang,
+            approved=False,
+        )
+        deliverable["robotics_harness"] = robotics
 
         hook = build_hook_plan(
             project_name=project_name or core_report.get("title") or "",
@@ -466,21 +638,27 @@ class BusinessGenerator:
         n_cards = core_report.get("counts", {}).get("total_cards", 0)
         is_en = (lang or "").lower().startswith("en")
         title_show = project_name or core_report.get("title") or ""
+        ap = acceptance.get("acceptance_p")
         if is_en:
             human_lead = (
-                f"Consultation ready for «{title_show}»: filling, analytical report and main PDF "
-                f"({n_cards} cards). Author uniqueness + deploy agent — after payment."
+                f"Consultation ready for «{title_show}»: path steps A01–A12, analytical report, main PDF "
+                f"({n_cards} cards). wayD terminal active · P(accept)={ap}. "
+                f"GenCore slots + live log + robotics harness ready for ops tuning."
             )
         else:
             human_lead = (
-                f"Консультация по «{title_show}»: наполнение, аналитический отчёт и основной PDF готовы "
-                f"({n_cards} карточек). Авторская уникальность + агент деплоя — после оплаты."
+                f"Консультация по «{title_show}»: шаги A01–A12, аналитический отчёт, основной PDF "
+                f"({n_cards} карточек). wayD terminal активен · P(приёмки)={ap}. "
+                f"Слоты GenCore + live log + robotics harness готовы к ops-настройке."
             )
+
+        # Hide paid implementation commercial fields on public surface
+        deliverable = redact_paid_surface(deliverable)
 
         return {
             "module": self.name,
             "role": "orchestrator",
-            "version": "2.2.0-consult-clean",
+            "version": "2.3.0-wayd",
             "input": {
                 "business": business_text[:500],
                 "industry_id": industry_id,

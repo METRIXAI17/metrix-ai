@@ -8,6 +8,8 @@ from backend.core.business_gen.rd_reader import convert_to_rd
 from backend.core.business_gen.author_personality import build_author_personality
 from backend.core.business_gen.assist_agent import ImplementationAssistAgent
 from backend.core.business_gen.gencore import run_gencore
+from backend.core.business_gen.robotics_harness import RoboticsHarness
+from backend.core.business_gen.implement_model import build_implement_model
 
 __all__ = [
     "BusinessGenerator",
@@ -20,4 +22,6 @@ __all__ = [
     "build_author_personality",
     "ImplementationAssistAgent",
     "run_gencore",
+    "RoboticsHarness",
+    "build_implement_model",
 ]

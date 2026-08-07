@@ -1,20 +1,47 @@
-Apache License
-Version 2.0, January 2004
-http://www.apache.org/licenses/
-
+Metrix AI Personal-Use License
 Copyright 2026 Metrix AI / Karim Metrix
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, and run the Software for PERSONAL, NON-COMMERCIAL purposes only,
+subject to the following conditions:
 
-    http://www.apache.org/licenses/LICENSE-2.0
+1. PERSONAL USE ALLOWED
+   You may use the Software for personal learning, research, private
+   experimentation, and non-commercial portfolio / educational work.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+2. COMMERCIAL USE PROHIBITED
+   You may NOT use, sell, sublicense, host as a paid service, resell,
+   white-label, or otherwise exploit the Software (or substantial portions of
+   it) for commercial purposes without a separate written commercial license
+   from the copyright holder.
 
-Note: The `pilot_private/` commercial pilot backend is intentionally excluded
-from the public open-source distribution.
+   "Commercial purposes" includes, without limitation:
+   - offering the Software or derivatives as a paid product or service;
+   - using the Software inside a revenue-generating business workflow
+     for clients or customers;
+   - redistributing the Software as part of a commercial package.
+
+3. ATTRIBUTION
+   The above copyright notice and this permission notice shall be included
+   in all copies or substantial portions of the Software.
+
+4. NO TRADEMARK LICENSE
+   This license does not grant rights to the names "Metrix AI", "KARIM METRIX",
+   "wayD", or related marks except for factual attribution.
+
+5. PRIVATE / PILOT COMPONENTS
+   Directories intentionally excluded from public distribution (e.g.
+   pilot_private/) remain proprietary. Absence from the public tree does not
+   imply a grant of rights.
+
+6. DISCLAIMER
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+
+For commercial licensing: contact via https://x.com/karimmetrix

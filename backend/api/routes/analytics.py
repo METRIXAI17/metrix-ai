@@ -858,6 +858,268 @@ def identity_answers_submit(body: IdentityAnswersBody) -> dict[str, Any]:
     }
 
 
+# ── wayD · segmentation · robotics · implement (ops) ─────────────────────────
+
+
+class WayDBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    industry: str = ""
+    project_name: str = ""
+    lang: str = "ru"
+
+
+@router.post("/wayd/terminal")
+def wayd_terminal_run(body: WayDBody) -> dict[str, Any]:
+    """wayD terminal: labels · segment · path · acceptance · edges (ops analytical surface)."""
+    from backend.core.business_gen.client_segmentation import segment_client
+    from backend.core.business_gen.user_paths import select_user_path
+    from backend.core.business_gen.expert_base_directions import match_expert_directions
+    from backend.core.business_gen.acceptance_forecast import forecast_acceptance
+    from backend.core.business_gen.core_deliverable import _detect_profile
+    from backend.core.wayd import stamp_labels, compute_terminal, compose_edges
+
+    prof = _detect_profile(body.business)
+    seg = segment_client(body.business, industry_id=body.industry, profile=prof, lang=body.lang)
+    path = select_user_path(
+        body.business, segment_id=(seg.get("primary") or {}).get("id") or "", lang=body.lang
+    )
+    expert = match_expert_directions(body.business, lang=body.lang)
+    acc = forecast_acceptance(
+        segment_fit=float(seg.get("segment_fit") or 0.5),
+        path_fit=float(path.get("path_fit") or 0.5),
+        path_sophistication=float((path.get("path") or {}).get("sophistication") or 0.7),
+        lang=body.lang,
+    )
+    labels = stamp_labels(
+        direction_ids=["product_pack", "unit_pack", "ch_network"],
+        segment_id=(seg.get("primary") or {}).get("id"),
+        path_id=(path.get("path") or {}).get("id"),
+        rails=True,
+    )
+    mesh = compose_edges(
+        [
+            "gencore",
+            "live_log",
+            "client_segmentation",
+            "user_paths",
+            "acceptance_forecast",
+            "originality_inject",
+            "robotics_harness",
+            "implement_model",
+            "expert_base_directions",
+            "wayd",
+        ],
+        segment_fit=float(seg.get("segment_fit") or 0.5),
+        path_fit=float(path.get("path_fit") or 0.5),
+    ).to_dict()
+    terminal = compute_terminal(
+        acceptance_p=float(acc.get("acceptance_p") or 0.55),
+        path_fit=float(path.get("path_fit") or 0.5),
+        segment_fit=float(seg.get("segment_fit") or 0.5),
+        edge_count=int(mesh.get("edge_count") or 0),
+        edge_strength=float(mesh.get("edge_strength") or 0.0),
+    ).to_dict()
+    return {
+        "module": "wayD",
+        "labels": labels,
+        "terminal": terminal,
+        "segment": seg,
+        "path": path,
+        "expert_directions": expert,
+        "acceptance": acc,
+        "edges": mesh,
+        "unique_functions": mesh.get("unique_functions") or [],
+    }
+
+
+@router.post("/segment")
+def segment_client_run(body: WayDBody) -> dict[str, Any]:
+    from backend.core.business_gen.client_segmentation import segment_client
+    from backend.core.business_gen.core_deliverable import _detect_profile
+
+    prof = _detect_profile(body.business)
+    return segment_client(body.business, industry_id=body.industry, profile=prof, lang=body.lang)
+
+
+@router.get("/expert-directions")
+def expert_directions_list(lang: str = "ru") -> dict[str, Any]:
+    from backend.core.business_gen.expert_base_directions import list_all_directions
+
+    return {"module": "ExpertBaseDirections", "directions": list_all_directions(lang), "count": 8}
+
+
+@router.post("/expert-directions/match")
+def expert_directions_match(body: WayDBody) -> dict[str, Any]:
+    from backend.core.business_gen.expert_base_directions import match_expert_directions
+
+    return match_expert_directions(body.business, lang=body.lang)
+
+
+@router.post("/user-path")
+def user_path_run(body: WayDBody) -> dict[str, Any]:
+    from backend.core.business_gen.user_paths import select_user_path
+    from backend.core.business_gen.client_segmentation import segment_client
+    from backend.core.business_gen.core_deliverable import _detect_profile
+
+    prof = _detect_profile(body.business)
+    seg = segment_client(body.business, industry_id=body.industry, profile=prof, lang=body.lang)
+    return select_user_path(
+        body.business, segment_id=(seg.get("primary") or {}).get("id") or "", lang=body.lang
+    )
+
+
+class ImplementOpsBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    industry: str = ""
+    lang: str = "ru"
+    expose_price: bool = False  # founder ops only
+
+
+@router.post("/implement-model")
+def implement_model_run(body: ImplementOpsBody) -> dict[str, Any]:
+    """Three-direction implement model. Price only if expose_price (ops)."""
+    from backend.core.business_gen.implement_model import build_implement_model
+    from backend.core.business_gen.client_segmentation import segment_client
+    from backend.core.business_gen.user_paths import select_user_path
+    from backend.core.business_gen.expert_base_directions import match_expert_directions
+    from backend.core.business_gen.core_deliverable import _detect_profile
+
+    prof = _detect_profile(body.business)
+    seg = segment_client(body.business, industry_id=body.industry, profile=prof, lang=body.lang)
+    path = select_user_path(
+        body.business, segment_id=(seg.get("primary") or {}).get("id") or "", lang=body.lang
+    )
+    expert = match_expert_directions(body.business, lang=body.lang)
+    return build_implement_model(
+        segment=seg,
+        path=path,
+        expert=expert,
+        lang=body.lang,
+        expose_price=bool(body.expose_price),
+    )
+
+
+class RoboticsStartBody(BaseModel):
+    plan: dict = Field(default_factory=dict)
+    business: str = ""
+    lang: str = "ru"
+
+
+class RoboticsAdvanceBody(BaseModel):
+    session_id: str
+    note: str = ""
+
+
+@router.post("/robotics/plan")
+def robotics_plan(body: WayDBody) -> dict[str, Any]:
+    """Build robotics harness plan (teaser) for three-direction implement."""
+    from backend.core.business_gen.robotics_harness import RoboticsHarness
+    from backend.core.business_gen.implement_model import build_implement_model
+    from backend.core.business_gen.client_segmentation import segment_client
+    from backend.core.business_gen.user_paths import select_user_path
+    from backend.core.business_gen.acceptance_forecast import forecast_acceptance
+    from backend.core.business_gen.core_deliverable import _detect_profile
+    from backend.core.wayd import stamp_labels, compute_terminal, compose_edges
+
+    prof = _detect_profile(body.business)
+    seg = segment_client(body.business, industry_id=body.industry, profile=prof, lang=body.lang)
+    path = select_user_path(
+        body.business, segment_id=(seg.get("primary") or {}).get("id") or "", lang=body.lang
+    )
+    im = build_implement_model(segment=seg, path=path, lang=body.lang, expose_price=False)
+    acc = forecast_acceptance(
+        segment_fit=float(seg.get("segment_fit") or 0.5),
+        path_fit=float(path.get("path_fit") or 0.5),
+        lang=body.lang,
+    )
+    labels = stamp_labels(
+        direction_ids=["product_pack", "unit_pack", "ch_network"],
+        segment_id=(seg.get("primary") or {}).get("id"),
+        path_id=(path.get("path") or {}).get("id"),
+    )
+    mesh = compose_edges(
+        ["robotics_harness", "implement_model", "wayd", "live_log", "gencore"],
+        segment_fit=float(seg.get("segment_fit") or 0.5),
+        path_fit=float(path.get("path_fit") or 0.5),
+    ).to_dict()
+    terminal = compute_terminal(
+        acceptance_p=float(acc.get("acceptance_p") or 0.55),
+        edge_count=int(mesh.get("edge_count") or 0),
+        edge_strength=float(mesh.get("edge_strength") or 0),
+    ).to_dict()
+    wayd = {"labels": labels, "terminal": terminal, "edges": mesh}
+    plan = RoboticsHarness().build_plan(
+        implement_model=im,
+        wayd=wayd,
+        segment=seg,
+        path=path,
+        acceptance=acc,
+        lang=body.lang,
+        approved=False,
+    )
+    return plan
+
+
+@router.post("/robotics/start")
+def robotics_start(body: RoboticsStartBody) -> dict[str, Any]:
+    """Start autonomous robotics executive session (after implement approval)."""
+    from backend.core.business_gen.robotics_harness import RoboticsHarness
+
+    rh = RoboticsHarness()
+    plan = body.plan or rh.build_plan(lang=body.lang, approved=True)
+    # force unlock
+    for step in plan.get("queue") or []:
+        step["status"] = "ready"
+    session = rh.start(plan, lang=body.lang)
+    return {"ok": True, "session": session, "session_id": session.get("session_id")}
+
+
+@router.post("/robotics/advance")
+def robotics_advance(body: RoboticsAdvanceBody) -> dict[str, Any]:
+    from backend.core.business_gen.robotics_harness import RoboticsHarness
+
+    return RoboticsHarness().advance(body.session_id, note=body.note or "")
+
+
+@router.get("/robotics/{session_id}")
+def robotics_get(session_id: str) -> dict[str, Any]:
+    from backend.core.business_gen.robotics_harness import RoboticsHarness
+
+    return RoboticsHarness().get(session_id)
+
+
+@router.get("/live-log")
+def live_log_list(limit: int = 12) -> dict[str, Any]:
+    """List recent local live-log sessions (ops panel)."""
+    from pathlib import Path
+    import json
+    from backend.core.business_gen.live_log import LOG_DIR
+
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    files = sorted(LOG_DIR.glob("log_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    items = []
+    for p in files[: max(1, min(int(limit), 40))]:
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            days = data.get("days") or []
+            items.append(
+                {
+                    "id": data.get("id") or p.stem,
+                    "project_name": data.get("project_name"),
+                    "status": data.get("status"),
+                    "touches_done": data.get("touches_done"),
+                    "touch_target": data.get("touch_target"),
+                    "days_done": sum(1 for d in days if d.get("done")),
+                    "days_total": len(days),
+                    "artifact_shipped": data.get("artifact_shipped"),
+                    "backend": data.get("backend"),
+                }
+            )
+        except Exception:
+            continue
+    return {"ok": True, "sessions": items, "count": len(items)}
+
+
 @router.get("/business-services")
 def business_services(lang: str = "ru") -> dict[str, Any]:
     """10 Business Tasks services + short wow demos (no hard prices)."""

@@ -37,21 +37,21 @@ def build_hook_plan(
     if is_en:
         headline = f"What you get for «{title}»"
         lines_cards = [
-            {"k": "Ready now", "v": f"Filling · analytical report · main PDF · {n_cards} decision cards"},
-            {"k": "Who pays", "v": payer},
+            {"k": "Ready now", "v": f"Steps A01–A12 · analytical report · main PDF · {n_cards} decision cards"},
+            {"k": "Who pays (buyer)", "v": payer},
             {"k": "What you sell", "v": unit},
             {"k": "Pilot of success", "v": metric},
             {"k": "Author stance", "v": axis or "Systems builder angle from your brief"},
             {
-                "k": "After payment",
-                "v": "Author uniqueness pack + deploy agent · clarifying questions in DM",
+                "k": "Next tech layer",
+                "v": "Identity uniqueness + GenCore slots + live log + robotics harness (ops)",
             },
         ]
         pitch = (
-            "You already have the map. Pay when you want the hands-on path: "
-            "we refine uniqueness and run deployment with you."
+            "You already have the map: resume + tech context. "
+            "Implementation of three directions is configured in ops — not a public pay wall."
         )
-        cta = f"Pay & continue · DM @{X_DM.split('/')[-1]}"
+        cta = f"Continue · DM @{X_DM.split('/')[-1]}"
         next_step = f"Write on X: {X_DM} — “Core · {title[:40]}”"
         markdown = (
             f"## {headline}\n\n"
@@ -62,21 +62,21 @@ def build_hook_plan(
     else:
         headline = f"Что готово по «{title}»"
         lines_cards = [
-            {"k": "Уже сейчас", "v": f"Наполнение · аналитический отчёт · основной PDF · {n_cards} карточек решений"},
-            {"k": "Кто платит", "v": payer},
+            {"k": "Уже сейчас", "v": f"Шаги A01–A12 · аналитический отчёт · основной PDF · {n_cards} карточек решений"},
+            {"k": "Кто платит (buyer)", "v": payer},
             {"k": "Что продаёте", "v": unit},
             {"k": "Мера успеха", "v": metric},
             {"k": "Угол автора", "v": axis or "Системный билдер — из вашего брифа"},
             {
-                "k": "После оплаты",
-                "v": "Авторская уникальность + агент деплоя · уточняющие вопросы в переписке",
+                "k": "Следующий техслой",
+                "v": "Идентичность + слоты GenCore + live log + robotics harness (ops)",
             },
         ]
         pitch = (
-            "Карта уже собрана. Оплата — когда нужны руки: "
-            "усиливаем уникальность и ведём внедрение вместе."
+            "Карта уже собрана: резюме + техконтекст. "
+            "Внедрение трёх направлений настраивается в ops — без публичной pay-wall."
         )
-        cta = "Оплатить и приступить · написать в X"
+        cta = "Продолжить · написать в X"
         next_step = f"Напишите в X: {X_DM} — «Ядро · {title[:40]}»"
         markdown = (
             f"## {headline}\n\n"
@@ -87,7 +87,7 @@ def build_hook_plan(
 
     return {
         "module": "HookPlan",
-        "version": "2.0",
+        "version": "2.1-hidden-commercial",
         "headline": headline,
         "pitch": pitch,
         "cards": lines_cards,
@@ -95,14 +95,18 @@ def build_hook_plan(
         "cta": cta,
         "next_step": next_step,
         "x_dm": X_DM,
-        "price_usd": CORE_PRICE_USD,
+        # Commercial redacted on public surface (ops may restore via implement_model expose)
+        "price_usd": None,
+        "price_redacted": True,
+        "commercial_hidden": True,
         "lang": "en" if is_en else "ru",
         # keep fields for old clients
         "bullets": [c["v"] for c in lines_cards],
         "sub_cta": next_step,
-        "value_mid_usd": (value or {}).get("realized_mid_usd"),
-        "gap_usd": (value or {}).get("gap_usd"),
+        "value_mid_usd": None,
+        "gap_usd": None,
         "band": (value or {}).get("band"),
         "open_questions_left": 0,
-        "why_buy_now": [c["v"] for c in lines_cards[:3]],
+        "why_continue": [c["v"] for c in lines_cards[:3]],
+        "why_buy_now": [c["v"] for c in lines_cards[:3]],  # legacy key
     }

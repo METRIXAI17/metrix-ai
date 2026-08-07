@@ -115,6 +115,17 @@ def test_business_generate_library_core():
     # GenCore wired
     assert out.get("gencore") and out["gencore"].get("module") == "GenCore"
     assert "v1_consult" in (out["gencore"].get("slots") or {})
+    # wayD spine + segmentation + paths + originality + acceptance + robotics
+    assert out.get("wayd") and out["wayd"].get("terminal")
+    assert out.get("client_segmentation") and out["client_segmentation"].get("primary")
+    assert out.get("user_path") and out["user_path"].get("path")
+    assert out.get("expert_directions") and out["expert_directions"].get("top")
+    assert out.get("originality") and "originality" in out["originality"]
+    assert out.get("acceptance_forecast") and out["acceptance_forecast"].get("acceptance_p") is not None
+    assert out.get("implement_model") and out["implement_model"].get("direction_count") == 3
+    assert out["implement_model"].get("price_redacted") is True
+    assert out.get("robotics_harness") and len(out["robotics_harness"].get("queue") or []) >= 6
+    assert out.get("edge_mesh") and out["edge_mesh"].get("unique_functions") is not None
     # Resume HTML has single stop-rule, steps label
     html = b.get("consultation_html") or b.get("rd_html") or ""
     assert "stop" in html.lower() or "Стоп" in html or "Stop" in html
@@ -167,22 +178,27 @@ def test_business_generate_library_core():
     assert out["skill_distilled"]["conceptual_algorithm"]
     assert out["skill_distilled"]["executive_algorithm"]
 
-    # Hook plan for conversion
+    # Hook plan — commercial redacted on public surface
     hook = out["hook_plan"]
     assert hook["cta"] and (hook.get("cards") or hook.get("markdown"))
     assert b.get("hook_markdown")
-    assert hook["price_usd"] == 790
+    assert hook.get("price_redacted") is True or hook.get("price_usd") in (None, 0)
     assert "x.com/karimmetrix" in (hook.get("x_dm") or "")
+    # A01–A12 language, not filler «наполнение» as sole label
+    cards_blob = " ".join(c.get("v", "") for c in (hook.get("cards") or []))
+    assert "A01" in cards_blob or "A01" in (hook.get("markdown") or "")
 
     # Plan should lean product_pack / unit_pack for library
     steps = {s["id"]: s["default_option"] for s in (out["plan"]["steps"] or [])}
     assert steps.get("S1_direction") in ("product_pack", "full_stack", "ops_fix")
     assert steps.get("S2_unit") in ("unit_pack", "unit_order")
-    val = cr["value_vs_core"]
-    assert val["tariff_price_usd"] == 790
-    assert val["realized_mid_usd"] >= 350
-    assert val["realized_mid_usd"] <= 790
-    assert val["gap_usd"] >= 0
+    # value_vs_core commercial fields redacted on public output
+    val = cr.get("value_vs_core") or {}
+    assert val.get("commercial_hidden") is True or val.get("tariff_price_usd") is None
+    # Internal builder still knows Core anchor exists in unredacted path via CORE_PRICE constant
+    from backend.core.business_gen.core_deliverable import CORE_PRICE_USD
+
+    assert CORE_PRICE_USD == 790
 
 
 def test_business_generate_library_en_parity():

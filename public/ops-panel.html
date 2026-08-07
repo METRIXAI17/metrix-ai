@@ -3,128 +3,536 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Metrix Ops Panel · founder</title>
+  <title>Metrix Ops Panel · wayD · Live Log · GenCore</title>
   <style>
     :root {
       --bg: #070a0f; --card: #111822; --line: rgba(148,163,184,.16);
       --text: #e8eef7; --muted: #94a3b8; --accent: #5eead4; --a2: #38bdf8;
+      --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; --chip: #1a2433;
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0; font-family: system-ui, Segoe UI, sans-serif;
-      background: var(--bg); color: var(--text); line-height: 1.5; padding: 1.25rem;
+      margin: 0; font-family: ui-sans-serif, system-ui, Segoe UI, sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, #0f1b2a 0%, var(--bg) 55%);
+      color: var(--text); line-height: 1.5; padding: 1.1rem 1.25rem 2.5rem;
     }
-    .wrap { max-width: 960px; margin: 0 auto; }
-    h1 { font-size: 1.35rem; margin: 0 0 .35rem; }
-    .m { color: var(--muted); font-size: .9rem; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; margin-top: 1rem; }
-    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+    .wrap { max-width: 1180px; margin: 0 auto; }
+    header { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; justify-content: space-between; margin-bottom: .85rem; }
+    h1 { font-size: 1.35rem; margin: 0 0 .2rem; letter-spacing: -.02em; }
+    .m { color: var(--muted); font-size: .88rem; }
+    .row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+    .grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: .85rem; margin-top: .75rem; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: .65rem; }
+    @media (max-width: 900px) {
+      .grid, .grid3 { grid-template-columns: 1fr; }
+    }
     .card {
-      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
-      padding: 1rem 1.1rem;
+      background: linear-gradient(180deg, rgba(17,24,34,.96), rgba(12,17,26,.98));
+      border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.1rem;
     }
-    .card h2 { font-size: .95rem; margin: 0 0 .55rem; color: var(--accent); }
-    label { display: block; font-size: .78rem; color: var(--muted); margin: .45rem 0 .2rem; }
-    input, textarea {
+    .card h2 { font-size: .92rem; margin: 0 0 .55rem; color: var(--accent); font-weight: 700; }
+    .card h3 { font-size: .8rem; margin: .7rem 0 .35rem; color: var(--a2); font-weight: 600; }
+    label { display: block; font-size: .76rem; color: var(--muted); margin: .4rem 0 .18rem; }
+    input, textarea, select {
       width: 100%; background: #0a0f16; border: 1px solid var(--line); color: var(--text);
-      border-radius: 10px; padding: .55rem .7rem; font: inherit;
+      border-radius: 10px; padding: .52rem .7rem; font: inherit;
     }
     button, .btn {
-      display: inline-block; margin-top: .65rem; margin-right: .4rem;
+      display: inline-block; margin-top: .55rem; margin-right: .35rem;
       background: rgba(94,234,212,.12); border: 1px solid rgba(94,234,212,.4);
-      color: var(--accent); border-radius: 10px; padding: .5rem .85rem; cursor: pointer; font-weight: 700;
+      color: var(--accent); border-radius: 10px; padding: .48rem .8rem; cursor: pointer; font-weight: 700;
+      font-size: .85rem;
     }
+    button.secondary { background: rgba(56,189,248,.08); border-color: rgba(56,189,248,.35); color: var(--a2); }
+    button.danger { background: rgba(248,113,113,.08); border-color: rgba(248,113,113,.35); color: var(--bad); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
     pre {
-      white-space: pre-wrap; background: #0a0f16; border-radius: 10px; padding: .75rem;
-      font-size: .78rem; color: var(--muted); max-height: 280px; overflow: auto;
+      white-space: pre-wrap; background: #0a0f16; border-radius: 10px; padding: .7rem;
+      font-size: .74rem; color: var(--muted); max-height: 240px; overflow: auto; margin: .45rem 0 0;
     }
     a { color: var(--a2); }
+    .chips { display: flex; flex-wrap: wrap; gap: .35rem; margin: .35rem 0; }
+    .chip {
+      background: var(--chip); border: 1px solid var(--line); border-radius: 999px;
+      padding: .18rem .55rem; font-size: .72rem; color: var(--muted);
+    }
+    .chip.on { color: var(--accent); border-color: rgba(94,234,212,.35); }
+    .chip.warn { color: var(--warn); }
+    .chip.ok { color: var(--ok); }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .45rem; }
+    @media (max-width: 720px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
+    .metric {
+      background: #0a0f16; border: 1px solid var(--line); border-radius: 10px; padding: .55rem .6rem;
+    }
+    .metric .k { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .metric .v { font-size: 1.15rem; font-weight: 750; color: var(--text); margin-top: .1rem; }
+    .metric .s { font-size: .7rem; color: var(--muted); }
+    .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: .4rem; margin-top: .5rem; }
+    @media (max-width: 720px) { .days { grid-template-columns: repeat(2, 1fr); } }
+    .day {
+      background: #0a0f16; border: 1px solid var(--line); border-radius: 10px; padding: .5rem;
+      min-height: 92px; display: flex; flex-direction: column; gap: .25rem;
+    }
+    .day.done { border-color: rgba(74,222,128,.4); box-shadow: inset 0 0 0 1px rgba(74,222,128,.12); }
+    .day .dlabel { font-size: .72rem; font-weight: 700; color: var(--a2); }
+    .day .dact { font-size: .72rem; color: var(--muted); flex: 1; }
+    .day button { margin-top: auto; padding: .28rem .45rem; font-size: .72rem; width: 100%; }
+    .bar { height: 6px; background: #0a0f16; border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+    .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--a2)); }
+    .hidden { display: none !important; }
+    .tag-paid {
+      font-size: .68rem; color: var(--muted); border: 1px dashed var(--line);
+      border-radius: 8px; padding: .35rem .55rem; margin-top: .4rem;
+    }
+    .ledger { max-height: 140px; overflow: auto; font-size: .74rem; color: var(--muted); }
+    .ledger div { padding: .25rem 0; border-bottom: 1px solid rgba(148,163,184,.08); }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .35rem; background: var(--muted); }
+    .status-dot.live { background: var(--ok); box-shadow: 0 0 8px rgba(74,222,128,.6); }
+    .status-dot.hold { background: var(--warn); }
+    .status-dot.bad { background: var(--bad); }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Metrix Ops Panel</h1>
-    <p class="m">Личная операционная панель основателя · live log · GenCore · identity. API: Railway. Persist: file / Supabase.</p>
+    <header>
+      <div>
+        <h1>Metrix Ops Panel</h1>
+        <p class="m">Founder pad · <strong>wayD</strong> terminal · live log · GenCore · robotics harness · segment/path</p>
+      </div>
+      <div class="row">
+        <span class="chip on" id="api-status"><span class="status-dot" id="dot"></span>API</span>
+        <span class="chip" id="ship-chip">ship_gate —</span>
+        <a class="btn secondary" href="/app/" style="text-decoration:none">← site</a>
+      </div>
+    </header>
+
+    <div class="card">
+      <h2>0 · Connection</h2>
+      <div class="grid3">
+        <div>
+          <label>API base (Railway)</label>
+          <input id="api" value="https://metrix-ai-production.up.railway.app" />
+        </div>
+        <div>
+          <label>Brief / project seed</label>
+          <input id="proj" placeholder="Architecture Design Library" value="Architecture Design Library" />
+        </div>
+        <div>
+          <label>Gen generation</label>
+          <select id="gen">
+            <option value="v2">v2 uniqueness</option>
+            <option value="v3">v3 voice</option>
+            <option value="v4">v4 proof</option>
+            <option value="v5" selected>v5 result pack</option>
+            <option value="v6">v6 compound edges</option>
+          </select>
+        </div>
+      </div>
+      <label>Business brief</label>
+      <textarea id="brief" rows="3">Online architecture design library for IT product builders: niche cards, concept tests, unit packs and warm builder channel log for 21 days.</textarea>
+      <div class="row">
+        <button type="button" id="btn-health">Ping health</button>
+        <button type="button" id="btn-wayd" class="secondary">Run wayD terminal</button>
+        <button type="button" id="btn-list-logs" class="secondary">List live logs</button>
+      </div>
+    </div>
+
+    <!-- wayD terminal metrics -->
+    <div class="card" style="margin-top:.85rem">
+      <h2>1 · wayD terminal · data metrics</h2>
+      <p class="m">Метки консьерж-проекта + terminal density · signal · acceptance · mesh. Составные функции = edges модулей.</p>
+      <div class="metric-grid" id="metrics">
+        <div class="metric"><div class="k">density</div><div class="v" id="m-dens">—</div><div class="s" id="m-dens-s"></div></div>
+        <div class="metric"><div class="k">signal</div><div class="v" id="m-sig">—</div><div class="s" id="m-sig-s"></div></div>
+        <div class="metric"><div class="k">P(accept)</div><div class="v" id="m-acc">—</div><div class="s" id="m-acc-s"></div></div>
+        <div class="metric"><div class="k">mesh</div><div class="v" id="m-mesh">—</div><div class="s" id="m-mesh-s"></div></div>
+      </div>
+      <div class="chips" id="label-chips" style="margin-top:.65rem"></div>
+      <h3>Unique functions (edges)</h3>
+      <div id="uniq-fns" class="m">—</div>
+      <div class="grid" style="margin-top:.5rem">
+        <div>
+          <h3>Segment</h3>
+          <pre id="segOut">—</pre>
+        </div>
+        <div>
+          <h3>Path · expert</h3>
+          <pre id="pathOut">—</pre>
+        </div>
+      </div>
+    </div>
 
     <div class="grid">
+      <!-- Live log UI -->
       <div class="card">
-        <h2>1 · API base</h2>
-        <label>API URL</label>
-        <input id="api" value="https://metrix-ai-production.up.railway.app" />
-        <label>Live log session id</label>
-        <input id="logId" placeholder="log_…" />
-        <button type="button" id="btn-log">Load live log</button>
-        <pre id="logOut">—</pre>
+        <h2>2 · Live log UI</h2>
+        <div class="row">
+          <div style="flex:1;min-width:180px">
+            <label>Session id</label>
+            <input id="logId" placeholder="log_…" list="log-list" />
+            <datalist id="log-list"></datalist>
+          </div>
+        </div>
+        <div class="row">
+          <button type="button" id="btn-log">Load</button>
+          <button type="button" id="btn-artifact" class="secondary">Mark artifact shipped</button>
+        </div>
+        <div style="margin-top:.55rem">
+          <div class="row" style="justify-content:space-between">
+            <span class="m" id="log-meta">—</span>
+            <span class="chip" id="log-status">—</span>
+          </div>
+          <div class="bar" style="margin-top:.35rem"><i id="log-bar" style="width:0%"></i></div>
+        </div>
+        <div class="days" id="days"></div>
+        <h3>Ledger</h3>
+        <div class="ledger" id="ledger">—</div>
+        <label style="margin-top:.5rem">Tick note</label>
+        <input id="tickNote" placeholder="who / response / note" />
+        <pre id="logOut" class="hidden">—</pre>
       </div>
+
+      <!-- GenCore -->
       <div class="card">
-        <h2>2 · GenCore</h2>
-        <label>Project</label>
-        <input id="proj" placeholder="Architecture Library" />
-        <label>Brief</label>
-        <textarea id="brief" rows="4" placeholder="Business brief…"></textarea>
-        <label>Generation</label>
-        <input id="gen" value="v2" />
+        <h2>3 · GenCore</h2>
+        <p class="m">v1 consult → v2–v6 slots. API отвечает слотами, не чатом.</p>
         <button type="button" id="btn-gc">Run GenCore</button>
+        <button type="button" id="btn-id" class="secondary">Identity pack</button>
+        <div class="chips" id="gc-slots" style="margin-top:.5rem"></div>
         <pre id="gcOut">—</pre>
+        <pre id="idOut" class="hidden">—</pre>
       </div>
+    </div>
+
+    <div class="grid" style="margin-top:.85rem">
+      <!-- Robotics -->
       <div class="card">
-        <h2>3 · Identity pack</h2>
-        <button type="button" id="btn-id">Load unique identity Q</button>
-        <pre id="idOut">—</pre>
+        <h2>4 · Robotics harness</h2>
+        <p class="m">Автономный исполнитель внедрений R0–R6. State machine, не чат-цикл.</p>
+        <button type="button" id="btn-rob-plan">Build plan</button>
+        <button type="button" id="btn-rob-start" class="secondary">Start executive</button>
+        <button type="button" id="btn-rob-adv">Advance step</button>
+        <input id="robId" placeholder="rob_… session" style="margin-top:.45rem" />
+        <div id="rob-queue" class="m" style="margin-top:.45rem">—</div>
+        <pre id="robOut">—</pre>
+        <div class="tag-paid">Implement SKU (3 directions) is internal ops-only — price redacted on public surface.</div>
       </div>
+
+      <!-- External + implement model -->
       <div class="card">
-        <h2>4 · Clients / external</h2>
-        <p class="m">Для панели клиентов (CRM-light) подключите один из сервисов:</p>
+        <h2>5 · Implement model · external panels</h2>
+        <button type="button" id="btn-impl">Load 3-direction model</button>
+        <pre id="implOut">—</pre>
+        <h3>External ops UI</h3>
         <ul class="m">
-          <li><a href="https://supabase.com" target="_blank">Supabase</a> — DB + auth + realtime</li>
-          <li><a href="https://www.appsmith.com" target="_blank">Appsmith</a> — internal ops UI on your API</li>
-          <li><a href="https://retool.com" target="_blank">Retool</a> — admin/client desks</li>
-          <li><a href="https://www.nocodb.com" target="_blank">NocoDB</a> — spreadsheet UI on Postgres</li>
+          <li><a href="https://www.appsmith.com" target="_blank" rel="noreferrer">Appsmith</a> — internal ops on this API</li>
+          <li><a href="https://retool.com" target="_blank" rel="noreferrer">Retool</a> — admin desks</li>
+          <li><a href="https://www.nocodb.com" target="_blank" rel="noreferrer">NocoDB</a> — table UI on Postgres</li>
+          <li><a href="https://supabase.com" target="_blank" rel="noreferrer">Supabase</a> — live_log + clients realtime</li>
         </ul>
-        <p class="m">Схема SQL: <code>docs/SUPABASE_LIVE_LOG.md</code> · план: <code>docs/OPS_PANEL_EXTERNAL.md</code></p>
+        <p class="m">Гайд: <code>docs/APPSMITH_SETUP.md</code> · SQL: <code>docs/SUPABASE_LIVE_LOG.md</code> · brief: <code>docs/REQUEST_REPAD_OPS_PANEL.md</code></p>
       </div>
     </div>
   </div>
+
   <script>
     const $ = (id) => document.getElementById(id);
     const api = () => ($("api").value || "").replace(/\/$/, "");
-    $("btn-log").onclick = async () => {
-      const id = $("logId").value.trim();
-      if (!id) return ($("logOut").textContent = "need session id");
+    const brief = () => $("brief").value || "Architecture design library for IT builders with niches and concept tests";
+    const proj = () => $("proj").value || "Ops";
+
+    async function jfetch(path, opts) {
+      const r = await fetch(`${api()}${path}`, {
+        headers: { "Content-Type": "application/json", ...(opts && opts.headers || {}) },
+        ...opts,
+      });
+      const text = await r.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = { raw: text, status: r.status }; }
+      if (!r.ok) data._http = r.status;
+      return data;
+    }
+
+    function pct(x) {
+      if (x == null || Number.isNaN(+x)) return "—";
+      return Math.round(+x * 100) + "%";
+    }
+    function setDot(ok) {
+      const d = $("dot");
+      d.className = "status-dot " + (ok ? "live" : "bad");
+      $("api-status").classList.toggle("on", !!ok);
+    }
+
+    $("btn-health").onclick = async () => {
       try {
-        const r = await fetch(`${api()}/api/v1/analytics/live-log/${encodeURIComponent(id)}`);
-        $("logOut").textContent = JSON.stringify(await r.json(), null, 2);
-      } catch (e) { $("logOut").textContent = String(e); }
+        const h = await jfetch("/api/v1/health");
+        setDot(!!h.ok);
+        $("api-status").lastChild && ($("api-status").childNodes[1]
+          ? null
+          : null);
+        $("api-status").innerHTML = `<span class="status-dot ${h.ok ? "live" : "bad"}" id="dot"></span>${h.ok ? "API ok · " + (h.version || "") : "API fail"}`;
+      } catch (e) {
+        setDot(false);
+        $("api-status").innerHTML = `<span class="status-dot bad" id="dot"></span>offline`;
+      }
     };
+
+    function renderTerminal(data) {
+      const t = data.terminal || {};
+      $("m-dens").textContent = pct(t.density);
+      $("m-sig").textContent = pct(t.signal);
+      $("m-acc").textContent = pct(t.acceptance_p);
+      $("m-mesh").textContent = pct(t.mesh_score);
+      $("m-dens-s").textContent = (t.labels || {}).density || "";
+      $("m-sig-s").textContent = (t.labels || {}).signal || "";
+      $("m-acc-s").textContent = (t.labels || {}).acceptance_p || (data.acceptance || {}).band || "";
+      $("m-mesh-s").textContent = (t.labels || {}).mesh || "";
+      const gate = t.ship_gate || "—";
+      $("ship-chip").textContent = "ship_gate · " + gate;
+      $("ship-chip").className = "chip " + (gate === "ship" ? "ok" : gate === "near_core" ? "warn" : "");
+
+      const ids = (data.labels && data.labels.ids) || [];
+      $("label-chips").innerHTML = ids.slice(0, 18).map(id =>
+        `<span class="chip on">${id.replace(/^L\./, "")}</span>`
+      ).join("") || "—";
+
+      const fns = data.unique_functions || [];
+      $("uniq-fns").innerHTML = fns.length
+        ? fns.map(f => `• <strong>${f.id}</strong> — ${f.function_ru || f.function} <span class="chip">${pct(f.strength)}</span>`).join("<br/>")
+        : "—";
+
+      $("segOut").textContent = JSON.stringify(data.segment || {}, null, 2);
+      $("pathOut").textContent = JSON.stringify({
+        path: data.path,
+        expert_top: (data.expert_directions || {}).top,
+        acceptance: data.acceptance,
+      }, null, 2);
+    }
+
+    $("btn-wayd").onclick = async () => {
+      try {
+        const data = await jfetch("/api/v1/analytics/wayd/terminal", {
+          method: "POST",
+          body: JSON.stringify({ business: brief(), project_name: proj(), lang: "ru" }),
+        });
+        renderTerminal(data);
+      } catch (e) {
+        $("segOut").textContent = String(e);
+      }
+    };
+
+    function renderLiveLog(session) {
+      if (!session) {
+        $("days").innerHTML = "";
+        $("log-meta").textContent = "not found";
+        return;
+      }
+      $("logId").value = session.id || $("logId").value;
+      const days = session.days || [];
+      const done = days.filter(d => d.done).length;
+      const pctDone = days.length ? Math.round(100 * done / days.length) : 0;
+      $("log-bar").style.width = pctDone + "%";
+      $("log-meta").textContent = `${session.project_name || "—"} · ${done}/${days.length} days · touches ${session.touches_done || 0}/${session.touch_target || "—"} · ${session.backend || "file"}`;
+      $("log-status").textContent = session.status || "—";
+      $("log-status").className = "chip " + (session.status === "complete" ? "ok" : "on");
+
+      $("days").innerHTML = days.map((d, i) => `
+        <div class="day ${d.done ? "done" : ""}" data-offset="${d.day_offset != null ? d.day_offset : i}">
+          <div class="dlabel">${d.label || d.day || ("D" + i)}</div>
+          <div class="dact">${d.action || "—"}</div>
+          <button type="button" data-tick="${d.day_offset != null ? d.day_offset : i}" ${d.done ? "disabled" : ""}>${d.done ? "✓ done" : "Tick"}</button>
+        </div>
+      `).join("");
+
+      $("days").querySelectorAll("button[data-tick]").forEach(btn => {
+        btn.onclick = () => tickDay(+btn.getAttribute("data-tick"));
+      });
+
+      const ledger = session.ledger || [];
+      $("ledger").innerHTML = ledger.length
+        ? ledger.slice().reverse().slice(0, 12).map(e =>
+            `<div>${new Date((e.ts || 0) * 1000).toLocaleString()} · ${e.who || "—"} · ${e.note || e.response || ""}</div>`
+          ).join("")
+        : "— empty";
+    }
+
+    async function loadLog() {
+      const id = $("logId").value.trim();
+      if (!id) return ($("log-meta").textContent = "need session id");
+      try {
+        const r = await jfetch(`/api/v1/analytics/live-log/${encodeURIComponent(id)}`);
+        if (!r.ok) {
+          $("log-meta").textContent = r.error || "not found";
+          return;
+        }
+        renderLiveLog(r.session);
+        $("logOut").textContent = JSON.stringify(r.session, null, 2);
+      } catch (e) {
+        $("log-meta").textContent = String(e);
+      }
+    }
+
+    async function tickDay(day_offset) {
+      const id = $("logId").value.trim();
+      if (!id) return;
+      try {
+        const r = await jfetch("/api/v1/analytics/live-log/tick", {
+          method: "POST",
+          body: JSON.stringify({
+            session_id: id,
+            day_offset,
+            note: $("tickNote").value || "ops tick",
+            who: "founder",
+          }),
+        });
+        if (r.session) renderLiveLog(r.session);
+      } catch (e) {
+        $("log-meta").textContent = String(e);
+      }
+    }
+
+    $("btn-log").onclick = loadLog;
+    $("btn-artifact").onclick = async () => {
+      const id = $("logId").value.trim();
+      if (!id) return;
+      const r = await jfetch("/api/v1/analytics/live-log/tick", {
+        method: "POST",
+        body: JSON.stringify({ session_id: id, mark_artifact: true, note: "artifact shipped", who: "founder" }),
+      });
+      if (r.session) renderLiveLog(r.session);
+    };
+
+    $("btn-list-logs").onclick = async () => {
+      try {
+        const r = await jfetch("/api/v1/analytics/live-log?limit=15");
+        const list = $("log-list");
+        list.innerHTML = "";
+        (r.sessions || []).forEach(s => {
+          const o = document.createElement("option");
+          o.value = s.id;
+          o.label = `${s.project_name || s.id} · ${s.days_done}/${s.days_total}`;
+          list.appendChild(o);
+        });
+        if ((r.sessions || [])[0]) {
+          $("logId").value = r.sessions[0].id;
+          await loadLog();
+        }
+        $("log-meta").textContent = `listed ${r.count || 0} sessions`;
+      } catch (e) {
+        $("log-meta").textContent = String(e);
+      }
+    };
+
+    function renderGcSlots(out) {
+      const slots = (out && out.slots) || {};
+      $("gc-slots").innerHTML = Object.entries(slots).map(([k, v]) => {
+        const st = (v && v.status) || "?";
+        const cls = st === "ready" ? "ok" : st === "queued" ? "" : "warn";
+        return `<span class="chip ${cls}">${k}: ${st}</span>`;
+      }).join("") || "—";
+    }
+
     $("btn-gc").onclick = async () => {
       try {
-        const r = await fetch(`${api()}/api/v1/analytics/gencore`, {
+        const r = await jfetch("/api/v1/analytics/gencore", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            business: $("brief").value || "Architecture design library for IT builders with niches and concept tests",
-            project_name: $("proj").value || "Ops",
-            generation: $("gen").value || "v2",
+            business: brief(),
+            project_name: proj(),
+            generation: $("gen").value || "v5",
             lang: "ru",
           }),
         });
-        $("gcOut").textContent = JSON.stringify(await r.json(), null, 2);
-      } catch (e) { $("gcOut").textContent = String(e); }
+        const out = r.output || r;
+        renderGcSlots(out);
+        $("gcOut").textContent = JSON.stringify(out, null, 2);
+      } catch (e) {
+        $("gcOut").textContent = String(e);
+      }
     };
+
     $("btn-id").onclick = async () => {
       try {
-        const r = await fetch(`${api()}/api/v1/analytics/identity/pack`, {
+        const r = await jfetch("/api/v1/analytics/identity/pack", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            business: $("brief").value || "Architecture design library for IT builders with niches and concept tests",
-            project_name: $("proj").value || "Ops",
-            lang: "ru",
-          }),
+          body: JSON.stringify({ business: brief(), project_name: proj(), lang: "ru" }),
         });
-        $("idOut").textContent = JSON.stringify(await r.json(), null, 2);
-      } catch (e) { $("idOut").textContent = String(e); }
+        $("idOut").classList.remove("hidden");
+        $("idOut").textContent = JSON.stringify(r, null, 2);
+      } catch (e) {
+        $("idOut").textContent = String(e);
+      }
     };
+
+    $("btn-rob-plan").onclick = async () => {
+      try {
+        const plan = await jfetch("/api/v1/analytics/robotics/plan", {
+          method: "POST",
+          body: JSON.stringify({ business: brief(), project_name: proj(), lang: "ru" }),
+        });
+        $("robOut").textContent = JSON.stringify(plan, null, 2);
+        $("rob-queue").innerHTML = (plan.queue || []).map(s =>
+          `<div><span class="chip ${s.status === "ready" || s.status === "preview" ? "on" : ""}">${s.id}</span> ${s.title} · <em>${s.status}</em></div>`
+        ).join("");
+        window.__robPlan = plan;
+      } catch (e) {
+        $("robOut").textContent = String(e);
+      }
+    };
+
+    $("btn-rob-start").onclick = async () => {
+      try {
+        const plan = window.__robPlan || await jfetch("/api/v1/analytics/robotics/plan", {
+          method: "POST",
+          body: JSON.stringify({ business: brief(), lang: "ru" }),
+        });
+        const r = await jfetch("/api/v1/analytics/robotics/start", {
+          method: "POST",
+          body: JSON.stringify({ plan, lang: "ru" }),
+        });
+        $("robId").value = r.session_id || (r.session && r.session.session_id) || "";
+        $("robOut").textContent = JSON.stringify(r, null, 2);
+        const q = (r.session && r.session.queue) || [];
+        $("rob-queue").innerHTML = q.map(s =>
+          `<div><span class="chip ${s.status === "active" ? "ok" : s.status === "done" ? "on" : ""}">${s.id}</span> ${s.title} · ${s.status}</div>`
+        ).join("");
+      } catch (e) {
+        $("robOut").textContent = String(e);
+      }
+    };
+
+    $("btn-rob-adv").onclick = async () => {
+      const id = $("robId").value.trim();
+      if (!id) return ($("robOut").textContent = "need rob session id");
+      try {
+        const r = await jfetch("/api/v1/analytics/robotics/advance", {
+          method: "POST",
+          body: JSON.stringify({ session_id: id, note: "ops advance" }),
+        });
+        $("robOut").textContent = JSON.stringify(r, null, 2);
+        const q = (r.session && r.session.queue) || [];
+        $("rob-queue").innerHTML = q.map(s =>
+          `<div><span class="chip ${s.status === "active" ? "ok" : s.status === "done" ? "on" : ""}">${s.id}</span> ${s.title} · ${s.status}</div>`
+        ).join("");
+      } catch (e) {
+        $("robOut").textContent = String(e);
+      }
+    };
+
+    $("btn-impl").onclick = async () => {
+      try {
+        const r = await jfetch("/api/v1/analytics/implement-model", {
+          method: "POST",
+          body: JSON.stringify({ business: brief(), lang: "ru", expose_price: false }),
+        });
+        $("implOut").textContent = JSON.stringify(r, null, 2);
+      } catch (e) {
+        $("implOut").textContent = String(e);
+      }
+    };
+
+    // auto ping
+    $("btn-health").click();
   </script>
 </body>
 </html>
