@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter
+import os
+
+from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
 from backend.core.decision_core import DecisionMakingCore
@@ -628,21 +630,36 @@ def business_generate_run(body: BusinessGenBody) -> dict[str, Any]:
     """
     Generate business system: autonomous pack + expert base + control panel.
     Asks TZ-style choices; self-tests; forecasts human reaction; pre-corrects.
-    v2.1: R&D reader, author personality, smart routers, skill memory, assist agent.
+    v2.3: wayD · GenCore · originality · acceptance · robotics · Supabase sync.
     """
-    return BusinessGenerator().generate(
-        body.business,
+    from backend.security.hardening import sanitize_text
+    from backend.services.supabase_sync import attach_sync_meta, sync_run
+
+    business = sanitize_text(body.business, max_len=20_000)
+    result = BusinessGenerator().generate(
+        business,
         industry_id=body.industry,
         lang=body.lang,
         answers=body.answers or None,
         choices=body.choices or None,
         numbers={k: float(v) for k, v in (body.numbers or {}).items() if _is_number(v)},
-        project_name=body.project_name,
+        project_name=sanitize_text(body.project_name or "", max_len=200),
         channel=body.channel or "auto",
         multi_pass=bool(body.multi_pass),
         passes=max(3, min(int(body.passes or 7), 12)),
         generation=body.generation or "v1",
     )
+    sync_info = sync_run(
+        endpoint="/api/v1/analytics/business-generate",
+        payload=result,
+        request_meta={
+            "business": business,
+            "industry_id": body.industry,
+            "project_name": body.project_name,
+            "lang": body.lang,
+        },
+    )
+    return attach_sync_meta(result, sync_info)
 
 
 class GenCoreBody(BaseModel):
@@ -665,13 +682,16 @@ def gencore_run(body: GenCoreBody) -> dict[str, Any]:
     from backend.core.business_gen.author_personality import build_author_personality
     from backend.core.business_gen.identity_engine import build_post_pay_identity_pack
     from backend.core.business_gen.core_deliverable import _detect_profile
+    from backend.security.hardening import sanitize_text
+    from backend.services.supabase_sync import attach_sync_meta, sync_run
 
-    prof = _detect_profile(body.business)
+    business = sanitize_text(body.business, max_len=20_000)
+    prof = _detect_profile(business)
     pers = body.personality or build_author_personality(
-        body.business, profile=prof, project_name=body.project_name, lang=body.lang
+        business, profile=prof, project_name=body.project_name, lang=body.lang
     )
     ident = body.identity_pack or build_post_pay_identity_pack(
-        body.business,
+        business,
         personality=pers,
         profile=prof,
         project_name=body.project_name,
@@ -679,7 +699,7 @@ def gencore_run(body: GenCoreBody) -> dict[str, Any]:
         answers=body.answers or None,
     )
     out = run_gencore(
-        business_text=body.business,
+        business_text=business,
         project_name=body.project_name,
         core_report=body.core_report or {"title": body.project_name, "profile": prof},
         personality=pers,
@@ -689,7 +709,17 @@ def gencore_run(body: GenCoreBody) -> dict[str, Any]:
         generation=body.generation or "v2",
         lang=body.lang,
     )
-    return {"module": "GenCore", "output": out, "message": out.get("message")}
+    result = {"module": "GenCore", "output": out, "message": out.get("message")}
+    sync_info = sync_run(
+        endpoint="/api/v1/analytics/gencore",
+        payload=result,
+        request_meta={
+            "business": business,
+            "project_name": body.project_name,
+            "lang": body.lang,
+        },
+    )
+    return attach_sync_meta(result, sync_info)
 
 
 class AssistApproveBody(BaseModel):
@@ -968,6 +998,56 @@ def user_path_run(body: WayDBody) -> dict[str, Any]:
     )
 
 
+class OnlineNicheBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    industry: str = ""
+    project_name: str = ""
+    lang: str = "ru"
+    multi_pass: int = 3
+
+
+@router.post("/online-niche-rework")
+def online_niche_rework_run(body: OnlineNicheBody) -> dict[str, Any]:
+    """Rework niches for online-business executors (originality + wayD + acceptance)."""
+    from backend.core.business_gen.online_niche_rework import rework_online_niches
+    from backend.security.hardening import sanitize_text
+    from backend.services.supabase_sync import attach_sync_meta, sync_run
+
+    business = sanitize_text(body.business, max_len=20_000)
+    out = rework_online_niches(
+        business,
+        industry_id=body.industry,
+        lang=body.lang,
+        multi_pass=max(1, min(int(body.multi_pass or 3), 7)),
+        project_name=sanitize_text(body.project_name or "", max_len=200),
+    )
+    result = {"module": "OnlineNicheRework", "output": out, "message": out.get("message")}
+    sync_info = sync_run(
+        endpoint="/api/v1/analytics/online-niche-rework",
+        payload=result,
+        request_meta={
+            "business": business,
+            "industry_id": body.industry,
+            "project_name": body.project_name,
+            "lang": body.lang,
+        },
+    )
+    return attach_sync_meta(result, sync_info)
+
+
+@router.get("/online-niche-prompt")
+def online_niche_prompt() -> dict[str, Any]:
+    """Export the dedicated online-business niche rework prompt."""
+    from backend.core.business_gen.online_niche_rework import ONLINE_NICHE_PROMPT
+
+    return {
+        "module": "OnlineNichePrompt",
+        "prompt_id": "ONLINE_NICHE_PROMPT",
+        "prompt": ONLINE_NICHE_PROMPT.strip(),
+        "usage": "POST /api/v1/analytics/online-niche-rework with business brief",
+    }
+
+
 class ImplementOpsBody(BaseModel):
     business: str = Field(..., min_length=20)
     industry: str = ""
@@ -976,13 +1056,24 @@ class ImplementOpsBody(BaseModel):
 
 
 @router.post("/implement-model")
-def implement_model_run(body: ImplementOpsBody) -> dict[str, Any]:
-    """Three-direction implement model. Price only if expose_price (ops)."""
+def implement_model_run(body: ImplementOpsBody, request: Request) -> dict[str, Any]:
+    """Three-direction implement model. Price only with ops key + expose_price."""
     from backend.core.business_gen.implement_model import build_implement_model
     from backend.core.business_gen.client_segmentation import segment_client
     from backend.core.business_gen.user_paths import select_user_path
     from backend.core.business_gen.expert_base_directions import match_expert_directions
     from backend.core.business_gen.core_deliverable import _detect_profile
+
+    ops_key = (os.getenv("METRIX_OPS_KEY") or "").strip()
+    provided = (
+        request.headers.get("x-metrix-ops-key") or request.headers.get("x-ops-key") or ""
+    ).strip()
+    # Default: never expose price on public. Only if explicitly requested AND
+    # (ops key matches OR ops key not configured for local dev).
+    expose = False
+    if body.expose_price:
+        if not ops_key or provided == ops_key:
+            expose = True
 
     prof = _detect_profile(body.business)
     seg = segment_client(body.business, industry_id=body.industry, profile=prof, lang=body.lang)
@@ -995,7 +1086,7 @@ def implement_model_run(body: ImplementOpsBody) -> dict[str, Any]:
         path=path,
         expert=expert,
         lang=body.lang,
-        expose_price=bool(body.expose_price),
+        expose_price=expose,
     )
 
 

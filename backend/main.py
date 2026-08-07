@@ -31,6 +31,7 @@ from fastapi.staticfiles import StaticFiles
 from backend import __brand__, __codename__, __version__
 from backend.api.routes import analytics, fin_models, health, requests, zones
 from backend.config import API_PREFIX, CORS_ORIGINS, DEBUG, ENV_NAME, HOST, PORT
+from backend.security import install_security
 
 logging.basicConfig(
     level=logging.DEBUG if DEBUG else logging.INFO,
@@ -48,6 +49,9 @@ app = FastAPI(
     docs_url="/docs" if DEBUG else "/docs",
     redoc_url="/redoc" if DEBUG else "/redoc",
 )
+
+# Basic cybersecurity: rate limit · headers · body size · ops key gate
+install_security(app)
 
 # CORS: explicit origins in production. DEBUG may allow "*".
 # credentials + "*" is invalid in browsers — disable credentials when wildcard.
@@ -81,6 +85,8 @@ if (_frontend / "index.html").exists():
 
 @app.get("/")
 def root() -> JSONResponse:
+    from backend.services.supabase_sync import is_enabled as supabase_on
+
     return JSONResponse(
         {
             "brand": __brand__,
@@ -92,6 +98,9 @@ def root() -> JSONResponse:
             "frontend": "/app/",
             "health": f"{API_PREFIX}/health",
             "catalog": f"{API_PREFIX}/catalog",
+            "ops_panel": "/app/ops-panel.html",
+            "supabase_sync": supabase_on(),
+            "security": "basic-1",
         }
     )
 
@@ -99,6 +108,8 @@ def root() -> JSONResponse:
 @app.get("/health")
 def root_health() -> JSONResponse:
     """Alias for platform healthchecks that expect /health."""
+    from backend.services.supabase_sync import is_enabled as supabase_on
+
     return JSONResponse(
         {
             "ok": True,
@@ -106,6 +117,8 @@ def root_health() -> JSONResponse:
             "version": __version__,
             "env": ENV_NAME,
             "service": "metrix-ai-backend",
+            "supabase_sync": supabase_on(),
+            "security": "basic-1",
         }
     )
 

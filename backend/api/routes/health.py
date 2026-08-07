@@ -23,6 +23,8 @@ router = APIRouter(tags=["system"])
 
 @router.get("/health")
 def health() -> dict:
+    from backend.services.supabase_sync import is_enabled as supabase_on
+
     return {
         "ok": True,
         "brand": __brand__,
@@ -32,6 +34,8 @@ def health() -> dict:
         "service": "metrix-ai-backend",
         "public_niches": PUBLIC_INDUSTRY_IDS,
         "decision_support": DECISION_SUPPORT_PRODUCT.get("id"),
+        "supabase_sync": supabase_on(),
+        "security": "basic-1",
     }
 
 
@@ -40,6 +44,19 @@ def catalog() -> dict:
     zones = get_zone_registry().describe()
     fins = get_fin_model_registry().list_models()
     public = [INDUSTRIES[i] for i in PUBLIC_INDUSTRY_IDS if i in INDUSTRIES]
+    # Public catalog: redact USD prices (implement commercial is ops-only)
+    mon = {}
+    for k, v in (MONETIZATION or {}).items():
+        if isinstance(v, dict):
+            mon[k] = {
+                kk: vv
+                for kk, vv in v.items()
+                if kk not in ("base_price_usd", "price_usd", "ops_price_usd")
+            }
+            mon[k]["price_public"] = "on_request" if k != "policy" else None
+            mon[k]["commercial_hidden"] = True
+        else:
+            mon[k] = v
     return {
         "industries": public,
         "all_industries": list(INDUSTRIES.values()),
@@ -48,7 +65,7 @@ def catalog() -> dict:
         "tracks": list(TRACKS),
         "zones": zones + [{"id": "superstructure", "name": ZONES["superstructure"], "modules": ["Product Overlay"]}],
         "fin_models": fins,
-        "monetization": MONETIZATION,
+        "monetization": mon,
         "module_names": {
             "specs": "SpecsForge Recursive Oracle",
             "meta_reality": "MetaReality Synthesizer",

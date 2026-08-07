@@ -3,6 +3,9 @@
 Сейчас Metrix пишет live log в **локальные JSON** (`backend/data/live_logs/`) — работает на Railway как ephemeral.  
 Чтобы лог был **живым между деплоями и устройствами** — подключаем Supabase.
 
+> **Полная схема** (live_log + **metrix_runs** sync всех ответов + skill_memory + clients):  
+> `docs/SUPABASE_FULL_SCHEMA.sql` — выполнить целиком в SQL Editor.
+
 ## Зачем Supabase
 
 | Нужда | Как |

@@ -1,0 +1,168 @@
+{
+  "name": "MetrixOpsAPI",
+  "plugin": "restapi-plugin",
+  "datasourceConfiguration": {
+    "url": "https://metrix-ai-production.up.railway.app",
+    "headers": [
+      { "key": "Content-Type", "value": "application/json" }
+    ],
+    "authentication": { "authenticationType": "none" }
+  },
+  "queries": [
+    {
+      "name": "health",
+      "method": "GET",
+      "path": "/api/v1/health"
+    },
+    {
+      "name": "liveLogList",
+      "method": "GET",
+      "path": "/api/v1/analytics/live-log?limit=20"
+    },
+    {
+      "name": "liveLogGet",
+      "method": "GET",
+      "path": "/api/v1/analytics/live-log/{{logId.text}}"
+    },
+    {
+      "name": "liveLogTick",
+      "method": "POST",
+      "path": "/api/v1/analytics/live-log/tick",
+      "body": {
+        "session_id": "{{logId.text}}",
+        "day_offset": "{{day.value}}",
+        "note": "{{note.text}}",
+        "who": "ops"
+      }
+    },
+    {
+      "name": "waydTerminal",
+      "method": "POST",
+      "path": "/api/v1/analytics/wayd/terminal",
+      "body": {
+        "business": "{{brief.text}}",
+        "project_name": "{{proj.text}}",
+        "lang": "ru"
+      }
+    },
+    {
+      "name": "gencore",
+      "method": "POST",
+      "path": "/api/v1/analytics/gencore",
+      "body": {
+        "business": "{{brief.text}}",
+        "project_name": "{{proj.text}}",
+        "generation": "v6",
+        "lang": "ru"
+      }
+    },
+    {
+      "name": "businessGenerate",
+      "method": "POST",
+      "path": "/api/v1/analytics/business-generate",
+      "body": {
+        "business": "{{brief.text}}",
+        "project_name": "{{proj.text}}",
+        "lang": "ru",
+        "multi_pass": true,
+        "passes": 5
+      }
+    },
+    {
+      "name": "segment",
+      "method": "POST",
+      "path": "/api/v1/analytics/segment",
+      "body": { "business": "{{brief.text}}", "lang": "ru" }
+    },
+    {
+      "name": "userPath",
+      "method": "POST",
+      "path": "/api/v1/analytics/user-path",
+      "body": { "business": "{{brief.text}}", "lang": "ru" }
+    },
+    {
+      "name": "onlineNicheRework",
+      "method": "POST",
+      "path": "/api/v1/analytics/online-niche-rework",
+      "body": {
+        "business": "{{brief.text}}",
+        "project_name": "{{proj.text}}",
+        "multi_pass": 3,
+        "lang": "ru"
+      }
+    },
+    {
+      "name": "roboticsPlan",
+      "method": "POST",
+      "path": "/api/v1/analytics/robotics/plan",
+      "body": { "business": "{{brief.text}}", "lang": "ru" }
+    },
+    {
+      "name": "roboticsStart",
+      "method": "POST",
+      "path": "/api/v1/analytics/robotics/start",
+      "body": { "plan": "{{roboticsPlan.data}}", "lang": "ru" },
+      "headers": [{ "key": "X-Metrix-Ops-Key", "value": "{{appsmith.store.opsKey}}" }]
+    },
+    {
+      "name": "roboticsAdvance",
+      "method": "POST",
+      "path": "/api/v1/analytics/robotics/advance",
+      "body": { "session_id": "{{robId.text}}", "note": "ops" }
+    },
+    {
+      "name": "implementModel",
+      "method": "POST",
+      "path": "/api/v1/analytics/implement-model",
+      "body": {
+        "business": "{{brief.text}}",
+        "expose_price": false,
+        "lang": "ru"
+      }
+    },
+    {
+      "name": "identityPack",
+      "method": "POST",
+      "path": "/api/v1/analytics/identity/pack",
+      "body": {
+        "business": "{{brief.text}}",
+        "project_name": "{{proj.text}}",
+        "lang": "ru"
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "Live Log",
+      "widgets": ["Table(liveLogList)", "Input(logId)", "List(days)", "Button(Tick→liveLogTick)", "JSON(liveLogGet)"]
+    },
+    {
+      "name": "wayD Terminal",
+      "widgets": ["Text(density/signal/accept/mesh)", "Chips(labels.ids)", "List(unique_functions)", "JSON(segment/path)"]
+    },
+    {
+      "name": "GenCore",
+      "widgets": ["Select(generation)", "Button(Run)", "JSONViewer(slots)"]
+    },
+    {
+      "name": "Online Niches",
+      "widgets": ["Button(Rework)", "Table(niches_reworked)", "JSON(acceptance/wayd)"]
+    },
+    {
+      "name": "Robotics",
+      "widgets": ["Button(Plan)", "Button(Start)", "Button(Advance)", "List(queue R0-R6)"]
+    }
+  ],
+  "supabase_tables_for_nocodb": [
+    "metrix_runs",
+    "live_log_sessions",
+    "live_log_days",
+    "skill_memory",
+    "clients"
+  ],
+  "notes": [
+    "Import manually: create REST datasource with base URL, then recreate queries from this file.",
+    "Never put SUPABASE_SERVICE_ROLE_KEY or METRIX_OPS_KEY in public Appsmith pages without auth.",
+    "Founder pad already live: /app/ops-panel.html"
+  ]
+}

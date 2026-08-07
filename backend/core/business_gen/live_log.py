@@ -153,57 +153,13 @@ def _save(session: dict[str, Any]) -> None:
 
 
 def _supabase_upsert_session(session: dict[str, Any]) -> None:
-    """Best-effort REST upsert. Failures never break generate."""
+    """Best-effort REST upsert via unified sync. Failures never break generate."""
     if not SUPABASE_ENABLED:
         return
     try:
-        import httpx
+        from backend.services.supabase_sync import sync_live_log_session
 
-        headers = {
-            "apikey": SUPABASE_SERVICE_ROLE_KEY,
-            "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
-            "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates",
-        }
-        row = {
-            "id": session.get("id"),
-            "project_name": session.get("project_name"),
-            "run_id": session.get("run_id"),
-            "start_date": session.get("start_date"),
-            "end_date": session.get("end_date"),
-            "touch_target": session.get("touch_target"),
-            "touches_done": session.get("touches_done"),
-            "artifact": session.get("artifact") or {},
-            "artifact_shipped": session.get("artifact_shipped"),
-            "channel_name": session.get("channel_name"),
-            "status": session.get("status"),
-            "lang": session.get("lang"),
-        }
-        days = [
-            {
-                "session_id": session.get("id"),
-                "day_offset": d.get("day_offset"),
-                "day": d.get("day"),
-                "label": d.get("label"),
-                "action": d.get("action"),
-                "owner": d.get("owner"),
-                "done": d.get("done"),
-                "note": d.get("note") or "",
-            }
-            for d in session.get("days") or []
-        ]
-        with httpx.Client(timeout=8.0) as client:
-            client.post(
-                f"{SUPABASE_URL}/rest/v1/live_log_sessions",
-                headers=headers,
-                json=row,
-            )
-            if days:
-                client.post(
-                    f"{SUPABASE_URL}/rest/v1/live_log_days",
-                    headers=headers,
-                    json=days,
-                )
+        sync_live_log_session(session)
     except Exception:
         # stay local-file resilient
         pass

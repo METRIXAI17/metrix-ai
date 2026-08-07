@@ -180,6 +180,13 @@ def _persist(skill: dict[str, Any]) -> None:
     d = _ensure_dir()
     path = d / f"{skill['id']}.json"
     path.write_text(json.dumps(skill, ensure_ascii=False, indent=2), encoding="utf-8")
+    # Optional Supabase mirror (best-effort)
+    try:
+        from backend.services.supabase_sync import sync_skill
+
+        sync_skill(skill)
+    except Exception:
+        pass
 
 
 def _prune() -> None:

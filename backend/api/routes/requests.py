@@ -78,15 +78,19 @@ def process_request(body: ProcessBody) -> dict[str, Any]:
     Простой контракт:
       { industry, business, track? } → demo idea + breakdown + metrics + ...
     """
+    from backend.security.hardening import sanitize_text
+    from backend.services.supabase_sync import attach_sync_meta, sync_run
+
     lang = (body.lang or "").strip().lower()
     if lang not in ("en", "ru", ""):
         lang = ""
+    business = sanitize_text(body.business, max_len=20_000)
     req = ClientRequest(
         industry=body.industry,
-        business=body.business,
+        business=business,
         track=body.track,
-        name=body.name,
-        contact=body.contact,
+        name=sanitize_text(body.name or "", max_len=120),
+        contact=sanitize_text(body.contact or "", max_len=200),
         program_id=body.program_id,
         lang=lang,
         extra_params=body.extra_params,
@@ -96,7 +100,18 @@ def process_request(body: ProcessBody) -> dict[str, Any]:
         enable_monetization=body.enable_monetization,
     )
     result = get_pipeline().process(req)
-    return result.to_dict()
+    data = result.to_dict()
+    sync_info = sync_run(
+        endpoint="/api/v1/process",
+        payload=data,
+        request_meta={
+            "business": business,
+            "industry_id": body.industry,
+            "lang": lang or "auto",
+            "project_name": body.name or "",
+        },
+    )
+    return attach_sync_meta(data, sync_info)
 
 
 @router.post("/orient")
