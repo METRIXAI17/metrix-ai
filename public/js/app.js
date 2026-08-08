@@ -1,8 +1,8 @@
 /**
  * Metrix AI — public UI
  * EN default · RU/EN parent layer (no mixed chrome)
- * Modes: marketplace | request | tasks | generate
- * Layers: matryoshka · 4 tariffs · online/offline gen forecast
+ * Modes: marketplace | request | tasks | generate | promo | funding
+ * Layers: matryoshka · 4 tariffs · online/offline gen forecast · funding
  */
 (function () {
   const D = window.METRIX_DATA;
@@ -11,7 +11,7 @@
     return;
   }
 
-  const MODES = ["marketplace", "request", "tasks", "generate", "promo"];
+  const MODES = ["marketplace", "request", "tasks", "generate", "promo", "funding"];
 
   const state = {
     mode: "marketplace",
@@ -84,6 +84,7 @@
     bindFreeWork();
     bindGenerate();
     bindPromo();
+    bindFunding();
     startMarquee();
     loadServices();
 
@@ -96,6 +97,9 @@
     else if (hashMode === "generate" || hashMode === "mode-generate") setMode("generate");
     else if (hashMode === "tasks" || hashMode === "mode-tasks") setMode("tasks");
     else if (hashMode === "request" || hashMode === "consult") setMode("request");
+    else if (hashMode === "funding" || hashMode === "mode-funding" || hashMode === "capital")
+      setMode("funding");
+    else if (hashMode === "promo" || hashMode === "mode-promo") setMode("promo");
     if (params.get("industry")) {
       state.industry = params.get("industry");
       const el = $("#req-industry");
@@ -194,6 +198,7 @@
     if (mode === "workers") mode = "marketplace";
     if (mode === "business" || mode === "biz" || mode === "gen") mode = "generate";
     if (mode === "business-tasks" || mode === "business_tasks") mode = "tasks";
+    if (mode === "capital" || mode === "fund" || mode === "фандинг") mode = "funding";
     if (!MODES.includes(mode)) mode = "marketplace";
     state.mode = mode;
 
@@ -339,6 +344,9 @@
   function flagshipCtaLabel(cta) {
     if (cta === "generate") return t("tariff_cta_generate") || t("cta_generate");
     if (cta === "promo") return t("tariff_cta_promo") || t("nav_promo");
+    if (cta === "funding" || cta === "partner" || cta === "capital") {
+      return t("tariff_cta_funding") || t("nav_funding");
+    }
     if (cta === "later" || cta === "none") return t("after_one_step") || t("tariff_cta_later");
     if (cta === "request" || cta === "techwrite" || cta === "consult") {
       return t("tariff_cta_consult") || t("cta_consult");
@@ -353,6 +361,10 @@
     }
     if (cta === "promo") {
       setMode("promo");
+      return;
+    }
+    if (cta === "funding" || cta === "partner" || cta === "capital") {
+      setMode("funding");
       return;
     }
     if (cta === "pricing") {
@@ -760,17 +772,17 @@
         active: true,
       };
     }
+    if (cta === "funding" || cta === "partner" || cta === "capital") {
+      return {
+        mode: "funding",
+        label: t("tariff_cta_funding") || t("nav_funding") || "Funding",
+        active: true,
+      };
+    }
     if (cta === "later" || cta === "none") {
       return {
         mode: "",
         label: t("tariff_cta_later") || t("after_one_step"),
-        active: false,
-      };
-    }
-    if (cta === "partner") {
-      return {
-        mode: "",
-        label: tier.price || t("tariff_cta_later"),
         active: false,
       };
     }
@@ -1087,8 +1099,8 @@
           )}</div></div>`
       )
       .join("");
-    const tips = (p.general_tips || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("");
-    const ideas = (p.sales_ideas || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("");
+    const tips = (p.general_tips || []).map((x) => `<li>${escapeHtml(x)}</li>`).join("");
+    const ideas = (p.sales_ideas || []).map((x) => `<li>${escapeHtml(x)}</li>`).join("");
     const ans = (p.analytics_answers || [])
       .map((a) => `<li><strong>${escapeHtml(a.signal)}</strong> — ${escapeHtml(a.answer)}</li>`)
       .join("");
@@ -1096,6 +1108,166 @@
       <div class="eyebrow">Советы</div><ul class="clean-list">${tips}</ul>
       <div class="eyebrow">Идеи продаж</div><ul class="clean-list">${ideas}</ul>
       <div class="eyebrow">Аналитика</div><ul class="clean-list">${ans || "<li>—</li>"}</ul>`;
+    root.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ── Funding pack (3 pillars) ──────────────────────────────────────────────
+  function bindFunding() {
+    const form = $("#funding-form");
+    if (!form || form.dataset.bound === "1") return;
+    form.dataset.bound = "1";
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const headline = ($("#funding-headline")?.value || "").trim();
+      const body = ($("#funding-body")?.value || "").trim();
+      const err = $("#funding-error");
+      if (err) err.textContent = "";
+      if (headline.length < 3 || body.length < 20) {
+        if (err) err.textContent = t("gen_min_chars") || "Min 20 characters";
+        return;
+      }
+      const capitalRaw = ($("#funding-capital")?.value || "").trim();
+      let capitalUsd = null;
+      if (capitalRaw) {
+        const n = Number(capitalRaw);
+        if (!Number.isNaN(n) && n > 0) capitalUsd = n;
+      }
+      const partnerRole = ($("#funding-role")?.value || "hybrid").trim();
+      const assetMode = ($("#funding-asset-mode")?.value || "auto").trim();
+      const btn = $("#funding-submit");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "…";
+      }
+      try {
+        const path =
+          (D.api && D.api.fundingPackPath) || "/api/v1/analytics/funding-pack";
+        const res = await fetch(`${apiBase()}${path}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business: [headline, body].join(". "),
+            project_name: headline,
+            capital_usd: capitalUsd,
+            partner_role: partnerRole,
+            asset_mode: assetMode,
+            lang: lang(),
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        paintFunding(data);
+      } catch (ex) {
+        if (err) err.textContent = String(ex.message || ex);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = t("funding_run") || (lang() === "en" ? "Build funding plan" : "Собрать план фандинга");
+        }
+      }
+    });
+  }
+
+  function paintFunding(data) {
+    const root = $("#funding-result");
+    if (!root) return;
+    root.hidden = false;
+    const p = data.output || data;
+    $("#funding-msg").textContent = data.message || p.summary || "—";
+
+    const pillars = p.pillars || [];
+    $("#funding-pillars").innerHTML = pillars
+      .map(
+        (r) => `<div class="gen-block-card promo-road">
+          <h4>${escapeHtml(r.title || "")}</h4>
+          <p class="how-lead">${escapeHtml(r.promise || "")}</p>
+          <ol class="clean-list">${(r.steps || []).map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ol>
+          <p class="how-lead"><strong>KPI:</strong> ${escapeHtml(r.kpi || "")}</p>
+          <p class="how-lead"><strong>Kill / gate:</strong> ${escapeHtml(r.kill || "")}</p>
+        </div>`
+      )
+      .join("");
+
+    const levers =
+      (pillars[0] && pillars[0].levers) ||
+      (p.raw && p.raw.structural && p.raw.structural.instant_levers) ||
+      [];
+    $("#funding-levers").innerHTML = levers.length
+      ? `<ul class="clean-list">${levers
+          .map(
+            (l) =>
+              `<li><strong>${escapeHtml(l.id || "")}</strong> · $${escapeHtml(
+                String(l.price_usd ?? "—")
+              )} · ${escapeHtml(l.role || "")} · fit ${escapeHtml(String(l.fit ?? ""))} — ${escapeHtml(
+                l.surface || l.trigger || ""
+              )}</li>`
+          )
+          .join("")}</ul>`
+      : "<p class='how-lead'>—</p>";
+
+    const attaches =
+      (pillars[1] && pillars[1].attachments) ||
+      (p.raw && p.raw.assets && p.raw.assets.attachments) ||
+      [];
+    $("#funding-attach").innerHTML = attaches.length
+      ? attaches
+          .map((a) => {
+            const rent = a.rental
+              ? `rental $${a.rental.usd_per_week}/wk`
+              : "";
+            const pct = a.percent ? `${a.percent.share_pct}%` : "";
+            const modes = [rent, pct].filter(Boolean).join(" · ");
+            return `<div class="hook-item"><div class="k">${escapeHtml(
+              a.label || a.asset_id || ""
+            )}</div><div>${escapeHtml(modes)} · → ${escapeHtml(
+              a.attach_to || ""
+            )} · risk: ${escapeHtml(a.risk || "")}</div></div>`;
+          })
+          .join("")
+      : "<p class='how-lead'>—</p>";
+
+    const slots =
+      (pillars[2] && pillars[2].slots) ||
+      (p.raw && p.raw.capital_coop && p.raw.capital_coop.placement_slots) ||
+      [];
+    $("#funding-slots").innerHTML = slots.length
+      ? `<ul class="clean-list">${slots
+          .map(
+            (s) =>
+              `<li><strong>${escapeHtml(s.name || s.id)}</strong> · $${escapeHtml(
+                String(s.usd ?? "")
+              )} — ${escapeHtml(s.purpose || "")} · KPI: ${escapeHtml(s.kpi || "")}</li>`
+          )
+          .join("")}</ul>`
+      : "<p class='how-lead'>—</p>";
+
+    const launch = data.launch_path || p.launch_path || [];
+    $("#funding-launch").innerHTML = launch
+      .map(
+        (s) => `<div class="how-card" style="--flag-accent:var(--accent)">
+          <div class="step-num">${escapeHtml(s.n || "")}</div>
+          <h3>${escapeHtml(s.title || "")}</h3>
+          <p>${escapeHtml(s.text || "")}</p>
+        </div>`
+      )
+      .join("");
+
+    const paid = data.paid_quickstart || p.paid_quickstart || {};
+    const paidSteps = paid.steps || [];
+    const howRead = paid.how_to_read_results || [];
+    $("#funding-paid").innerHTML = `
+      <p class="how-lead"><strong>${escapeHtml(paid.one_liner || paid.title || "")}</strong></p>
+      <ol class="clean-list">${paidSteps
+        .map(
+          (s) =>
+            `<li><strong>${escapeHtml(s.label || s.id || "")}</strong> — ${escapeHtml(
+              s.action || ""
+            )} → <em>${escapeHtml(s.result || "")}</em> · ${escapeHtml(s.price || "")}</li>`
+        )
+        .join("")}</ol>
+      <div class="eyebrow" style="margin-top:0.75rem">How to read</div>
+      <ul class="clean-list">${howRead.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`;
+
     root.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 

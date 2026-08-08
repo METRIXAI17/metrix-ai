@@ -1,4 +1,4 @@
-"""Combine Promo + Market Making + Auto Orders into one monetization layer."""
+"""Combine Promo + Market Making + Auto Orders + Funding pillars into one layer."""
 
 from __future__ import annotations
 
@@ -8,6 +8,9 @@ from backend.config import MONETIZATION
 from backend.monetization.auto_orders import AutoOrdersEngine
 from backend.monetization.market_making import MarketMakingSimulator
 from backend.monetization.promo import PromoAutomation
+from backend.monetization.structural_income import StructuralIncomeEngine
+from backend.monetization.asset_attach import AssetAttachEngine
+from backend.monetization.capital_coop import CapitalCoopEngine
 
 
 class MonetizationOrchestrator:
@@ -17,6 +20,9 @@ class MonetizationOrchestrator:
         self.promo = PromoAutomation()
         self.mm = MarketMakingSimulator()
         self.orders = AutoOrdersEngine()
+        self.structural = StructuralIncomeEngine()
+        self.assets = AssetAttachEngine()
+        self.capital_coop = CapitalCoopEngine()
 
     def run(
         self,
@@ -53,6 +59,13 @@ class MonetizationOrchestrator:
             track=track,
         )
 
+        brief = " ".join(
+            [idea_title or "", industry_name or "", " ".join(phrases or [])]
+        ).strip()
+        structural = self.structural.build(brief or idea_title, project_name=idea_title)
+        assets = self.assets.build(brief or idea_title, project_name=idea_title)
+        capital = self.capital_coop.build(brief or idea_title, project_name=idea_title)
+
         stack_price = (
             promo.price_usd + mm.price_usd + orders.price_usd
             if orders.enabled
@@ -65,6 +78,11 @@ class MonetizationOrchestrator:
             "promo": promo.to_dict(),
             "market_making": mm.to_dict(),
             "auto_orders": orders.to_dict(),
+            "funding": {
+                "structural_income": structural,
+                "assets_1to1": assets,
+                "capital_coop": capital,
+            },
             "pricing": {
                 "promo_usd": promo.price_usd,
                 "market_making_usd": mm.price_usd,
@@ -75,7 +93,7 @@ class MonetizationOrchestrator:
             },
             "summary": (
                 f"Monetization: promo + MM"
-                f"{' + auto-orders' if orders.enabled else ''} | "
+                f"{' + auto-orders' if orders.enabled else ''} + funding×3 | "
                 f"stack≈${stack_price:.0f}, full package=${full['base_price_usd']}."
             ),
         }

@@ -795,6 +795,39 @@ def promotion_pack_run(body: PromotionBody) -> dict[str, Any]:
     return {"module": "PromotionPack", "output": pack, "message": pack.get("summary")}
 
 
+class FundingBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    project_name: str = ""
+    industry: str = ""
+    capital_usd: float | None = None
+    partner_role: str = "hybrid"  # operator | capital | hybrid
+    asset_mode: str = "auto"  # rental | percent | auto | hybrid
+    lang: str = "ru"
+
+
+@router.post("/funding-pack")
+def funding_pack_run(body: FundingBody) -> dict[str, Any]:
+    """Funding tariff: 3 pillars — structural income · assets 1:1 · capital coop."""
+    from backend.core.business_gen.funding_pack import build_funding_pack
+
+    pack = build_funding_pack(
+        body.business,
+        project_name=body.project_name,
+        capital_usd=body.capital_usd,
+        partner_role=body.partner_role or "hybrid",
+        asset_mode=body.asset_mode or "auto",
+        industry_id=body.industry,
+        lang=body.lang,
+    )
+    return {
+        "module": "FundingPack",
+        "output": pack,
+        "message": pack.get("summary"),
+        "launch_path": pack.get("launch_path"),
+        "paid_quickstart": pack.get("paid_quickstart"),
+    }
+
+
 class LiveLogTickBody(BaseModel):
     session_id: str
     day_offset: int | None = None

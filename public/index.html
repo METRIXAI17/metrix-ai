@@ -52,6 +52,9 @@
           <button type="button" data-mode="promo" role="tab" aria-selected="false" data-i18n="nav_promo">
             Promo
           </button>
+          <button type="button" data-mode="funding" role="tab" aria-selected="false" data-i18n="nav_funding">
+            Funding
+          </button>
         </div>
 
         <div class="nav-links">
@@ -457,6 +460,100 @@
         </div>
       </section>
 
+      <section class="section wrap mode-panel" id="mode-funding" data-panel="funding" hidden>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow" data-i18n="funding_eyebrow">Funding tariff · partner contour</div>
+            <h2 data-i18n="funding_title">Funding · 3 pillars</h2>
+            <p class="how-lead" data-i18n="funding_lead">
+              Structural auto-income · assets 1:1 · placed-capital cooperation. Free map first.
+            </p>
+          </div>
+        </div>
+        <form class="form-card form-card-slim" id="funding-form" novalidate>
+          <div class="form-grid">
+            <div class="field field-full field-span">
+              <label for="funding-headline"><span data-i18n="funding_headline">Project / offer *</span></label>
+              <input
+                id="funding-headline"
+                type="text"
+                required
+                maxlength="120"
+                data-i18n-ph="funding_headline_ph"
+                placeholder="E.g. AI agency ops core"
+              />
+            </div>
+            <div class="field field-full field-span">
+              <label for="funding-body"><span data-i18n="funding_body">Business + capital context *</span></label>
+              <textarea
+                id="funding-body"
+                required
+                rows="5"
+                data-i18n-ph="funding_body_ph"
+                placeholder="What you sell, sales/pilots, capital size, partners, unit numbers…"
+              ></textarea>
+            </div>
+            <div class="field">
+              <label for="funding-capital" data-i18n="funding_capital">Capital to place (USD)</label>
+              <input id="funding-capital" type="number" min="0" step="1000" placeholder="10000" />
+            </div>
+            <div class="field">
+              <label for="funding-role" data-i18n="funding_role">Your role</label>
+              <select id="funding-role">
+                <option value="hybrid" data-i18n="funding_role_hybrid">Hybrid</option>
+                <option value="operator" data-i18n="funding_role_operator">Operator</option>
+                <option value="capital" data-i18n="funding_role_capital">Capital partner</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="funding-asset-mode" data-i18n="funding_asset_mode">Asset attach mode</label>
+              <select id="funding-asset-mode">
+                <option value="auto" data-i18n="funding_mode_auto">Auto</option>
+                <option value="rental" data-i18n="funding_mode_rental">Rental</option>
+                <option value="percent" data-i18n="funding_mode_percent">Percent</option>
+              </select>
+            </div>
+            <p class="form-error" id="funding-error" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-lg" id="funding-submit" data-i18n="funding_run">
+              Build funding plan
+            </button>
+          </div>
+        </form>
+        <div id="funding-result" class="gen-result" hidden>
+          <h3 id="funding-msg">—</h3>
+          <div id="funding-pillars" class="promo-roads"></div>
+          <div class="gen-block-card" style="margin-top:1rem">
+            <div class="eyebrow" data-i18n="funding_levers">Instant levers</div>
+            <div id="funding-levers"></div>
+          </div>
+          <div class="gen-block-card" style="margin-top:1rem">
+            <div class="eyebrow" data-i18n="funding_attach">1:1 attaches</div>
+            <div id="funding-attach"></div>
+          </div>
+          <div class="gen-block-card" style="margin-top:1rem">
+            <div class="eyebrow" data-i18n="funding_slots">Capital slots</div>
+            <div id="funding-slots"></div>
+          </div>
+          <div class="gen-block-card" style="margin-top:1rem">
+            <div class="eyebrow" data-i18n="funding_launch">Launch path</div>
+            <div id="funding-launch" class="how-grid"></div>
+          </div>
+          <div class="gen-block-card" style="margin-top:1rem">
+            <div class="eyebrow" data-i18n="funding_paid">Paid quickstart</div>
+            <div id="funding-paid"></div>
+          </div>
+          <div class="cr-cta-row" style="margin-top:1rem">
+            <button type="button" class="btn btn-primary" data-mode-jump="generate" data-i18n="nav_generate">
+              Generate 🔥
+            </button>
+            <button type="button" class="btn btn-ghost" data-mode-jump="request" data-i18n="cta_consult">
+              Consult + Tech-TZ
+            </button>
+            <a class="btn btn-ghost" href="https://x.com/karimmetrix" target="_blank" rel="noopener">@karimmetrix</a>
+          </div>
+        </div>
+      </section>
+
       <section class="section wrap" id="how">
         <div class="section-head">
           <div>
@@ -645,6 +742,7 @@
               Consult + Tech-TZ
             </button>
             <button type="button" class="btn btn-gold" data-mode-jump="generate" data-i18n="nav_generate">Generate 🔥</button>
+            <button type="button" class="btn btn-ghost" data-mode-jump="funding" data-i18n="nav_funding">Funding</button>
           </div>
         </div>
       </section>

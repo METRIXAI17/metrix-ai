@@ -59,6 +59,18 @@ TARIFF_CATALOG = [
         ],
         "best_for": "cloud-economy specialty hosts (your style)",
     },
+    {
+        "id": "funding_3pillars",
+        "name": "Funding · 3 pillars",
+        "price_usd": 0,
+        "includes": [
+            "Structural auto-income: OUTPUT map + instant levers",
+            "Assets 1:1: rental or % attach to configured sales",
+            "Capital cooperation: placed capital slots + partner pack",
+            "Launch path + paid quickstart (free map → pay on approve)",
+        ],
+        "best_for": "Founders wiring revenue structure before / with partner capital",
+    },
 ]
 
 
