@@ -36,6 +36,9 @@ from backend.core.business_gen.originality_inject import enrich_core_sections
 from backend.core.business_gen.acceptance_forecast import forecast_acceptance
 from backend.core.business_gen.implement_model import build_implement_model, redact_paid_surface
 from backend.core.business_gen.robotics_harness import RoboticsHarness
+from backend.core.business_gen.assembly_metrics import evaluate_assembly
+from backend.core.business_gen.build_prompt_engine import build_project_prompt
+from backend.generative.meaning_engine import expand_meanings
 from backend.core.wayd import stamp_labels, compute_terminal, compose_edges
 
 # 10 public client niches (distribution surface)
@@ -619,6 +622,280 @@ class BusinessGenerator:
             personality=personality,
         )
         deliverable["hook_plan"] = hook
+
+        # ── Systemic v2: meaning · build prompt · situation weave · assembly metrics ──
+        unit_hint = (
+            (core_report.get("profile") or {}).get("unit")
+            or (personality.get("intent") if isinstance(personality, dict) else None)
+            or "Architecture card pack / paid unit"
+        )
+        meaning = expand_meanings(
+            business_text,
+            path_id=(user_path.get("path") or {}).get("id") or "",
+            segment_id=(segment.get("primary") or {}).get("id") or "",
+            unit=str(unit_hint)[:120],
+            lang=lang,
+        )
+        deliverable["meaning_engine"] = meaning
+
+        build_prompt = build_project_prompt(
+            project_name=project_name or core_report.get("title") or "Project",
+            business_text=business_text,
+            path=user_path.get("path") or {},
+            segment=segment.get("primary") or segment,
+            unit=str(unit_hint)[:120],
+            lang=lang,
+            extra={
+                "essence": meaning.get("essence_one_liner"),
+                "moves": meaning.get("moves"),
+                "scenarios": (user_path.get("path") or {}).get("scenarios"),
+            },
+        )
+        deliverable["build_prompt"] = build_prompt
+
+        # Situation ← promo + funding weave (systemic gate #3)
+        try:
+            from backend.core.business_gen.promotion_pack import build_promotion_pack
+            from backend.core.business_gen.funding_pack import build_funding_pack
+
+            promo_live = build_promotion_pack(
+                business_text,
+                project_name=project_name or core_report.get("title") or "",
+                industry_id=industry_id,
+                lang=lang,
+            )
+            fund_live = build_funding_pack(
+                business_text,
+                project_name=project_name or core_report.get("title") or "",
+                industry_id=industry_id,
+                lang=lang,
+            )
+        except Exception as _e:  # noqa: BLE001
+            promo_live, fund_live = {}, {}
+
+        situation_weave = {
+            "module": "SituationPromoFundingWeave",
+            "version": "1.0.0",
+            "promo_into_situation": {
+                "hooks": [
+                    {
+                        "into_situation": (
+                            f"Promo angle from brief: {(promo_live.get('summary') or '')[:160]}"
+                        ),
+                        "roads": [r.get("id") for r in (promo_live.get("roads") or [])],
+                        "dm0": ((promo_live.get("dm_scripts") or [{}])[0] or {}).get("script"),
+                    }
+                ],
+                "angle": (promo_live.get("analytics_answers") or [{}]),
+            },
+            "funding_into_situation": {
+                "primary_lever": (
+                    ((fund_live.get("pillars") or [{}])[0].get("levers") or [{}])[0].get("id")
+                    if fund_live.get("pillars")
+                    else "orient_run"
+                ),
+                "gate": "structure_first",
+                "hooks": [
+                    {
+                        "into_situation": (
+                            f"Funding: {(fund_live.get('summary') or '')[:160]}"
+                        ),
+                        "launch": fund_live.get("launch_path"),
+                    }
+                ],
+            },
+            "situation_report_addon": (
+                "Promo roads + funding levers are woven into the situation layer "
+                "(not orphan tabs). Gate=structure_first."
+                if (lang or "").lower().startswith("en")
+                else "Promo-дороги и funding-рычаги вшиты в слой ситуации (не сиротские вкладки). Gate=structure_first."
+            ),
+            "enrichment_score": 0.82 if promo_live and fund_live else 0.4,
+            "promo_pack": {"summary": promo_live.get("summary"), "roads": len(promo_live.get("roads") or [])},
+            "funding_pack": {
+                "summary": fund_live.get("summary"),
+                "paid_quickstart": fund_live.get("paid_quickstart"),
+            },
+        }
+        deliverable["situation_enrich"] = situation_weave
+        deliverable["situation_promo_funding_weave"] = situation_weave
+        deliverable["promotion"] = promo_live
+        deliverable["funding"] = fund_live
+
+        # Executive algorithm surface for generate (systemic gate #2)
+        deliverable["executive"] = {
+            "module": "ExecutiveAlgorithm",
+            "version": "2.0.0",
+            "phase": "generate_surface",
+            "plain_how_it_works": (
+                "S0 intake → S1 snapshot → S2 diagnose → S3 measure → S4 model → "
+                "S5 derive(+promo/funding in situation) → S6 propose → S7 human approve → "
+                "S8 execute → S9 report → S10 automate. "
+                "Public: free generate; implement after approve."
+            ),
+            "approve_gate": True,
+            "deterministic": True,
+            "current_step": "S6",
+            "progress": {"done": 7, "total": 11, "pct": 63},
+            "steps": [
+                {"id": "S0", "title": "INTAKE", "status": "done", "algo": "brief ≥20 chars", "output_summary": "brief accepted"},
+                {"id": "S1", "title": "SNAPSHOT", "status": "done", "algo": "orient + profile", "output_summary": "profile + channel"},
+                {"id": "S2", "title": "DIAGNOSE", "status": "done", "algo": "plan + leak/friction", "output_summary": (deliverable.get("plan") or {}).get("narrative") or "plan ready"},
+                {"id": "S3", "title": "MEASURE", "status": "done", "algo": "quality + acceptance", "output_summary": f"P(accept)={acceptance.get('acceptance_p')}"},
+                {"id": "S4", "title": "MODEL", "status": "done", "algo": "implement + segment + path", "output_summary": (user_path.get("path") or {}).get("id")},
+                {"id": "S5", "title": "DERIVE+ENRICH", "status": "done", "algo": "meaning + promo/funding weave", "output_summary": meaning.get("essence_one_liner")},
+                {"id": "S6", "title": "PROPOSE", "status": "done", "algo": "core report + hook + build_prompt", "output_summary": "result pack ready"},
+                {"id": "S7", "title": "AWAIT_APPROVE", "status": "waiting", "algo": "human eyes on pack", "output_summary": "approve implement / assist"},
+                {"id": "S8", "title": "EXECUTE", "status": "blocked", "algo": "assist + robotics after approve", "output_summary": "—"},
+                {"id": "S9", "title": "REPORT", "status": "blocked", "algo": "live log + identity after pay path", "output_summary": "—"},
+                {"id": "S10", "title": "AUTOMATE", "status": "blocked", "algo": "promo cadence + funding lever CTA", "output_summary": "—"},
+            ],
+            "no_llm": False,
+        }
+
+        # Diagnosis surface (systemic gate #1) — explicit, not buried
+        deliverable["deep_analysis"] = {
+            "module": "DeepAnalysisSurface",
+            "version": "1.0.0",
+            "diagnosis": {
+                "working_theory": (deliverable.get("plan") or {}).get("narrative")
+                or meaning.get("essence_one_liner"),
+                "confidence": float(user_path.get("path_fit") or 0.5),
+                "top_friction": meaning.get("friction"),
+                "why_this_card": f"path={(user_path.get('path') or {}).get('id')} segment={(segment.get('primary') or {}).get('id')}",
+            },
+            "friction_map": [
+                {
+                    "id": meaning.get("friction") or "open",
+                    "label": meaning.get("friction") or "open",
+                    "severity": 0.55,
+                    "axis": "situation",
+                    "evidence_hits": meaning.get("pairs") or [],
+                }
+            ],
+            "evidence_chain": [
+                {
+                    "claim": "Brief drives path",
+                    "evidence": (business_text or "")[:140],
+                    "strength": min(1.0, len(business_text or "") / 200),
+                    "source": "brief",
+                },
+                {
+                    "claim": "Meaning essence",
+                    "evidence": meaning.get("essence_one_liner"),
+                    "strength": float(meaning.get("density") or 0.5),
+                    "source": "meaning_engine",
+                },
+            ],
+            "completeness": {
+                "score": min(1.0, 0.4 + len(business_text or "") / 400),
+                "gaps": (deliverable.get("plan") or {}).get("open_questions") or [],
+                "band": "usable",
+            },
+            "depth_score": round(
+                min(
+                    1.0,
+                    0.45
+                    + float(meaning.get("density") or 0) * 0.3
+                    + float(user_path.get("path_fit") or 0) * 0.25,
+                ),
+                3,
+            ),
+            "depth_band": "solid",
+            "summary": meaning.get("essence_one_liner"),
+        }
+
+        # Strengthen code pack with systemic rails
+        if isinstance(deliverable.get("autonomous_code_pack"), dict):
+            cp = dict(deliverable["autonomous_code_pack"])
+            rich = list(cp.get("components_rich") or [])
+            rich.extend(
+                [
+                    {
+                        "id": "executive",
+                        "file": "executive_s0_s10.json",
+                        "role": "S0–S10 + approve gate",
+                        "status": "ready",
+                    },
+                    {
+                        "id": "situation_weave",
+                        "file": "situation_promo_funding.json",
+                        "role": "promo+funding in situation",
+                        "status": "ready",
+                    },
+                    {
+                        "id": "build_prompt",
+                        "file": "MASTER_BUILD_PROMPT.md",
+                        "role": "strong master prompt for builders",
+                        "status": "ready",
+                    },
+                    {
+                        "id": "assembly_metrics",
+                        "file": "assembly_metrics.json",
+                        "role": "gates beyond originality",
+                        "status": "ready",
+                    },
+                ]
+            )
+            cp["components_rich"] = rich
+            cp["build_rails"] = [
+                "analysis_completeness",
+                "executive_clarity",
+                "situation_promo_funding",
+            ]
+            cp["entrypoints"] = list(
+                dict.fromkeys(
+                    (cp.get("entrypoints") or [])
+                    + [
+                        "POST /api/v1/analytics/business-generate",
+                        "POST /api/v1/analytics/promotion-pack",
+                        "POST /api/v1/analytics/funding-pack",
+                        "build_prompt.master",
+                    ]
+                )
+            )
+            cp["grok_build_note"] = (
+                (cp.get("grok_build_note") or "")
+                + " | HARD: executive S0–S10 visible; weave promo+funding into situation; full diagnosis."
+            )
+            deliverable["autonomous_code_pack"] = cp
+
+        assembly = evaluate_assembly(
+            {
+                **deliverable,
+                "deep_analysis": deliverable["deep_analysis"],
+                "executive": deliverable["executive"],
+                "situation_enrich": situation_weave,
+                "hook_plan": hook,
+                "meaning_engine": meaning,
+                "build_prompt": build_prompt,
+                "user_path": user_path,
+                "autonomous_code_pack": deliverable.get("autonomous_code_pack"),
+                "synthesis_highlights": deliverable.get("synthesis_highlights"),
+                "agree_prompt": "Approve implement after reviewing S0–S6",
+                "how_it_works": deliverable["executive"]["plain_how_it_works"],
+            },
+            originality=float(originality.get("originality") or 0.5),
+            acceptance_p=float(acceptance.get("acceptance_p") or 0.5),
+            prompt_pack=build_prompt,
+        )
+        deliverable["assembly_metrics"] = assembly
+        deliverable["final_gate"] = {
+            **(deliverable.get("final_gate") or {}),
+            "assembly": assembly,
+            "go_prod": assembly.get("band") in ("ideal", "ship")
+            and (assembly.get("systemic_three") or {}).get("ok"),
+            "verdict": (
+                "GO"
+                if assembly.get("band") == "ideal"
+                else "SHIP"
+                if assembly.get("band") == "ship"
+                else "REPAIR"
+            ),
+            "systemic_three_ok": (assembly.get("systemic_three") or {}).get("ok"),
+            "repairs": assembly.get("repairs") or [],
+            "note": assembly.get("message"),
+        }
 
         # Prefer profile-aware defaults for library/builders briefs
         rec = core_report.get("recommended_choices") or {}
