@@ -49,10 +49,19 @@ CORS_ORIGINS = [
     o.strip()
     for o in os.getenv(
         "METRIX_CORS",
-        "http://localhost:3000,http://127.0.0.1:5500,http://localhost:5500,null",
+        "http://localhost:3000,http://127.0.0.1:5500,http://localhost:5500,"
+        "http://127.0.0.1:8787,http://localhost:8787,null,"
+        "https://web.telegram.org,https://k.telegram.org",
     ).split(",")
     if o.strip()
 ]
+
+# Telegram Mini App / bot
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_PROVIDER_TOKEN = os.getenv("TELEGRAM_PROVIDER_TOKEN", "").strip()
+TELEGRAM_WEBAPP_URL = os.getenv("TELEGRAM_WEBAPP_URL", "").rstrip("/")
+# Payments off until ЮKassa / Tribute / Stars are wired.
+TELEGRAM_PAYMENTS = os.getenv("TELEGRAM_PAYMENTS", "0") == "1"
 
 # ── Client niches (public site + process API) ────────────────────────────────
 INDUSTRIES: dict[str, dict[str, Any]] = {

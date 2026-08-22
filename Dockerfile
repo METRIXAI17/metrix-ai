@@ -24,6 +24,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend ./backend
+COPY public ./public
+COPY telegram_app ./telegram_app
 
 # Writable runtime dirs (ephemeral on Railway unless a volume is attached)
 RUN mkdir -p backend/workspace backend/data/requests logs \

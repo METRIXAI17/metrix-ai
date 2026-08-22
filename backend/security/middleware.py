@@ -112,18 +112,28 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             # Don't leak stack to client in production middleware path
             return JSONResponse({"ok": False, "error": "internal_error"}, status_code=500)
 
-        # Security headers
+        # Security headers. /tg Mini App must be frameable by Telegram Web.
+        tg_surface = path.startswith("/tg") or path.startswith("/app/tg")
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
-        response.headers.setdefault("X-Frame-Options", "DENY")
+        if tg_surface:
+            response.headers.setdefault(
+                "Content-Security-Policy",
+                "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; "
+                "script-src 'self' 'unsafe-inline' https://telegram.org https://web.telegram.org; "
+                "connect-src 'self' https: https://telegram.org; "
+                "frame-ancestors 'self' https://web.telegram.org https://telegram.org https://*.telegram.org",
+            )
+        else:
+            response.headers.setdefault("X-Frame-Options", "DENY")
+            response.headers.setdefault(
+                "Content-Security-Policy",
+                "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; "
+                "script-src 'self' 'unsafe-inline'; connect-src 'self' https:; frame-ancestors 'none'",
+            )
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         response.headers.setdefault(
             "Permissions-Policy",
             "geolocation=(), microphone=(), camera=()",
-        )
-        response.headers.setdefault(
-            "Content-Security-Policy",
-            "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; "
-            "script-src 'self' 'unsafe-inline'; connect-src 'self' https:; frame-ancestors 'none'",
         )
         # Hide tech fingerprint
         if "server" in response.headers:

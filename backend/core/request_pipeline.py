@@ -98,6 +98,27 @@ class RequestPipeline:
         track = (req.track or "all").lower()
         track_arg = None if track in ("all", "") else track
 
+        # ── 1b. Task reader + assembly + auto mode (2026-08 update) ───────
+        assembly: dict[str, Any] = {}
+        try:
+            from backend.core.task_reader import assemble_query
+
+            _lang_r = (getattr(req, "lang", None) or "").strip().lower()
+            if _lang_r not in ("en", "ru"):
+                _lang_r = None
+            assembly = assemble_query(
+                req.business,
+                lang=_lang_r,
+                industry_hint=industry_id,
+            )
+            auto_track = (assembly.get("mode") or {}).get("surface_mode")
+            if track in ("all", "") and auto_track == "promo_lite":
+                track = "promotion"
+                track_arg = "promotion"
+        except Exception as exc:  # noqa: BLE001 — never break main path
+            logger.warning("task_reader failed: %s", exc)
+            assembly = {"ok": False, "error": str(exc)[:240]}
+
         # ── 2. Orient ─────────────────────────────────────────────────────
         logger.info("orient request_id=%s industry=%s", req.request_id, industry_id)
         orient = self.orientation.orient(
@@ -955,6 +976,12 @@ class RequestPipeline:
             operating_mode = f"{operating_mode}|paid_core"
         if circle_out.get("product_surfaces"):
             operating_mode = f"{operating_mode}|circle_system"
+        auto_sm = (assembly.get("mode") or {}).get("surface_mode")
+        auto_mm = (assembly.get("mode") or {}).get("metrix_mode")
+        if auto_sm:
+            operating_mode = f"{operating_mode}|reader:{auto_sm}"
+        if auto_mm and auto_mm != decision.active_mode:
+            operating_mode = f"{operating_mode}|assembled:{auto_mm}"
 
         # Portfolio-aware next step
         if len(demo_ideas) > 1:
@@ -992,7 +1019,10 @@ class RequestPipeline:
                 "program_id": req.program_id,
                 "product_result": product,
                 "industry_name": industry["name"],
-                "pipeline_version": "2.5-market-units-v2",
+                "pipeline_version": "2.6-task-reader-assembly",
+                "task_reader": assembly,
+                "auto_mode": (assembly.get("mode") or {}),
+                "end_readings": assembly.get("end_readings") or [],
                 "idea_count": len(demo_ideas),
                 "idea_portfolio": (product.get("portfolio") or {}),
                 "block_18_slot": "backend/paid",
