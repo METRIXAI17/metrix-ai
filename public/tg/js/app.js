@@ -3,14 +3,9 @@
   if (tg) {
     tg.ready();
     tg.expand();
-    try { tg.setHeaderColor("#0b0d12"); } catch (e) {}
+    try { tg.setHeaderColor("#070a0f"); } catch (e) {}
+    try { tg.setBackgroundColor("#070a0f"); } catch (e2) {}
   }
-
-  const mark = document.getElementById("mark");
-  mark.src = "/app/assets/metrix-brand-m.jpg";
-  mark.onerror = function () {
-    mark.src = "/assets/metrix-brand-m.jpg";
-  };
 
   function apiBase() {
     const h = location.hostname;
@@ -84,8 +79,11 @@
       go(b.getAttribute("data-go"));
     });
   });
-  document.getElementById("btn-scheme").addEventListener("click", function () {
-    go("scheme");
+  document.querySelectorAll(".logo[data-go]").forEach(function (b) {
+    b.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      go(b.getAttribute("data-go"));
+    });
   });
 
   function price(p) {
@@ -102,8 +100,8 @@
     return list
       .map(function (e) {
         return (
-          '<article class="card reading"><span class="sticker">' +
-          (e.label || e.id) +
+          '<article class="card card-flag reading"><span class="tag">' +
+          esc(e.label || e.id) +
           "</span><h3>" +
           esc(e.reading) +
           "</h3><p class='muted'>" +
@@ -127,11 +125,7 @@
 
   function buyRow(sku, title) {
     if (!PAYMENTS) {
-      return (
-        '<p class="muted sku-buy">Сейчас бесплатно · ' +
-        esc(sku) +
-        " · оплата (Tribute / карта) выключена</p>"
-      );
+      return '<p class="sku-buy">Бесплатно на старте</p>';
     }
     return (
       '<div class="row sku-buy">' +
@@ -161,16 +155,32 @@
 
   viewEl.addEventListener("click", function (ev) {
     var t = ev.target;
-    if (!t || !t.getAttribute) return;
-    if (t.getAttribute("data-buy")) {
-      buy(t.getAttribute("data-buy"), t.getAttribute("data-pay") || "yookassa");
+    if (!t || !t.closest) return;
+    var buyBtn = t.closest("[data-buy]");
+    if (buyBtn) {
+      buy(buyBtn.getAttribute("data-buy"), buyBtn.getAttribute("data-pay") || "yookassa");
+      return;
     }
-    if (t.getAttribute("data-go")) go(t.getAttribute("data-go"));
+    var goEl = t.closest("[data-go]");
+    if (goEl) go(goEl.getAttribute("data-go"));
   });
 
+  var HIT_NAMES = {
+    request_work: "Работа по запросу",
+    creative_assistant: "Творческий ассистент",
+    promo_cards: "Промо · карточки",
+    solution_logger: "Solution logger",
+    digital_mockup: "Цифровой макет",
+    flagship_metric: "Metric engine",
+    terminal_mine: "Терминал ордеров",
+    promo_reels: "Промо · ролики",
+    promo_prompts: "Промо · промпты",
+  };
+
   function home(c) {
+    var accents = ["#5eead4", "#38bdf8", "#c4b5fd"];
     var fns = (c.functions || [])
-      .map(function (f) {
+      .map(function (f, i) {
         var view =
           f.id === "creative_assistant"
             ? "fn-creative"
@@ -178,15 +188,15 @@
             ? "fn-logger"
             : "fn-mockup";
         return (
-          '<article class="card fn" data-go="' +
+          '<article class="card card-flag" style="--flag-accent:' +
+          accents[i % 3] +
+          '" data-go="' +
           view +
-          '"><span class="sticker">функция</span><h3>' +
+          '"><span class="tag">функция</span><h3>' +
           esc(f.title) +
-          "</h3><p class='muted'>" +
+          "</h3><p>" +
           esc(f.blurb) +
-          "</p><p class='price'>" +
-          price(f.price) +
-          " · хиты " +
+          "</p><p class='price'>хиты " +
           (f.hits || 0) +
           "</p></article>"
         );
@@ -196,7 +206,7 @@
       .map(function (h) {
         return (
           '<div class="card hit"><b>' +
-          esc(h.id) +
+          esc(HIT_NAMES[h.id] || h.id) +
           "</b><span class='price'>" +
           h.hits +
           "</span></div>"
@@ -204,17 +214,18 @@
       })
       .join("");
     return (
-      '<section class="hero"><div class="eyebrow">Metrix AI Bot</div>' +
-      "<h1>Маркетплейс решений</h1>" +
-      "<p class='muted'>Как CraftShift на рабочем столе: карточки, прогон, оплата. Читалка задания сама выбирает режим.</p>" +
-      '<div class="row">' +
+      '<section class="hero">' +
+      '<div class="hero-badge">Instant ideas · без оплаты</div>' +
+      "<h1>Одно окно для <em>workflows</em> и оригинальных проектов.</h1>" +
+      "<p class='lead'>Читалка задания держит несколько концов считывания и сама выбирает режим. Идеи сразу. Внедрение — когда утвердите.</p>" +
+      '<div class="hero-actions">' +
       '<button class="btn btn-primary" data-go="request">Работа по запросу</button>' +
-      '<button class="btn" data-go="flagships">Флагманские карточки</button>' +
+      '<button class="btn btn-ghost" data-go="flagships">Флагманские карточки</button>' +
       "</div></section>" +
-      '<div class="eyebrow">Функции</div><div class="grid">' +
+      '<div class="eyebrow section-label">Функции</div><div class="grid">' +
       fns +
       "</div>" +
-      '<div class="eyebrow" style="margin-top:16px">Хиты пользователей</div>' +
+      '<div class="eyebrow section-label">Хиты</div>' +
       '<div class="grid">' +
       hits +
       "</div>"
@@ -224,8 +235,8 @@
   function requestView() {
     return (
       '<div class="eyebrow">Работа по запросу</div>' +
-      "<h1>Сложный запрос → несколько считываний → режим</h1>" +
-      "<p class='muted'>Не один «правильный» ответ. Объективная читалка держит варианты и умолчания.</p>" +
+      "<h1>Сложный запрос → <em>несколько считываний</em></h1>" +
+      "<p class='lead'>Не один «правильный» ответ. Читалка держит варианты и умолчания, режим выбирается сборкой.</p>" +
       '<label>Бриф (своими словами)</label>' +
       '<textarea id="q-brief" placeholder="Опишите задачу, бизнес, что скрыто или неясно…"></textarea>' +
       '<div class="row"><button class="btn btn-primary" id="q-run">Собрать запрос</button></div>' +
@@ -237,11 +248,13 @@
     var cards = (c.flagships || [])
       .map(function (f) {
         return (
-          '<article class="card"><span class="sticker">' +
+          '<article class="card card-flag" style="--flag-accent:' +
+          esc(f.accent || "#5eead4") +
+          '"><span class="tag">' +
           esc(f.sticker) +
           "</span><h3>" +
           esc(f.title) +
-          "</h3><p class='muted'>" +
+          "</h3><p>" +
           esc(f.essence_ru) +
           "</p><p class='price'>" +
           price(f.price) +
@@ -252,8 +265,9 @@
       })
       .join("");
     return (
-      '<div class="eyebrow">Флагманские карточки</div><h1>Купить как на маркетплейсе</h1>' +
-      '<div class="grid">' +
+      '<div class="eyebrow">Флагманы</div><h1>Карточки <em>как на сайте</em></h1>' +
+      '<p class="lead">Именные слои Metrix — не свалка каталога.</p>' +
+      '<div class="grid grid-cards">' +
       cards +
       "</div>"
     );
@@ -387,7 +401,7 @@
           (out.assembly && out.assembly.summary) ||
           "";
         document.getElementById("q-out").innerHTML =
-          '<article class="card"><span class="sticker">режим ' +
+          '<article class="card card-flag"><span class="tag">режим ' +
           esc(mode) +
           "</span><h3>Сборка</h3><p class='muted'>" +
           esc((out.assembly || {}).summary || "") +

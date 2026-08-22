@@ -21,10 +21,10 @@ pilot_private
 tests
 docs
 demos
-assets
-css
-js
-index.html
+/assets
+/css
+/js
+/index.html
 paid-portal.html
 client-package-latest.html
 *.bat

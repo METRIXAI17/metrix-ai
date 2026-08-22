@@ -26,9 +26,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend ./backend
 COPY public ./public
 COPY telegram_app ./telegram_app
+COPY start.sh ./start.sh
 
 # Writable runtime dirs (ephemeral on Railway unless a volume is attached)
 RUN mkdir -p backend/workspace backend/data/requests logs \
+    && chmod +x start.sh \
     && chown -R appuser:appuser /app
 
 USER appuser
@@ -41,4 +43,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=25s --retries=3 \
 
 # proxy-headers: correct scheme/host behind Railway edge
 ENTRYPOINT ["tini", "--"]
-CMD ["sh", "-c", "exec uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8787} --proxy-headers --forwarded-allow-ips='*' --log-level info --timeout-keep-alive 30"]
+CMD ["sh", "./start.sh"]
