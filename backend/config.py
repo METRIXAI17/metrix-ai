@@ -55,6 +55,14 @@ CORS_ORIGINS = [
     ).split(",")
     if o.strip()
 ]
+# Always allow Mini App hosts (Vercel + Telegram Web) even if METRIX_CORS is a tight list.
+for _origin in (
+    "https://metrix-ai.vercel.app",
+    "https://web.telegram.org",
+    "https://k.telegram.org",
+):
+    if _origin not in CORS_ORIGINS:
+        CORS_ORIGINS.append(_origin)
 
 # Telegram Mini App / bot
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
