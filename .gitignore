@@ -33,3 +33,5 @@ docs/screenshot_*.png
 client-package-latest.html
 client-pack-latest.html
 logs/
+robots/data/
+!robots/.env.example
