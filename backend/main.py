@@ -85,6 +85,9 @@ if (_frontend / "index.html").exists():
 _tg = _frontend / "tg"
 if (_tg / "index.html").exists():
     app.mount("/tg", StaticFiles(directory=str(_tg), html=True), name="tg-miniapp")
+_assets = _frontend / "assets"
+if _assets.exists():
+    app.mount("/assets", StaticFiles(directory=str(_assets)), name="public-assets")
 
 
 @app.get("/")

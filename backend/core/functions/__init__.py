@@ -5,24 +5,24 @@ from backend.core.functions.solution_logger import run_solution_logger
 FUNCTIONS = (
     {
         "id": "creative_assistant",
-        "title_ru": "Творческий ассистент",
-        "title_en": "Creative assistant",
+        "title_ru": "Идеи, когда залипаешь",
+        "title_en": "Ideas when idle",
         "hit": True,
-        "blurb_ru": "Идеи, углы, промпты и правила для роликов — не «ещё один чат».",
+        "blurb_ru": "Угол и правило для поста или ролика. Не «ещё один чат».",
     },
     {
         "id": "solution_logger",
-        "title_ru": "Solution logger",
-        "title_en": "Solution logger",
+        "title_ru": "Разбор своих сделок",
+        "title_en": "Own-trade review",
         "hit": True,
-        "blurb_ru": "Полезный разбор своего трейдинга: тезис, семьи ошибок, путь к ордерам.",
+        "blurb_ru": "Тезис, семья ошибок, что повторять нельзя. Не сигналы.",
     },
     {
         "id": "digital_mockup",
-        "title_ru": "Цифровой макет",
-        "title_en": "Digital mockup",
+        "title_ru": "Макет вашей работы",
+        "title_en": "Work mockup",
         "hit": True,
-        "blurb_ru": "Подобие индивидуала: темп, оффер, слоты — быстрый разворот соло-работы.",
+        "blurb_ru": "Темп, оффер, слоты — чтобы соло-работа вставала без театра.",
     },
 )
 

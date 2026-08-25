@@ -1,3 +1,3 @@
-"""Metrix AI Telegram bot (Mini App launcher + payments)."""
+"""Karim Metrix Telegram bot — conversation first, Mini App second."""
 
-__bot__ = "Metrix AI Bot"
+__bot__ = "Karim Metrix"

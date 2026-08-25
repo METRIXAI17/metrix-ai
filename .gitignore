@@ -25,6 +25,9 @@ backend/data/live_logs/
 backend/data/skill_memory/
 backend/data/assist_sessions/
 backend/data/robotics_sessions/
+backend/data/resonance/
+backend/data/bot_sessions/
+backend/data/miniapp/hits.json
 docs/_probe*
 docs/screenshot_*.png
 client-package-latest.html

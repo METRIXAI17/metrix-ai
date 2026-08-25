@@ -103,6 +103,21 @@ class InvoiceBody(BaseModel):
     lang: str = "ru"
 
 
+class DemoBody(BaseModel):
+    brief: str = Field(default="", min_length=0)
+    hint: str = ""
+    strategy: str = ""
+    niche: str = ""
+    lang: str = "ru"
+
+
+class ResonateBody(BaseModel):
+    artifact_id: str
+    verdict: str
+    note: str = ""
+    who: str = ""
+
+
 @router.get("/catalog")
 def catalog(lang: str = "ru") -> dict[str, Any]:
     payload = catalog_payload(lang)
@@ -119,6 +134,91 @@ def catalog(lang: str = "ru") -> dict[str, Any]:
 def hit(item_id: str) -> dict[str, Any]:
     safe = sanitize_text(item_id, max_len=64)
     return {"ok": True, "hits": bump_hit(safe)}
+
+
+@router.post("/demo")
+def demo(body: DemoBody) -> dict[str, Any]:
+    """Demo highway: situation → named artifact. Value miner starts here."""
+    from backend.core.demo_highway import build_demo, format_telegram
+
+    brief = sanitize_text(body.brief, max_len=12_000)
+    if len(brief) < 8:
+        raise HTTPException(400, "Напишите ситуацию чуть живее — хотя бы одно предложение.")
+    try:
+        art = build_demo(
+            brief,
+            hint=sanitize_text(body.hint, max_len=40),
+            strategy=sanitize_text(body.strategy, max_len=40) or None,
+            niche=sanitize_text(body.niche, max_len=40) or None,
+        )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    bump_hit("demo_highway")
+    if art.get("strategy_id"):
+        bump_hit(art["strategy_id"])
+    if art.get("niche_id"):
+        bump_hit("agent_studio")
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
+@router.post("/resonate")
+def resonate_route(body: ResonateBody) -> dict[str, Any]:
+    from backend.core.resonance import resonate as _resonate
+
+    out = _resonate(
+        sanitize_text(body.artifact_id, max_len=32),
+        sanitize_text(body.verdict, max_len=20),
+        note=sanitize_text(body.note, max_len=500),
+        who=sanitize_text(body.who, max_len=80),
+    )
+    return out
+
+
+@router.get("/strategies")
+def strategies() -> dict[str, Any]:
+    from backend.core.strategies import list_strategies
+
+    return {"ok": True, "items": list_strategies()}
+
+
+@router.post("/strategy")
+def strategy_run(body: DemoBody) -> dict[str, Any]:
+    from backend.core.demo_highway import format_telegram
+    from backend.core.strategies import run_strategy
+    from backend.core.resonance import remember
+
+    brief = sanitize_text(body.brief or body.strategy or "карта мест", max_len=8_000)
+    art = run_strategy(body.strategy or body.hint, brief)
+    remember(art)
+    bump_hit(art.get("strategy_id") or "target_place")
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
+@router.get("/niches")
+def niches() -> dict[str, Any]:
+    from backend.core.agent_studio import list_niches
+
+    return {"ok": True, "items": list_niches()}
+
+
+@router.post("/agent")
+def agent_run(body: DemoBody) -> dict[str, Any]:
+    from backend.core.agent_studio import build_agent
+    from backend.core.demo_highway import format_telegram
+    from backend.core.resonance import remember
+
+    brief = sanitize_text(body.brief, max_len=8_000)
+    art = build_agent(body.niche or body.hint, brief)
+    remember(art)
+    bump_hit("agent_studio")
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
+@router.get("/posts")
+def posts(limit: int = 14) -> dict[str, Any]:
+    from backend.core.x_posts import HANDLE, X_URL, list_posts
+
+    return {"ok": True, "handle": HANDLE, "url": X_URL, "items": list_posts(limit)}
 
 
 @router.post("/read")

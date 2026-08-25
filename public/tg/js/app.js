@@ -35,26 +35,15 @@
     return r.json();
   }
 
+  const VIEWS = ["home", "demo", "strategies", "agents", "posts"];
   const state = {
     view: (location.hash || "").replace("#", "") || "home",
     catalog: null,
     last: null,
+    niche: "",
+    strategy: "",
   };
-  if (
-    [
-      "home",
-      "request",
-      "flagships",
-      "promo",
-      "terminal",
-      "fn-creative",
-      "fn-logger",
-      "fn-mockup",
-      "scheme",
-    ].indexOf(state.view) < 0
-  ) {
-    state.view = "home";
-  }
+  if (VIEWS.indexOf(state.view) < 0) state.view = "home";
 
   const viewEl = document.getElementById("view");
 
@@ -86,34 +75,6 @@
     });
   });
 
-  function price(p) {
-    if (!p) return "";
-    if (p.rub === 0) return "бесплатно";
-    var s = "";
-    if (p.rub != null) s += p.rub + " ₽";
-    if (p.stars) s += (s ? " · " : "") + p.stars + " ★";
-    return s;
-  }
-
-  function fmtReadings(list) {
-    if (!list || !list.length) return "";
-    return list
-      .map(function (e) {
-        return (
-          '<article class="card card-flag reading"><span class="tag">' +
-          esc(e.label || e.id) +
-          "</span><h3>" +
-          esc(e.reading) +
-          "</h3><p class='muted'>" +
-          esc(e.deliverable) +
-          " · " +
-          Math.round((e.confidence || 0) * 100) +
-          "%</p></article>"
-        );
-      })
-      .join("");
-  }
-
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;")
@@ -121,270 +82,235 @@
       .replace(/>/g, "&gt;");
   }
 
-  var PAYMENTS = false; // старт без оплаты; Tribute/ЮKassa позже
-
-  function buyRow(sku, title) {
-    if (!PAYMENTS) {
-      return '<p class="sku-buy">Бесплатно на старте</p>';
-    }
+  function artHtml(a) {
+    if (!a) return "";
+    var steps = (a.steps || [])
+      .map(function (s, i) {
+        return "<li>" + esc(s) + "</li>";
+      })
+      .join("");
+    var anti = (a.anti || [])
+      .map(function (s) {
+        return "<li>" + esc(s) + "</li>";
+      })
+      .join("");
+    var m = a.meta || {};
+    var meta = "";
+    if (m.entry) meta += '<p><span class="k">Вход</span> ' + esc(m.entry) + "</p>";
+    if (m.exit) meta += '<p><span class="k">Выход</span> ' + esc(m.exit) + "</p>";
+    if (m.invalidation) meta += '<p><span class="k">Смерть тезиса</span> ' + esc(m.invalidation) + "</p>";
+    if (m.window) meta += '<p><span class="k">Окно</span> ' + esc(m.window) + "</p>";
+    if (m.why_builder) meta += "<p>" + esc(m.why_builder) + "</p>";
     return (
-      '<div class="row sku-buy">' +
-      '<button type="button" class="btn btn-primary" data-buy="' +
-      esc(sku) +
-      '" data-pay="yookassa">Карта РФ</button>' +
-      '<button type="button" class="btn" data-buy="' +
-      esc(sku) +
-      '" data-pay="stars">Stars</button>' +
-      "</div>"
+      '<article class="artifact" data-aid="' +
+      esc(a.id || "") +
+      '">' +
+      '<span class="tag">' +
+      esc((a.lane || "demo") + (a.strategy_id ? " · " + a.strategy_id : a.niche_id ? " · " + a.niche_id : "")) +
+      "</span>" +
+      "<h2>" +
+      esc(a.title) +
+      "</h2>" +
+      '<p class="lead">' +
+      esc(a.one_liner) +
+      "</p>" +
+      "<h3>Где ломается</h3><p>" +
+      esc(a.break) +
+      "</p>" +
+      "<h3>Нестандартный ход</h3><p>" +
+      esc(a.move) +
+      "</p>" +
+      "<h3>Как садится</h3><ol class='tickets'>" +
+      steps +
+      "</ol>" +
+      "<h3>Артефакт на неделю</h3><p>" +
+      esc(a.artifact_week) +
+      "</p>" +
+      meta +
+      (anti ? "<h3>Не делать</h3><ul class='tickets'>" + anti + "</ul>" : "") +
+      '<p class="muted disc">' +
+      esc(a.disclaimer || "") +
+      "</p>" +
+      '<div class="resonate">' +
+      '<button class="btn btn-primary" data-rs="hit">Зашло</button>' +
+      '<button class="btn" data-rs="almost">Почти</button>' +
+      '<button class="btn" data-rs="miss">Мимо</button>' +
+      "</div>" +
+      '<div class="rs-out"></div>' +
+      "</article>"
     );
   }
-
-  async function buy(sku, pay) {
-    const out = await post("/api/v1/miniapp/invoice", { sku: sku, pay_in: pay });
-    if (out.invoice_url && tg && tg.openInvoice) {
-      tg.openInvoice(out.invoice_url, function () {});
-      return;
-    }
-    alert(
-      (out.hint || out.error || "Счёт не выставлен") +
-        "\nSKU " +
-        sku +
-        (out.price ? " · " + JSON.stringify(out.price) : "")
-    );
-  }
-
-  viewEl.addEventListener("click", function (ev) {
-    var t = ev.target;
-    if (!t || !t.closest) return;
-    var buyBtn = t.closest("[data-buy]");
-    if (buyBtn) {
-      buy(buyBtn.getAttribute("data-buy"), buyBtn.getAttribute("data-pay") || "yookassa");
-      return;
-    }
-    var goEl = t.closest("[data-go]");
-    if (goEl) go(goEl.getAttribute("data-go"));
-  });
-
-  var HIT_NAMES = {
-    request_work: "Работа по запросу",
-    creative_assistant: "Творческий ассистент",
-    promo_cards: "Промо · карточки",
-    solution_logger: "Solution logger",
-    digital_mockup: "Цифровой макет",
-    flagship_metric: "Metric engine",
-    terminal_mine: "Терминал ордеров",
-    promo_reels: "Промо · ролики",
-    promo_prompts: "Промо · промпты",
-  };
 
   function home(c) {
-    var accents = ["#5eead4", "#38bdf8", "#c4b5fd"];
-    var fns = (c.functions || [])
-      .map(function (f, i) {
-        var view =
-          f.id === "creative_assistant"
-            ? "fn-creative"
-            : f.id === "solution_logger"
-            ? "fn-logger"
-            : "fn-mockup";
-        return (
-          '<article class="card card-flag" style="--flag-accent:' +
-          accents[i % 3] +
-          '" data-go="' +
-          view +
-          '"><span class="tag">функция</span><h3>' +
-          esc(f.title) +
-          "</h3><p>" +
-          esc(f.blurb) +
-          "</p><p class='price'>хиты " +
-          (f.hits || 0) +
-          "</p></article>"
-        );
-      })
-      .join("");
-    var hits = (c.hits || [])
-      .map(function (h) {
-        return (
-          '<div class="card hit"><b>' +
-          esc(HIT_NAMES[h.id] || h.id) +
-          "</b><span class='price'>" +
-          h.hits +
-          "</span></div>"
-        );
-      })
-      .join("");
-    return (
-      '<section class="hero">' +
-      '<div class="hero-badge">Instant ideas · без оплаты</div>' +
-      "<h1>Одно окно для <em>workflows</em> и оригинальных проектов.</h1>" +
-      "<p class='lead'>Читалка задания держит несколько концов считывания и сама выбирает режим. Идеи сразу. Внедрение — когда утвердите.</p>" +
-      '<div class="hero-actions">' +
-      '<button class="btn btn-primary" data-go="request">Работа по запросу</button>' +
-      '<button class="btn btn-ghost" data-go="flagships">Флагманские карточки</button>' +
-      "</div></section>" +
-      '<div class="eyebrow section-label">Функции</div><div class="grid">' +
-      fns +
-      "</div>" +
-      '<div class="eyebrow section-label">Хиты</div>' +
-      '<div class="grid">' +
-      hits +
-      "</div>"
-    );
-  }
-
-  function requestView() {
-    return (
-      '<div class="eyebrow">Работа по запросу</div>' +
-      "<h1>Сложный запрос → <em>несколько считываний</em></h1>" +
-      "<p class='lead'>Не один «правильный» ответ. Читалка держит варианты и умолчания, режим выбирается сборкой.</p>" +
-      '<label>Бриф (своими словами)</label>' +
-      '<textarea id="q-brief" placeholder="Опишите задачу, бизнес, что скрыто или неясно…"></textarea>' +
-      '<div class="row"><button class="btn btn-primary" id="q-run">Собрать запрос</button></div>' +
-      '<div id="q-out"></div>'
-    );
-  }
-
-  function flagships(c) {
-    var cards = (c.flagships || [])
+    var flags = (c.flagships || [])
       .map(function (f) {
         return (
           '<article class="card card-flag" style="--flag-accent:' +
           esc(f.accent || "#5eead4") +
+          '" data-go="' +
+          esc(f.cta || "demo") +
           '"><span class="tag">' +
           esc(f.sticker) +
           "</span><h3>" +
           esc(f.title) +
           "</h3><p>" +
           esc(f.essence_ru) +
-          "</p><p class='price'>" +
-          price(f.price) +
-          "</p>" +
-          buyRow(f.sku, f.title) +
-          "</article>"
+          "</p></article>"
         );
       })
       .join("");
     return (
-      '<div class="eyebrow">Флагманы</div><h1>Карточки <em>как на сайте</em></h1>' +
-      '<p class="lead">Именные слои Metrix — не свалка каталога.</p>' +
+      '<section class="hero">' +
+      '<div class="hero-badge">Карим · не сигналы</div>' +
+      "<h1>Демо. Если артефакт <em>зашёл</em> — это товар.</h1>" +
+      "<p class='lead'>Торговал. Собрал нишу: уникальные финансовые модели, которые садятся в чужой проект. " +
+      "Посты на X иногда залетают. Фрилансю, когда есть окно. Когда нет — залипаю.</p>" +
+      '<div class="hero-actions">' +
+      '<button class="btn btn-primary" data-go="demo">Собрать демо</button>' +
+      '<button class="btn btn-ghost" data-go="strategies">Стратегии</button>' +
+      '<button class="btn btn-ghost" data-go="agents">Агенты</button>' +
+      "</div></section>" +
+      '<div class="eyebrow section-label">Двери</div><div class="grid grid-cards">' +
+      flags +
+      "</div>" +
+      '<p class="muted foot-note">Билдер на столе для SaaS 50–500, агентств, школ и e-com с высоким чеком. ' +
+      "Агент держит финмодель, не болтает.</p>"
+    );
+  }
+
+  function demoView() {
+    return (
+      '<div class="eyebrow">Магистраль</div>' +
+      "<h1>Ситуация → <em>артефакт</em></h1>" +
+      "<p class='lead'>Своими словами. Можно криво. Один выход, не отчёт. Если зайдёт — пилот сажает именно это.</p>" +
+      '<label>Что у вас за задача</label>' +
+      '<textarea id="q-brief" placeholder="SaaS 80 человек, фичи пилим, никто не знает, что считается победой. Или: золото, вхожу когда уже ушло…"></textarea>' +
+      '<div class="row"><button class="btn btn-primary" id="q-run">Собрать</button></div>' +
+      '<div id="q-out"></div>'
+    );
+  }
+
+  function strategiesView(c) {
+    var cards = (c.strategies || [])
+      .map(function (s) {
+        var img = s.image
+          ? '<img class="card-photo" src="' + esc(s.image) + '" alt="' + esc(s.name) + '" />'
+          : "";
+        return (
+          '<article class="card card-flag" style="--flag-accent:' +
+          esc(s.accent) +
+          '" data-st="' +
+          esc(s.id) +
+          '">' +
+          img +
+          '<span class="tag">' +
+          esc(s.market) +
+          "</span><h3>" +
+          esc(s.name) +
+          "</h3><p>" +
+          esc(s.one_liner) +
+          "</p><p class='muted'>" +
+          esc(s.for_whom) +
+          "</p></article>"
+        );
+      })
+      .join("");
+    return (
+      '<div class="eyebrow">Три модели</div>' +
+      "<h1>Места. Окно. <em>Амплитуда.</em></h1>" +
+      "<p class='lead'>Не стрелочки на сегодня. Модели, которые можно посадить в свой журнал.</p>" +
       '<div class="grid grid-cards">' +
       cards +
-      "</div>"
+      "</div>" +
+      '<label>Если хотите — одна фраза про ваш стиль входа</label>' +
+      '<textarea id="st-brief" placeholder="золото, ловлю догон… / местный листинг на этой неделе… / Америка, угадываю сторону…"></textarea>' +
+      '<div id="st-out"></div>'
     );
   }
 
-  function promoView() {
+  function agentsView(c) {
+    var cards = (c.niches || [])
+      .map(function (n) {
+        return (
+          '<article class="card card-flag" style="--flag-accent:' +
+          esc(n.accent) +
+          '" data-ag="' +
+          esc(n.id) +
+          '"><span class="tag">' +
+          esc(n.size) +
+          "</span><h3>" +
+          esc(n.title) +
+          "</h3><p>" +
+          esc(n.pain) +
+          "</p></article>"
+        );
+      })
+      .join("");
     return (
-      '<div class="eyebrow">Промо</div>' +
-      "<h1>Массовый бизнес-билдер</h1>" +
-      "<p class='muted'>Облегчённая версия: карточки описаний, идеи роликов, промпты для консалтинга.</p>" +
-      '<textarea id="p-brief" placeholder="Оффер / продукт / ниша…"></textarea>' +
-      '<div class="row">' +
-      '<button class="btn btn-primary" data-pk="cards">Карточки</button>' +
-      '<button class="btn" data-pk="reels">Ролики</button>' +
-      '<button class="btn" data-pk="prompts">Промпты</button>' +
-      "</div><div id='p-out'></div>" +
-      buyRow("promo_pack", "Промо-пак")
-    );
-  }
-
-  function terminalView() {
-    return (
-      '<div class="eyebrow">Терминал</div>' +
-      "<h1>Путь к ордерам / майнинг</h1>" +
-      "<p class='muted'>Не брокер. Неформальные цепочки решений → ожидающие ордера Metrix. Ликвидность = внимание + оплачиваемый SKU.</p>" +
-      '<textarea id="t-brief" placeholder="Тезис, след, журнал, что должно стать ордером…"></textarea>' +
-      '<button class="btn btn-primary" id="t-run">Майнить ордера</button>' +
-      '<div id="t-out"></div>'
-    );
-  }
-
-  function fnCreative() {
-    return (
-      '<div class="eyebrow">Функция</div><h1>Творческий ассистент</h1>' +
-      '<textarea id="c-brief" placeholder="Задача / ограничение / материал…"></textarea>' +
-      '<button class="btn btn-primary" id="c-run">Собрать идеи</button><div id="c-out"></div>' +
-      buyRow("fn_creative", "Creative")
-    );
-  }
-
-  function fnLogger() {
-    return (
-      '<div class="eyebrow">Функция</div><h1>Solution logger</h1>' +
-      "<p class='muted'>Полезный анализ своего трейдинга. Не сигналы.</p>" +
-      '<label>Тезис входа</label><textarea id="l-thesis" placeholder="Почему вход, где инвалидация, горизонт…"></textarea>' +
-      '<div class="row"><input id="l-market" placeholder="рынок" /><input id="l-side" placeholder="long/short" /><input id="l-result" placeholder="win/loss" /></div>' +
-      '<button class="btn btn-primary" id="l-run">Разобрать</button><div id="l-out"></div>' +
-      buyRow("fn_logger", "Logger")
-    );
-  }
-
-  function fnMockup() {
-    return (
-      '<div class="eyebrow">Функция</div><h1>Цифровой макет</h1>' +
-      "<p class='muted'>Подобие индивидуала: темп, оффер, слоты — быстрый разворот соло-работы.</p>" +
-      '<textarea id="m-port" placeholder="Кто вы, как работаете, что продаёте…"></textarea>' +
-      '<input id="m-offer" placeholder="оффер (необязательно)" />' +
-      '<button class="btn btn-primary" id="m-run">Собрать макет</button><div id="m-out"></div>' +
-      buyRow("fn_mockup", "Mockup")
-    );
-  }
-
-  function schemeView(s) {
-    if (!s) return "<p>Загрузка схемы…</p>";
-    var u = s.unit_90d_conservative || {};
-    var rails = (s.rails && s.rails.rf_cards) || {};
-    return (
-      '<div class="eyebrow">Монетизация</div><h1>Карточки · запрос · earning</h1>' +
-      '<article class="card"><h3>90 дней, нижняя планка</h3>' +
-      "<p>MAU " +
-      u.mau +
-      " · платящих " +
-      u.payers +
-      "</p>" +
-      "<p class='price'>GMV " +
-      u.gmv_rub +
-      " ₽ · net ЮKassa " +
-      u.net_yookassa_rub +
-      " ₽</p>" +
-      "<p class='muted'>" +
-      esc(u.note) +
-      "</p></article>" +
-      '<article class="card"><h3>Карты РФ → Telegram</h3><p>' +
-      esc(rails.how) +
-      "</p><p class='muted'>" +
-      esc(rails.not) +
-      "</p></article>" +
-      '<article class="card"><h3>Market making (формально)</h3><p>' +
-      esc((s.market_making || {}).formal) +
-      "</p></article>"
+      '<div class="eyebrow">Билдер агентов</div>' +
+      "<h1>Агент с <em>финмоделью</em></h1>" +
+      "<p class='lead'>Не чат, который отвечает на всё. Агент знает, что считать деньгами, когда молчать, какой артефакт отдать человеку.</p>" +
+      '<div class="grid">' +
+      cards +
+      "</div>" +
+      '<label>Кто вы и что бесит</label>' +
+      '<textarea id="ag-brief" placeholder="агентство 12 человек, онбординг съедает маржу…"></textarea>' +
+      '<div id="ag-out"></div>'
     );
   }
 
   async function render() {
     if (!state.catalog) {
-      viewEl.innerHTML = "<p class='muted'>Загрузка каталога…</p>";
+      viewEl.innerHTML = "<p class='muted'>Загрузка…</p>";
       try {
         state.catalog = await get("/api/v1/miniapp/catalog?lang=ru");
       } catch (e) {
-        viewEl.innerHTML = "<p>Нет связи с API. Запустите backend на :8787.</p>";
+        viewEl.innerHTML = "<p>Нет связи с API. Локально поднимите backend на :8787.</p>";
         return;
       }
     }
     var c = state.catalog;
     var html = "";
     if (state.view === "home") html = home(c);
-    else if (state.view === "request") html = requestView();
-    else if (state.view === "flagships") html = flagships(c);
-    else if (state.view === "promo") html = promoView();
-    else if (state.view === "terminal") html = terminalView();
-    else if (state.view === "fn-creative") html = fnCreative();
-    else if (state.view === "fn-logger") html = fnLogger();
-    else if (state.view === "fn-mockup") html = fnMockup();
-    else if (state.view === "scheme") html = schemeView(c.scheme);
+    else if (state.view === "demo") html = demoView();
+    else if (state.view === "strategies") html = strategiesView(c);
+    else if (state.view === "agents") html = agentsView(c);
     else html = home(c);
     viewEl.innerHTML = html;
     bind();
+  }
+
+  function bindResonate(root) {
+    if (!root) return;
+    root.querySelectorAll("[data-rs]").forEach(function (b) {
+      b.onclick = async function () {
+        var artEl = root.querySelector(".artifact");
+        var aid = artEl && artEl.getAttribute("data-aid");
+        var outEl = root.querySelector(".rs-out");
+        if (!aid) return;
+        var out = await post("/api/v1/miniapp/resonate", {
+          artifact_id: aid,
+          verdict: b.getAttribute("data-rs"),
+        });
+        var p = out.paid_path || {};
+        var msg =
+          out.verdict === "hit"
+            ? "Зашло. Это и есть товар. Пилот сажает именно этот артефакт в ваш контур."
+            : out.verdict === "almost"
+            ? "Почти. Допишите в поле выше, чего не хватает — соберу вторую версию."
+            : "Мимо. Нормально. Возьмите другую дверь.";
+        if (outEl) {
+          outEl.innerHTML =
+            '<article class="card"><h3>' +
+            esc(p.title || "") +
+            "</h3><p>" +
+            esc(msg) +
+            "</p><p class='muted'>" +
+            esc(p.why || "") +
+            "</p></article>";
+        }
+      };
+    });
   }
 
   function bind() {
@@ -392,119 +318,45 @@
     if (run) {
       run.onclick = async function () {
         var brief = document.getElementById("q-brief").value;
-        document.getElementById("q-out").innerHTML = "<p class='status'>Сборка…</p>";
-        var out = await post("/api/v1/miniapp/request", { brief: brief, lang: "ru" });
-        var mode = (out.mode || {}).surface_mode || "—";
-        var readings = fmtReadings(out.end_readings);
-        var idea =
-          (((out.process || {}).demo_idea) || {}).title ||
-          (out.assembly && out.assembly.summary) ||
-          "";
-        document.getElementById("q-out").innerHTML =
-          '<article class="card card-flag"><span class="tag">режим ' +
-          esc(mode) +
-          "</span><h3>Сборка</h3><p class='muted'>" +
-          esc((out.assembly || {}).summary || "") +
-          "</p></article>" +
-          readings +
-          (idea ? "<p class='muted'>Демо: " + esc(idea) + "</p>" : "") +
-          buyRow("request_deep", "Deep request");
+        var box = document.getElementById("q-out");
+        box.innerHTML = "<p class='status'>Собираю…</p>";
+        try {
+          var out = await post("/api/v1/miniapp/demo", { brief: brief, lang: "ru" });
+          if (!out.ok) {
+            box.innerHTML = "<p class='muted'>" + esc(out.detail || out.error || "Не собралось") + "</p>";
+            return;
+          }
+          state.last = out.artifact;
+          box.innerHTML = artHtml(out.artifact);
+          bindResonate(box);
+        } catch (e) {
+          box.innerHTML = "<p>Сеть. Попробуйте ещё раз.</p>";
+        }
       };
     }
-    document.querySelectorAll("[data-pk]").forEach(function (b) {
-      b.onclick = async function () {
-        var kind = b.getAttribute("data-pk");
-        var brief = (document.getElementById("p-brief") || {}).value || "оффер";
-        var out = await post("/api/v1/miniapp/promo", { brief: brief, kind: kind, lang: "ru" });
-        document.getElementById("p-out").innerHTML =
-          '<pre class="pre">' + esc(JSON.stringify(out.items || out, null, 2)) + "</pre>";
+    document.querySelectorAll("[data-st]").forEach(function (card) {
+      card.onclick = async function () {
+        var id = card.getAttribute("data-st");
+        var extra = (document.getElementById("st-brief") || {}).value || id;
+        var box = document.getElementById("st-out");
+        box.innerHTML = "<p class='status'>Собираю карту…</p>";
+        var out = await post("/api/v1/miniapp/strategy", { brief: extra, strategy: id });
+        box.innerHTML = artHtml(out.artifact);
+        bindResonate(box);
       };
     });
-    var tr = document.getElementById("t-run");
-    if (tr) {
-      tr.onclick = async function () {
-        var brief = document.getElementById("t-brief").value;
-        var out = await post("/api/v1/miniapp/terminal", { brief: brief, lang: "ru" });
-        var tickets = (out.tickets || [])
-          .map(function (t) {
-            return "<li><b>" + esc(t.status) + "</b> — " + esc(t.title) + ". " + esc(t.why) + "</li>";
-          })
-          .join("");
-        var chain = (out.chain || [])
-          .map(function (s) {
-            return "<li>" + esc(s.move) + "</li>";
-          })
-          .join("");
-        document.getElementById("t-out").innerHTML =
-          '<article class="card"><h3>Цепочка (не формальная)</h3><ol class="tickets">' +
-          chain +
-          "</ol></article>" +
-          '<article class="card"><h3>Ордера</h3><ul class="tickets">' +
-          tickets +
-          "</ul><p class='muted'>" +
-          esc((out.viability || {}).verdict || "") +
-          "</p></article>" +
-          buyRow("terminal_mine", "Mine");
+    document.querySelectorAll("[data-ag]").forEach(function (card) {
+      card.onclick = async function () {
+        var id = card.getAttribute("data-ag");
+        var extra = (document.getElementById("ag-brief") || {}).value || "";
+        if (extra.length < 8) extra = "Собрать агента для ниши " + id;
+        var box = document.getElementById("ag-out");
+        box.innerHTML = "<p class='status'>Собираю спеку…</p>";
+        var out = await post("/api/v1/miniapp/agent", { brief: extra, niche: id });
+        box.innerHTML = artHtml(out.artifact);
+        bindResonate(box);
       };
-    }
-    var cr = document.getElementById("c-run");
-    if (cr) {
-      cr.onclick = async function () {
-        var out = await post("/api/v1/miniapp/creative", {
-          brief: document.getElementById("c-brief").value,
-          lang: "ru",
-        });
-        document.getElementById("c-out").innerHTML =
-          '<pre class="pre">' +
-          esc((out.ideas || []).map(function (i) { return i.line; }).join("\n")) +
-          "\n\n" +
-          esc((out.prompts || []).join("\n")) +
-          "</pre>";
-      };
-    }
-    var lr = document.getElementById("l-run");
-    if (lr) {
-      lr.onclick = async function () {
-        var out = await post("/api/v1/miniapp/logger", {
-          thesis: document.getElementById("l-thesis").value,
-          market: document.getElementById("l-market").value,
-          side: document.getElementById("l-side").value,
-          result: document.getElementById("l-result").value,
-          lang: "ru",
-        });
-        document.getElementById("l-out").innerHTML =
-          '<article class="card"><h3>Полезность ' +
-          ((out.stats || {}).usefulness || 0) +
-          "</h3><p>" +
-          esc((out.error_families || []).join(", ")) +
-          "</p><p class='muted'>" +
-          esc(((out.path_to_orders || {}).note) || "") +
-          "</p></article>";
-      };
-    }
-    var mr = document.getElementById("m-run");
-    if (mr) {
-      mr.onclick = async function () {
-        var out = await post("/api/v1/miniapp/mockup", {
-          portrait: document.getElementById("m-port").value,
-          offer: document.getElementById("m-offer").value,
-          lang: "ru",
-        });
-        var L = out.likeness || {};
-        document.getElementById("m-out").innerHTML =
-          '<article class="card"><h3>' +
-          esc(L.working_name) +
-          "</h3><p>темп " +
-          esc(L.tempo) +
-          " · канал " +
-          esc(L.channel) +
-          " · оффер " +
-          esc(L.offer_shape) +
-          "</p><ol>" +
-          (out.unfold_24h || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") +
-          "</ol></article>";
-      };
-    }
+    });
   }
 
   render();

@@ -87,10 +87,12 @@ def test_functions_and_terminal():
 def test_catalog_and_scheme():
     cat = catalog_payload("ru")
     titles = [f["title"] for f in cat["flagships"]]
-    assert any("Работа по запросу" in (t or "") or f.get("section") == "работа по запросу" for f, t in zip(cat["flagships"], titles))
+    assert any("Демо" in (t or "") for t in titles)
+    assert any("Target Place" in (t or "") for t in titles)
     assert len(cat["functions"]) == 3
-    assert cat["nav"][1]["title"] == "Работа по запросу"
-    assert cat["nav"][2]["title"] == "Флагманские карточки"
+    assert cat["nav"][1]["title"] == "Демо"
+    assert cat["nav"][2]["title"] == "Стратегии"
+    assert cat["nav"][3]["title"] == "Агенты"
     sch = scheme_payload()
     assert sch["rails"]["rf_cards"]["possible"] is True
     assert sch["unit_90d_conservative"]["gmv_rub"] > 0

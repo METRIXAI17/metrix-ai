@@ -198,6 +198,14 @@ h3 { font-size: 1.05rem; letter-spacing: -0.02em; }
   background: var(--flag-accent);
   border-radius: var(--radius) 0 0 var(--radius);
 }
+.card-photo {
+  width: calc(100% + 2.1rem);
+  margin: -1rem -1.05rem 0.7rem;
+  height: 112px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid var(--border);
+}
 .card-flag h3 { padding-left: 0.15rem; }
 .card-flag p { color: var(--text-muted); font-size: 0.86rem; flex: 1; }
 .card:hover, .card-flag:hover {
@@ -286,12 +294,63 @@ textarea:focus, input:focus {
 .tickets li { margin: 0.35rem 0; }
 
 /* —— Tab bar —— */
+.nav-x {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+.nav-x:hover { color: var(--accent); }
+
+.artifact {
+  margin-top: 1rem;
+  padding: 1.05rem 1.1rem 1.2rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-strong);
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(94, 234, 212, 0.12), transparent 55%),
+    linear-gradient(180deg, #111822, #0c1219);
+}
+.artifact h2 {
+  font-size: 1.22rem;
+  letter-spacing: -0.03em;
+  margin: 0.35rem 0 0.4rem;
+}
+.artifact h3 {
+  margin-top: 0.95rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+.artifact p { color: var(--text-muted); font-size: 0.92rem; }
+.artifact .k {
+  display: inline-block;
+  min-width: 7.5rem;
+  color: var(--accent-2);
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-right: 0.35rem;
+}
+.resonate {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1.1rem;
+}
+.disc { font-size: 0.78rem !important; margin-top: 0.8rem; }
+.foot-note { margin-top: 1.4rem; font-size: 0.82rem; max-width: 46ch; }
+.rs-out { margin-top: 0.75rem; }
+
 .tabbar {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 2px;
   padding: 0.4rem 0.35rem calc(0.45rem + var(--safe-b));
   background: rgba(7, 10, 15, 0.94);
