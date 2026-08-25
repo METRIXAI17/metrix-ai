@@ -63,16 +63,32 @@
     if (h !== state.view) go(h);
   });
 
-  document.querySelectorAll(".tabbar button").forEach(function (b) {
-    b.addEventListener("click", function () {
-      go(b.getAttribute("data-go"));
-    });
-  });
-  document.querySelectorAll(".logo[data-go]").forEach(function (b) {
-    b.addEventListener("click", function (ev) {
+  document.addEventListener("click", function (ev) {
+    var t = ev.target;
+    if (!t || !t.closest) return;
+    var goEl = t.closest("[data-go]");
+    if (goEl) {
       ev.preventDefault();
-      go(b.getAttribute("data-go"));
-    });
+      var name = goEl.getAttribute("data-go");
+      if (name) go(name);
+      return;
+    }
+    var st = t.closest("[data-st]");
+    if (st) {
+      ev.preventDefault();
+      runStrategy(st.getAttribute("data-st"));
+      return;
+    }
+    var ag = t.closest("[data-ag]");
+    if (ag) {
+      ev.preventDefault();
+      runAgent(ag.getAttribute("data-ag"));
+      return;
+    }
+    if (t.closest("#q-run")) {
+      ev.preventDefault();
+      runDemo();
+    }
   });
 
   function esc(s) {
@@ -166,9 +182,9 @@
       "<p class='lead'>Торговал. Собрал нишу: уникальные финансовые модели, которые садятся в чужой проект. " +
       "Посты на X иногда залетают. Фрилансю, когда есть окно. Когда нет — залипаю.</p>" +
       '<div class="hero-actions">' +
-      '<button class="btn btn-primary" data-go="demo">Собрать демо</button>' +
-      '<button class="btn btn-ghost" data-go="strategies">Стратегии</button>' +
-      '<button class="btn btn-ghost" data-go="agents">Агенты</button>' +
+      '<button type="button" class="btn btn-primary" data-go="demo">Собрать демо</button>' +
+      '<button type="button" class="btn btn-ghost" data-go="strategies">Стратегии</button>' +
+      '<button type="button" class="btn btn-ghost" data-go="agents">Агенты</button>' +
       "</div></section>" +
       '<div class="eyebrow section-label">Двери</div><div class="grid grid-cards">' +
       flags +
@@ -185,7 +201,7 @@
       "<p class='lead'>Своими словами. Можно криво. Один выход, не отчёт. Если зайдёт — пилот сажает именно это.</p>" +
       '<label>Что у вас за задача</label>' +
       '<textarea id="q-brief" placeholder="SaaS 80 человек, фичи пилим, никто не знает, что считается победой. Или: золото, вхожу когда уже ушло…"></textarea>' +
-      '<div class="row"><button class="btn btn-primary" id="q-run">Собрать</button></div>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="q-run">Собрать</button></div>' +
       '<div id="q-out"></div>'
     );
   }
@@ -313,50 +329,49 @@
     });
   }
 
-  function bind() {
-    var run = document.getElementById("q-run");
-    if (run) {
-      run.onclick = async function () {
-        var brief = document.getElementById("q-brief").value;
-        var box = document.getElementById("q-out");
-        box.innerHTML = "<p class='status'>Собираю…</p>";
-        try {
-          var out = await post("/api/v1/miniapp/demo", { brief: brief, lang: "ru" });
-          if (!out.ok) {
-            box.innerHTML = "<p class='muted'>" + esc(out.detail || out.error || "Не собралось") + "</p>";
-            return;
-          }
-          state.last = out.artifact;
-          box.innerHTML = artHtml(out.artifact);
-          bindResonate(box);
-        } catch (e) {
-          box.innerHTML = "<p>Сеть. Попробуйте ещё раз.</p>";
-        }
-      };
+  async function runDemo() {
+    var briefEl = document.getElementById("q-brief");
+    var box = document.getElementById("q-out");
+    if (!box) return;
+    var brief = briefEl ? briefEl.value : "";
+    box.innerHTML = "<p class='status'>Собираю…</p>";
+    try {
+      var out = await post("/api/v1/miniapp/demo", { brief: brief, lang: "ru" });
+      if (!out.ok) {
+        box.innerHTML = "<p class='muted'>" + esc(out.detail || out.error || "Не собралось") + "</p>";
+        return;
+      }
+      state.last = out.artifact;
+      box.innerHTML = artHtml(out.artifact);
+      bindResonate(box);
+    } catch (e) {
+      box.innerHTML = "<p>Сеть. Попробуйте ещё раз.</p>";
     }
-    document.querySelectorAll("[data-st]").forEach(function (card) {
-      card.onclick = async function () {
-        var id = card.getAttribute("data-st");
-        var extra = (document.getElementById("st-brief") || {}).value || id;
-        var box = document.getElementById("st-out");
-        box.innerHTML = "<p class='status'>Собираю карту…</p>";
-        var out = await post("/api/v1/miniapp/strategy", { brief: extra, strategy: id });
-        box.innerHTML = artHtml(out.artifact);
-        bindResonate(box);
-      };
-    });
-    document.querySelectorAll("[data-ag]").forEach(function (card) {
-      card.onclick = async function () {
-        var id = card.getAttribute("data-ag");
-        var extra = (document.getElementById("ag-brief") || {}).value || "";
-        if (extra.length < 8) extra = "Собрать агента для ниши " + id;
-        var box = document.getElementById("ag-out");
-        box.innerHTML = "<p class='status'>Собираю спеку…</p>";
-        var out = await post("/api/v1/miniapp/agent", { brief: extra, niche: id });
-        box.innerHTML = artHtml(out.artifact);
-        bindResonate(box);
-      };
-    });
+  }
+
+  async function runStrategy(id) {
+    var extra = (document.getElementById("st-brief") || {}).value || id;
+    var box = document.getElementById("st-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Собираю карту…</p>";
+    var out = await post("/api/v1/miniapp/strategy", { brief: extra, strategy: id });
+    box.innerHTML = artHtml(out.artifact);
+    bindResonate(box);
+  }
+
+  async function runAgent(id) {
+    var extra = (document.getElementById("ag-brief") || {}).value || "";
+    if (extra.length < 8) extra = "Собрать агента для ниши " + id;
+    var box = document.getElementById("ag-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Собираю спеку…</p>";
+    var out = await post("/api/v1/miniapp/agent", { brief: extra, niche: id });
+    box.innerHTML = artHtml(out.artifact);
+    bindResonate(box);
+  }
+
+  function bind() {
+    bindResonate(viewEl);
   }
 
   render();

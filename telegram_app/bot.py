@@ -32,6 +32,7 @@ from backend.core.x_posts import list_posts
 from backend.core.voice import IDLE_HINT
 from telegram_app import sessions
 from telegram_app import texts
+from telegram_app.menu import menu_action
 
 HERE = Path(__file__).resolve().parent
 AVATAR = HERE / "avatar.jpg"
@@ -74,7 +75,7 @@ def main_keyboard() -> dict:
             [{"text": texts.MENU_AGENTS}, {"text": texts.MENU_POSTS}],
         ],
         "resize_keyboard": True,
-        "is_persistent": True,
+        "one_time_keyboard": False,
     }
 
 
@@ -82,15 +83,27 @@ def webapp_row(webapp: str) -> list[dict]:
     return [{"text": "Открыть билдер", "web_app": {"url": webapp}}]
 
 
+def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
+    """Primary nav — inline callbacks. Reply keyboard is a fallback; Telegram often hides it."""
+    rows = [
+        [
+            {"text": "Демо", "callback_data": "m:demo"},
+            {"text": "Стратегии", "callback_data": "m:strat"},
+        ],
+        [
+            {"text": "Агенты", "callback_data": "m:agents"},
+            {"text": "Посты", "callback_data": "m:posts"},
+        ],
+        webapp_row(webapp),
+        [{"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"}],
+    ]
+    if extra:
+        rows = extra + rows
+    return {"inline_keyboard": rows}
+
+
 def start_inline(webapp: str) -> dict:
-    return {
-        "inline_keyboard": [
-            webapp_row(webapp),
-            [
-                {"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"},
-            ],
-        ]
-    }
+    return nav_inline(webapp)
 
 
 def resonance_kb(artifact_id: str) -> dict:
@@ -155,7 +168,7 @@ class BotAPI:
         *,
         markup: dict | None = None,
         html: bool = True,
-    ) -> None:
+    ) -> dict:
         payload: dict = {
             "chat_id": chat_id,
             "text": text,
@@ -165,7 +178,11 @@ class BotAPI:
             payload["parse_mode"] = "HTML"
         if markup:
             payload["reply_markup"] = markup
-        self.call("sendMessage", **payload)
+        data = self.call("sendMessage", **payload)
+        if not data.get("ok") and html:
+            payload.pop("parse_mode", None)
+            data = self.call("sendMessage", **payload)
+        return data
 
     def send_start(self, chat_id: int, webapp: str) -> None:
         photo = AVATAR if AVATAR.exists() else MARK
@@ -186,21 +203,26 @@ class BotAPI:
             except Exception:
                 data = {"ok": False}
             if data.get("ok"):
-                self.call(
-                    "sendMessage",
-                    chat_id=chat_id,
-                    text=IDLE_HINT,
-                    reply_markup=main_keyboard(),
+                self.send(
+                    chat_id,
+                    IDLE_HINT,
+                    markup=main_keyboard(),
+                    html=False,
                 )
-                self.call(
-                    "sendMessage",
-                    chat_id=chat_id,
-                    text="Билдер на столе — если удобнее пальцами по карточкам.",
-                    reply_markup=kb,
+                self.send(
+                    chat_id,
+                    "Демо · Стратегии · Агенты — кнопки под этим сообщением.",
+                    markup=kb,
+                    html=False,
                 )
                 return
         self.send(chat_id, texts.START, markup=main_keyboard())
-        self.send(chat_id, IDLE_HINT, markup=kb)
+        self.send(
+            chat_id,
+            "Демо · Стратегии · Агенты — кнопки под этим сообщением.",
+            markup=kb,
+            html=False,
+        )
 
 
 def bootstrap(api: BotAPI, webapp: str) -> None:
@@ -241,13 +263,86 @@ def _run_demo(api: BotAPI, chat_id: int, brief: str, **kw) -> None:
     _send_artifact(api, chat_id, art)
 
 
+def _esc(s: str) -> str:
+    return (
+        str(s or "")
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
+
+
+def show_strategies(api: BotAPI, chat_id: int, webapp: str) -> None:
+    lines = ["<b>Три модели. Не сигналы.</b>\n"]
+    for s in list_strategies():
+        lines.append(
+            f"<b>{_esc(s['name'])}</b> · {_esc(s['market'])}\n"
+            f"{_esc(s['one_liner'])}\n"
+            f"<i>{_esc(s['for_whom'])}</i>\n"
+        )
+    extra = strategies_kb()["inline_keyboard"]
+    api.send(chat_id, "\n".join(lines), markup=nav_inline(webapp, extra=extra))
+
+
+def show_agents(api: BotAPI, chat_id: int, webapp: str) -> None:
+    lines = ["<b>Билдер агентов.</b> Агент держит финмодель, не болтает.\n"]
+    for n in list_niches():
+        lines.append(f"<b>{_esc(n['title'])}</b>\n{_esc(n['pain'])}\n")
+    extra = niches_kb()["inline_keyboard"]
+    api.send(chat_id, "\n".join(lines), markup=nav_inline(webapp, extra=extra))
+
+
+def show_posts(api: BotAPI, chat_id: int, webapp: str) -> None:
+    extra = posts_kb()["inline_keyboard"]
+    api.send(chat_id, texts.POSTS_INTRO, markup=nav_inline(webapp, extra=extra))
+
+
+def show_demo_prompt(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_demo")
+    api.send(chat_id, texts.ASK_DEMO, markup=nav_inline(webapp), html=False)
+
+
+def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
+    if action == "start":
+        sessions.set_mode(chat_id, "idle")
+        api.send_start(chat_id, webapp)
+        return
+    if action == "help":
+        api.send(chat_id, texts.HELP, markup=nav_inline(webapp), html=False)
+        return
+    if action == "demo":
+        show_demo_prompt(api, chat_id, webapp)
+        return
+    if action == "strategies":
+        show_strategies(api, chat_id, webapp)
+        return
+    if action == "agents":
+        show_agents(api, chat_id, webapp)
+        return
+    if action == "posts":
+        show_posts(api, chat_id, webapp)
+        return
+
+
 def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
     cid = cq.get("id")
     data = (cq.get("data") or "").strip()
     msg = cq.get("message") or {}
-    chat_id = (msg.get("chat") or {}).get("id")
+    from_user = cq.get("from") or {}
+    chat_id = (msg.get("chat") or {}).get("id") or from_user.get("id")
     api.call("answerCallbackQuery", callback_query_id=cid)
     if not chat_id:
+        return
+    if data.startswith("m:"):
+        action = {
+            "demo": "demo",
+            "strat": "strategies",
+            "strategies": "strategies",
+            "agents": "agents",
+            "posts": "posts",
+        }.get(data.split(":", 1)[1])
+        if action:
+            dispatch_menu(api, chat_id, action, webapp)
         return
     if data.startswith("rs:"):
         _, verdict, aid = (data.split(":", 2) + ["", ""])[:3]
@@ -271,7 +366,7 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
     if data.startswith("ag:"):
         nid = data.split(":", 1)[1]
         sessions.set_mode(chat_id, "await_agent_brief", niche=nid)
-        api.send(chat_id, texts.ASK_AGENT)
+        api.send(chat_id, texts.ASK_AGENT, markup=nav_inline(webapp), html=False)
         return
     if data.startswith("xp:"):
         from backend.core.x_posts import format_post, post_by_id
@@ -294,35 +389,12 @@ def _looks_freelance(text: str) -> bool:
 
 def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
     raw = (text or "").strip()
-    low = raw.lower()
     st = sessions.load(chat_id)
     mode = st.get("mode") or "idle"
 
-    if low.startswith("/start") or low == "/app":
-        sessions.set_mode(chat_id, "idle")
-        api.send_start(chat_id, webapp)
-        return
-    if low.startswith("/help"):
-        api.send(chat_id, texts.HELP, markup=main_keyboard())
-        return
-    if low.startswith("/demo") or raw == texts.MENU_DEMO:
-        sessions.set_mode(chat_id, "await_demo")
-        api.send(chat_id, texts.ASK_DEMO)
-        return
-    if low.startswith("/strategies") or raw == texts.MENU_STRAT:
-        lines = ["<b>Три модели. Не сигналы.</b>\n"]
-        for s in list_strategies():
-            lines.append(f"<b>{s['name']}</b> · {s['market']}\n{s['one_liner']}\n<i>{s['for_whom']}</i>\n")
-        api.send(chat_id, "\n".join(lines), markup=strategies_kb())
-        return
-    if low.startswith("/agents") or raw == texts.MENU_AGENTS:
-        lines = ["<b>Билдер агентов.</b> Агент держит финмодель, не болтает.\n"]
-        for n in list_niches():
-            lines.append(f"<b>{n['title']}</b>\n{n['pain']}\n")
-        api.send(chat_id, "\n".join(lines), markup=niches_kb())
-        return
-    if low.startswith("/posts") or raw == texts.MENU_POSTS:
-        api.send(chat_id, texts.POSTS_INTRO, markup=posts_kb())
+    action = menu_action(raw)
+    if action:
+        dispatch_menu(api, chat_id, action, webapp)
         return
 
     if mode == "await_almost":
@@ -419,7 +491,17 @@ def main() -> int:
             )
             for upd in data.get("result") or []:
                 offset = int(upd["update_id"]) + 1
-                handle_update(api, upd, webapp)
+                try:
+                    handle_update(api, upd, webapp)
+                except Exception as exc:  # noqa: BLE001
+                    print("update error", exc)
+                    chat = ((upd.get("message") or upd.get("callback_query") or {}).get("message") or upd.get("message") or {}).get("chat") or {}
+                    cid = chat.get("id") or ((upd.get("callback_query") or {}).get("from") or {}).get("id")
+                    if cid:
+                        try:
+                            api.send(cid, "Кнопка не прошла. Нажмите ещё раз — Демо, Стратегии или Агенты.", html=False)
+                        except Exception:
+                            pass
         except KeyboardInterrupt:
             print("stop")
             return 0
