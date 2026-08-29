@@ -35,19 +35,24 @@
     return r.json();
   }
 
-  const VIEWS = ["home", "demo", "strategies", "agents", "posts"];
+  const VIEWS = ["landing", "engine", "making", "home", "demo", "strategies", "agents", "posts"];
+  const ALIAS = { home: "landing", demo: "landing", strategies: "engine", agents: "engine", posts: "making" };
   const state = {
-    view: (location.hash || "").replace("#", "") || "home",
+    view: (location.hash || "").replace("#", "") || "landing",
     catalog: null,
     last: null,
+    closer: null,
     niche: "",
     strategy: "",
+    comfort: [],
   };
-  if (VIEWS.indexOf(state.view) < 0) state.view = "home";
+  if (ALIAS[state.view]) state.view = ALIAS[state.view];
+  if (VIEWS.indexOf(state.view) < 0) state.view = "landing";
 
   const viewEl = document.getElementById("view");
 
   function go(name) {
+    name = ALIAS[name] || name;
     state.view = name;
     try {
       history.replaceState(null, "", "#" + name);
@@ -59,7 +64,7 @@
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", function () {
-    var h = (location.hash || "").replace("#", "") || "home";
+    var h = ALIAS[(location.hash || "").replace("#", "")] || (location.hash || "").replace("#", "") || "landing";
     if (h !== state.view) go(h);
   });
 
@@ -87,7 +92,15 @@
     }
     if (t.closest("#q-run")) {
       ev.preventDefault();
-      runDemo();
+      runLanding();
+    }
+    if (t.closest("#c-run")) {
+      ev.preventDefault();
+      runComfort();
+    }
+    if (t.closest("#m-run")) {
+      ev.preventDefault();
+      runMaking();
     }
   });
 
@@ -98,10 +111,79 @@
       .replace(/>/g, "&gt;");
   }
 
+  function cardsHtml(cards) {
+    var items = (cards && cards.items) || [];
+    if (!items.length) return "";
+    return (
+      '<div class="eyebrow section-label">Функциональные обозначения</div><div class="card-table">' +
+      items
+        .map(function (c) {
+          return (
+            '<article class="fn-card"><code>' +
+            esc(c.code) +
+            '</code><span class="des">' +
+            esc(c.designation) +
+            "</span><h4>" +
+            esc(c.poetic_name) +
+            "</h4><p>" +
+            esc(c.action) +
+            '</p><div class="fn-meta"><span><b>fn</b> ' +
+            esc(c.function) +
+            "</span><span><b>obj</b> " +
+            esc(c.object) +
+            "</span><span><b>unit</b> " +
+            esc(c.unit) +
+            "</span><span><b>kill</b> " +
+            esc(c.kill) +
+            "</span></div></article>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  function eventHtml(ev) {
+    if (!ev) return "";
+    return (
+      '<article class="event-vision">' +
+      '<span class="tag">событие</span>' +
+      "<h2>" +
+      esc(ev.title) +
+      "</h2>" +
+      '<p class="atm">' +
+      esc(ev.atmosphere) +
+      "</p>" +
+      "<p>" +
+      esc(ev.who_enters) +
+      "</p>" +
+      "<h3>Что движется</h3><p>" +
+      esc(ev.what_moves) +
+      "</p>" +
+      "<h3>Что стоит</h3><p>" +
+      esc(ev.what_stays) +
+      "</p>" +
+      '<p class="lead">' +
+      esc(ev.invitation) +
+      "</p></article>"
+    );
+  }
+
+  function essayHtml(abs) {
+    if (!abs || !abs.essay) return "";
+    return (
+      '<div class="eyebrow">Абстракция</div><h2>' +
+      esc(abs.lead || abs.archetype) +
+      '</h2><div class="essay">' +
+      esc(abs.essay) +
+      "</div>"
+    );
+  }
+
   function artHtml(a) {
     if (!a) return "";
     var steps = (a.steps || [])
-      .map(function (s, i) {
+      .map(function (s) {
         return "<li>" + esc(s) + "</li>";
       })
       .join("");
@@ -117,6 +199,38 @@
     if (m.invalidation) meta += '<p><span class="k">Смерть тезиса</span> ' + esc(m.invalidation) + "</p>";
     if (m.window) meta += '<p><span class="k">Окно</span> ' + esc(m.window) + "</p>";
     if (m.why_builder) meta += "<p>" + esc(m.why_builder) + "</p>";
+    var cal = (m.calendar_7d || []).map(function (d) {
+      return (
+        '<div class="day"><div class="n">' +
+        esc(d.day) +
+        "</div><div><b>" +
+        esc(d.title) +
+        "</b><p>" +
+        esc(d.do) +
+        "</p></div></div>"
+      );
+    }).join("");
+    var fin = m.fin_structure_shift || {};
+    var fear = fin.fear_protocol || {};
+    var fee = fin.success_fee || {};
+    var extra = "";
+    if (cal) extra += '<h3>Неделя</h3>' + cal;
+    if (fear.say) {
+      extra +=
+        '<div class="fear"><h3>Протокол страха</h3><p>' +
+        esc(fear.say) +
+        "</p><p>" +
+        esc(fear.inversion) +
+        "</p></div>";
+    }
+    if (fee.on) {
+      extra +=
+        '<div class="fee"><h3>Share</h3><p>' +
+        esc(fee.on) +
+        "</p><p class='muted'>" +
+        esc(fee.kill) +
+        "</p></div>";
+    }
     return (
       '<article class="artifact" data-aid="' +
       esc(a.id || "") +
@@ -143,6 +257,7 @@
       esc(a.artifact_week) +
       "</p>" +
       meta +
+      extra +
       (anti ? "<h3>Не делать</h3><ul class='tickets'>" + anti + "</ul>" : "") +
       '<p class="muted disc">' +
       esc(a.disclaimer || "") +
@@ -157,56 +272,28 @@
     );
   }
 
-  function home(c) {
-    var flags = (c.flagships || [])
-      .map(function (f) {
-        return (
-          '<article class="card card-flag" style="--flag-accent:' +
-          esc(f.accent || "#5eead4") +
-          '" data-go="' +
-          esc(f.cta || "demo") +
-          '"><span class="tag">' +
-          esc(f.sticker) +
-          "</span><h3>" +
-          esc(f.title) +
-          "</h3><p>" +
-          esc(f.essence_ru) +
-          "</p></article>"
-        );
+  function landingView() {
+    return (
+      '<section class="room">' +
+      '<div class="room-head"><span class="room-pulse" aria-hidden="true"></span>' +
+      '<div class="eyebrow">Видение события</div></div>' +
+      "<h1>Не кнопка. <em>Комната.</em></h1>" +
+      "<p class='lead'>Работа и отдых здесь не противоположности. " +
+      "Стремиться к состоянию — значит стремиться к смерти. " +
+      "Событие уже идёт — ты входишь в него, или нет.</p>" +
+      '<label>Что сейчас движется</label>' +
+      '<textarea id="q-brief" placeholder="SaaS 80 человек, фичи пилим, никто не знает, что считается победой…"></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="q-run">Войти</button></div>' +
+      '<div id="q-out"></div></section>'
+    );
+  }
+
+  function engineView(c) {
+    var log = state.comfort
+      .map(function (m) {
+        return '<div class="bubble ' + (m.role === "you" ? "you" : "quiet") + '">' + esc(m.text) + "</div>";
       })
       .join("");
-    return (
-      '<section class="hero">' +
-      '<div class="hero-badge">Карим · не сигналы</div>' +
-      "<h1>Демо. Если артефакт <em>зашёл</em> — это товар.</h1>" +
-      "<p class='lead'>Торговал. Собрал нишу: уникальные финансовые модели, которые садятся в чужой проект. " +
-      "Посты на X иногда залетают. Фрилансю, когда есть окно. Когда нет — залипаю.</p>" +
-      '<div class="hero-actions">' +
-      '<button type="button" class="btn btn-primary" data-go="demo">Собрать демо</button>' +
-      '<button type="button" class="btn btn-ghost" data-go="strategies">Стратегии</button>' +
-      '<button type="button" class="btn btn-ghost" data-go="agents">Агенты</button>' +
-      "</div></section>" +
-      '<div class="eyebrow section-label">Двери</div><div class="grid grid-cards">' +
-      flags +
-      "</div>" +
-      '<p class="muted foot-note">Билдер на столе для SaaS 50–500, агентств, школ и e-com с высоким чеком. ' +
-      "Агент держит финмодель, не болтает.</p>"
-    );
-  }
-
-  function demoView() {
-    return (
-      '<div class="eyebrow">Магистраль</div>' +
-      "<h1>Ситуация → <em>артефакт</em></h1>" +
-      "<p class='lead'>Своими словами. Можно криво. Один выход, не отчёт. Если зайдёт — пилот сажает именно это.</p>" +
-      '<label>Что у вас за задача</label>' +
-      '<textarea id="q-brief" placeholder="SaaS 80 человек, фичи пилим, никто не знает, что считается победой. Или: золото, вхожу когда уже ушло…"></textarea>' +
-      '<div class="row"><button type="button" class="btn btn-primary" id="q-run">Собрать</button></div>' +
-      '<div id="q-out"></div>'
-    );
-  }
-
-  function strategiesView(c) {
     var cards = (c.strategies || [])
       .map(function (s) {
         var img = s.image
@@ -225,27 +312,11 @@
           esc(s.name) +
           "</h3><p>" +
           esc(s.one_liner) +
-          "</p><p class='muted'>" +
-          esc(s.for_whom) +
           "</p></article>"
         );
       })
       .join("");
-    return (
-      '<div class="eyebrow">Три модели</div>' +
-      "<h1>Места. Окно. <em>Амплитуда.</em></h1>" +
-      "<p class='lead'>Не стрелочки на сегодня. Модели, которые можно посадить в свой журнал.</p>" +
-      '<div class="grid grid-cards">' +
-      cards +
-      "</div>" +
-      '<label>Если хотите — одна фраза про ваш стиль входа</label>' +
-      '<textarea id="st-brief" placeholder="золото, ловлю догон… / местный листинг на этой неделе… / Америка, угадываю сторону…"></textarea>' +
-      '<div id="st-out"></div>'
-    );
-  }
-
-  function agentsView(c) {
-    var cards = (c.niches || [])
+    var niches = (c.niches || [])
       .map(function (n) {
         return (
           '<article class="card card-flag" style="--flag-accent:' +
@@ -263,15 +334,43 @@
       })
       .join("");
     return (
-      '<div class="eyebrow">Билдер агентов</div>' +
-      "<h1>Агент с <em>финмоделью</em></h1>" +
-      "<p class='lead'>Не чат, который отвечает на всё. Агент знает, что считать деньгами, когда молчать, какой артефакт отдать человеку.</p>" +
-      '<div class="grid">' +
+      '<section class="comfort">' +
+      '<div class="eyebrow">Верхний модуль движка</div>' +
+      " <h1>Тихий <em>ассистент</em></h1>" +
+      "<p class='lead'>Идеи и точки роста. Без подъёма пульса. Можно сесть.</p>" +
+      '<div class="comfort-log" id="c-log">' +
+      (log || '<div class="bubble quiet">Тихо. Напишите, что уже движется — или что бесит.</div>') +
+      "</div>" +
+      '<textarea id="c-brief" placeholder="слишком много людей, слишком много фич, касса как туман…"></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="c-run">Сказать</button></div>' +
+      '<div id="c-out"></div></section>' +
+      '<div class="eyebrow section-label">Модели внутри движка</div><div class="grid grid-cards">' +
       cards +
       "</div>" +
-      '<label>Кто вы и что бесит</label>' +
-      '<textarea id="ag-brief" placeholder="агентство 12 человек, онбординг съедает маржу…"></textarea>' +
-      '<div id="ag-out"></div>'
+      '<div class="eyebrow section-label">Агенты</div><div class="grid">' +
+      niches +
+      "</div>" +
+      '<div id="st-out"></div><div id="ag-out"></div>'
+    );
+  }
+
+  function makingView() {
+    var ready = state.closer && state.closer.cards;
+    return (
+      '<section class="chamber">' +
+      '<div class="chamber-hero">' +
+      '<div class="eyebrow">Камера сборки</div>' +
+      "<h1>Мейкинг. <em>Неделя,</em> не план.</h1>" +
+      "<p class='lead'>Ткёт абстракцию, карточки, промпт и наскриненный тренд в семь дней, которые можно прожить. " +
+      "День 1 — вход в событие. Никогда «исследование».</p></div>" +
+      (ready
+        ? "<p class='muted'>Карточки уже на столе. Можно собрать неделю.</p>"
+        : "<p class='muted'>Если ещё не входили — камера соберёт событие из фразы. Лучше сначала лендинг.</p>") +
+      '<label>Уточнение к сборке (необязательно)</label>' +
+      '<textarea id="m-brief" placeholder="соберите неделю под мой контур… / боюсь менять кассу…"></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="m-run">Собрать неделю</button>' +
+      '<button type="button" class="btn btn-ghost" data-go="landing">В комнату</button></div>' +
+      '<div id="m-out"></div></section>'
     );
   }
 
@@ -287,11 +386,9 @@
     }
     var c = state.catalog;
     var html = "";
-    if (state.view === "home") html = home(c);
-    else if (state.view === "demo") html = demoView();
-    else if (state.view === "strategies") html = strategiesView(c);
-    else if (state.view === "agents") html = agentsView(c);
-    else html = home(c);
+    if (state.view === "engine") html = engineView(c);
+    else if (state.view === "making") html = makingView();
+    else html = landingView();
     viewEl.innerHTML = html;
     bind();
   }
@@ -311,10 +408,10 @@
         var p = out.paid_path || {};
         var msg =
           out.verdict === "hit"
-            ? "Зашло. Это и есть товар. Пилот сажает именно этот артефакт в ваш контур."
+            ? "Зашло. Это и есть товар. Пилот сажает именно этот артефакт в ваш контур на share."
             : out.verdict === "almost"
-            ? "Почти. Допишите в поле выше, чего не хватает — соберу вторую версию."
-            : "Мимо. Нормально. Возьмите другую дверь.";
+            ? "Почти. Допишите, чего не хватает — соберу вторую версию."
+            : "Мимо. Нормально. Возьмите другую дверь — или посидите.";
         if (outEl) {
           outEl.innerHTML =
             '<article class="card"><h3>' +
@@ -329,29 +426,122 @@
     });
   }
 
-  async function runDemo() {
+  function paintCloser(box, pack, art) {
+    var abs = (pack && pack.abstraction) || (art && art.abstraction) || {};
+    var ev = (pack && pack.event) || (art && art.event) || {};
+    var cards = (pack && pack.cards) || (art && art.cards) || {};
+    var prompt = (pack && pack.prompt) || {};
+    var audit = (pack && pack.audit) || {};
+    box.innerHTML =
+      eventHtml(ev) +
+      essayHtml(abs) +
+      cardsHtml(cards) +
+      (prompt.engine_brief
+        ? '<div class="eyebrow section-label">Промпт для основного движка</div><pre class="pre">' +
+          esc(prompt.engine_brief) +
+          "</pre>"
+        : "") +
+      (audit.ratio
+        ? '<p class="muted">Аудит гипотез: ' + audit.held + "/" + audit.total + "</p>"
+        : "") +
+      artHtml(art);
+    bindResonate(box);
+  }
+
+  async function runLanding() {
     var briefEl = document.getElementById("q-brief");
     var box = document.getElementById("q-out");
     if (!box) return;
     var brief = briefEl ? briefEl.value : "";
-    box.innerHTML = "<p class='status'>Собираю…</p>";
+    box.innerHTML = "<p class='status'>Собираю комнату…</p>";
     try {
-      var out = await post("/api/v1/miniapp/demo", { brief: brief, lang: "ru" });
+      var out = await post("/api/v1/miniapp/landing", { brief: brief, lang: "ru" });
       if (!out.ok) {
         box.innerHTML = "<p class='muted'>" + esc(out.detail || out.error || "Не собралось") + "</p>";
         return;
       }
       state.last = out.artifact;
-      box.innerHTML = artHtml(out.artifact);
-      bindResonate(box);
+      state.closer = out.closer;
+      paintCloser(box, out.closer, out.artifact);
     } catch (e) {
       box.innerHTML = "<p>Сеть. Попробуйте ещё раз.</p>";
     }
   }
 
+  async function runComfort() {
+    var briefEl = document.getElementById("c-brief");
+    var box = document.getElementById("c-out");
+    var log = document.getElementById("c-log");
+    if (!briefEl) return;
+    var msg = briefEl.value || "";
+    if (msg.length < 2) return;
+    state.comfort.push({ role: "you", text: msg });
+    if (log) {
+      log.innerHTML += '<div class="bubble you">' + esc(msg) + "</div>";
+    }
+    if (box) box.innerHTML = "<p class='status'>Сидим…</p>";
+    try {
+      var out = await post("/api/v1/miniapp/comfort", {
+        message: msg,
+        brief: (state.closer && state.closer.brief) || msg,
+        history: state.comfort.slice(-8),
+        lang: "ru",
+      });
+      state.comfort.push({ role: "quiet", text: out.reply || "" });
+      if (log) log.innerHTML += '<div class="bubble quiet">' + esc(out.reply || "") + "</div>";
+      var objs = (out.objects || [])
+        .map(function (o) {
+          return (
+            '<div class="obj"><span class="k">' +
+            esc(o.title) +
+            "</span><p>" +
+            esc(o.text) +
+            "</p></div>"
+          );
+        })
+        .join("");
+      if (box) box.innerHTML = '<div class="objects">' + objs + "</div>";
+      briefEl.value = "";
+    } catch (e) {
+      if (box) box.innerHTML = "<p>Сеть.</p>";
+    }
+  }
+
+  async function runMaking() {
+    var extraEl = document.getElementById("m-brief");
+    var box = document.getElementById("m-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Камера ткёт неделю…</p>";
+    var extra = extraEl ? extraEl.value : "";
+    var brief =
+      extra ||
+      (state.closer && state.closer.brief) ||
+      "собери неделю из того, что уже движется в комнате";
+    try {
+      var out = await post("/api/v1/miniapp/making", {
+        brief: brief,
+        extra: extra,
+        lang: "ru",
+        closer: state.closer,
+      });
+      if (!out.ok) {
+        box.innerHTML =
+          "<p class='muted'>" +
+          esc(out.error || out.detail || "Камера пуста. Сначала войдите на лендинге.") +
+          "</p>";
+        return;
+      }
+      state.last = out.artifact || out.making;
+      box.innerHTML = artHtml(out.artifact || out.making);
+      bindResonate(box);
+    } catch (e) {
+      box.innerHTML = "<p>Сеть.</p>";
+    }
+  }
+
   async function runStrategy(id) {
-    var extra = (document.getElementById("st-brief") || {}).value || id;
-    var box = document.getElementById("st-out");
+    var extra = (document.getElementById("c-brief") || {}).value || id;
+    var box = document.getElementById("st-out") || document.getElementById("c-out");
     if (!box) return;
     box.innerHTML = "<p class='status'>Собираю карту…</p>";
     var out = await post("/api/v1/miniapp/strategy", { brief: extra, strategy: id });
@@ -360,9 +550,9 @@
   }
 
   async function runAgent(id) {
-    var extra = (document.getElementById("ag-brief") || {}).value || "";
+    var extra = (document.getElementById("c-brief") || {}).value || "";
     if (extra.length < 8) extra = "Собрать агента для ниши " + id;
-    var box = document.getElementById("ag-out");
+    var box = document.getElementById("ag-out") || document.getElementById("c-out");
     if (!box) return;
     box.innerHTML = "<p class='status'>Собираю спеку…</p>";
     var out = await post("/api/v1/miniapp/agent", { brief: extra, niche: id });

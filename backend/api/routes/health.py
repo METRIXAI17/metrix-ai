@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from backend import __brand__, __codename__, __version__
+from backend import __brand__, __codename__, __release__, __version__
 from backend.config import (
     CLIENT_NICHE_LIST_RU,
     DECISION_SUPPORT_PRODUCT,
@@ -36,6 +36,9 @@ def health() -> dict:
         "decision_support": DECISION_SUPPORT_PRODUCT.get("id"),
         "supabase_sync": supabase_on(),
         "security": "basic-1",
+        "closer": True,
+        "sections": ["landing", "engine", "making"],
+        "release": __release__,
     }
 
 

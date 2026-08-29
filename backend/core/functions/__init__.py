@@ -1,5 +1,6 @@
 from backend.core.functions.creative_assistant import run_creative_assistant
 from backend.core.functions.digital_mockup import run_digital_mockup
+from backend.core.functions.making_chamber import run_making_function
 from backend.core.functions.solution_logger import run_solution_logger
 
 FUNCTIONS = (
@@ -24,6 +25,14 @@ FUNCTIONS = (
         "hit": True,
         "blurb_ru": "Темп, оффер, слоты — чтобы соло-работа вставала без театра.",
     },
+    {
+        "id": "making_chamber",
+        "title_ru": "Камера сборки",
+        "title_en": "Making chamber",
+        "hit": True,
+        "section": "making",
+        "blurb_ru": "Неделя, которую можно прожить: событие, прогрев, страх, share, сателлит. Не план.",
+    },
 )
 
 __all__ = [
@@ -31,4 +40,5 @@ __all__ = [
     "run_creative_assistant",
     "run_solution_logger",
     "run_digital_mockup",
+    "run_making_function",
 ]

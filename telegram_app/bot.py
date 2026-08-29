@@ -71,8 +71,8 @@ def _webapp() -> str:
 def main_keyboard() -> dict:
     return {
         "keyboard": [
-            [{"text": texts.MENU_DEMO}, {"text": texts.MENU_STRAT}],
-            [{"text": texts.MENU_AGENTS}, {"text": texts.MENU_POSTS}],
+            [{"text": texts.MENU_LANDING}, {"text": texts.MENU_ENGINE}],
+            [{"text": texts.MENU_MAKING}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -80,19 +80,18 @@ def main_keyboard() -> dict:
 
 
 def webapp_row(webapp: str) -> list[dict]:
-    return [{"text": "Открыть билдер", "web_app": {"url": webapp}}]
+    return [{"text": "Лендинг-студия", "web_app": {"url": webapp}}]
 
 
 def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
-    """Primary nav — inline callbacks. Reply keyboard is a fallback; Telegram often hides it."""
+    """Primary nav — three sections. Reply keyboard is a fallback; Telegram often hides it."""
     rows = [
         [
-            {"text": "Демо", "callback_data": "m:demo"},
-            {"text": "Стратегии", "callback_data": "m:strat"},
+            {"text": "Лендинг", "callback_data": "m:landing"},
+            {"text": "Движок", "callback_data": "m:engine"},
         ],
         [
-            {"text": "Агенты", "callback_data": "m:agents"},
-            {"text": "Посты", "callback_data": "m:posts"},
+            {"text": "Мейкинг", "callback_data": "m:making"},
         ],
         webapp_row(webapp),
         [{"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"}],
@@ -211,7 +210,7 @@ class BotAPI:
                 )
                 self.send(
                     chat_id,
-                    "Демо · Стратегии · Агенты — кнопки под этим сообщением.",
+                    "Лендинг · Движок · Мейкинг — кнопки под этим сообщением.",
                     markup=kb,
                     html=False,
                 )
@@ -219,7 +218,7 @@ class BotAPI:
         self.send(chat_id, texts.START, markup=main_keyboard())
         self.send(
             chat_id,
-            "Демо · Стратегии · Агенты — кнопки под этим сообщением.",
+            "Лендинг · Движок · Мейкинг — кнопки под этим сообщением.",
             markup=kb,
             html=False,
         )
@@ -228,16 +227,16 @@ class BotAPI:
 def bootstrap(api: BotAPI, webapp: str) -> None:
     api.call(
         "setChatMenuButton",
-        menu_button={"type": "web_app", "text": "Билдер", "web_app": {"url": webapp}},
+        menu_button={"type": "web_app", "text": "Лендинг", "web_app": {"url": webapp}},
     )
     api.call(
         "setMyCommands",
         commands=[
             {"command": "start", "description": "Кто я и как это работает"},
-            {"command": "demo", "description": "Собрать демо-артефакт"},
-            {"command": "strategies", "description": "Три стратегии"},
-            {"command": "agents", "description": "Собрать агента"},
-            {"command": "posts", "description": "Черновики для X"},
+            {"command": "landing", "description": "Видение события — войти в комнату"},
+            {"command": "engine", "description": "Тихий ассистент · идеи и точки роста"},
+            {"command": "making", "description": "Камера сборки — неделя, не план"},
+            {"command": "demo", "description": "Синоним лендинга"},
         ],
     )
     api.call("setMyDescription", description=texts.DESC)
@@ -246,7 +245,21 @@ def bootstrap(api: BotAPI, webapp: str) -> None:
 
 
 def _send_artifact(api: BotAPI, chat_id: int, art: dict) -> None:
-    sessions.set_mode(chat_id, "await_feedback", last_artifact_id=art.get("id"))
+    sessions.set_mode(
+        chat_id,
+        "await_feedback",
+        last_artifact_id=art.get("id"),
+        closer_id=art.get("closer_id"),
+        last_engine_brief=art.get("engine_brief") or "",
+    )
+    essay = art.get("abstraction") or {}
+    if essay.get("essay"):
+        from backend.core.content_closer import format_abstraction_telegram
+
+        raw = format_abstraction_telegram(essay)
+        if len(raw) > 3900:
+            raw = raw[:3890] + "…"
+        api.send(chat_id, raw)
     api.send(chat_id, format_telegram(art), markup=resonance_kb(art["id"]))
 
 
@@ -297,9 +310,25 @@ def show_posts(api: BotAPI, chat_id: int, webapp: str) -> None:
     api.send(chat_id, texts.POSTS_INTRO, markup=nav_inline(webapp, extra=extra))
 
 
+def show_landing(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_landing")
+    api.send(chat_id, texts.ASK_LANDING, markup=nav_inline(webapp), html=False)
+
+
+def show_engine(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_engine")
+    extra = strategies_kb()["inline_keyboard"] + niches_kb()["inline_keyboard"]
+    api.send(chat_id, texts.ASK_ENGINE, markup=nav_inline(webapp, extra=extra), html=False)
+
+
+def show_making(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_making")
+    extra = posts_kb()["inline_keyboard"]
+    api.send(chat_id, texts.ASK_MAKING, markup=nav_inline(webapp, extra=extra), html=False)
+
+
 def show_demo_prompt(api: BotAPI, chat_id: int, webapp: str) -> None:
-    sessions.set_mode(chat_id, "await_demo")
-    api.send(chat_id, texts.ASK_DEMO, markup=nav_inline(webapp), html=False)
+    show_landing(api, chat_id, webapp)
 
 
 def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
@@ -310,17 +339,14 @@ def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
     if action == "help":
         api.send(chat_id, texts.HELP, markup=nav_inline(webapp), html=False)
         return
-    if action == "demo":
-        show_demo_prompt(api, chat_id, webapp)
+    if action in ("landing", "demo"):
+        show_landing(api, chat_id, webapp)
         return
-    if action == "strategies":
-        show_strategies(api, chat_id, webapp)
+    if action in ("engine", "strategies", "agents"):
+        show_engine(api, chat_id, webapp)
         return
-    if action == "agents":
-        show_agents(api, chat_id, webapp)
-        return
-    if action == "posts":
-        show_posts(api, chat_id, webapp)
+    if action in ("making", "posts"):
+        show_making(api, chat_id, webapp)
         return
 
 
@@ -335,11 +361,14 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
         return
     if data.startswith("m:"):
         action = {
-            "demo": "demo",
-            "strat": "strategies",
-            "strategies": "strategies",
-            "agents": "agents",
-            "posts": "posts",
+            "landing": "landing",
+            "demo": "landing",
+            "engine": "engine",
+            "strat": "engine",
+            "strategies": "engine",
+            "agents": "engine",
+            "making": "making",
+            "posts": "making",
         }.get(data.split(":", 1)[1])
         if action:
             dispatch_menu(api, chat_id, action, webapp)
@@ -419,11 +448,28 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
         sessions.set_mode(chat_id, "idle")
         return
 
-    if mode in ("await_demo", "await_agent_brief"):
-        kw = {}
-        if mode == "await_agent_brief":
-            kw = {"hint": "agent", "niche": st.get("niche")}
-        _run_demo(api, chat_id, raw, **kw)
+    if mode in ("await_demo", "await_landing"):
+        _run_demo(api, chat_id, raw, hint="landing")
+        return
+
+    if mode == "await_engine":
+        from backend.core.content_closer import comfort_turn
+
+        hist = st.get("comfort_history") or []
+        turn = comfort_turn(raw, history=hist, lang="ru")
+        hist = (hist + [{"role": "user", "text": raw}, {"role": "assistant", "text": turn["reply"]}])[-8:]
+        sessions.set_mode(chat_id, "await_engine", comfort_history=hist)
+        api.send(chat_id, turn["reply"], html=False)
+        if len(raw) >= 24:
+            _run_demo(api, chat_id, raw, hint="engine")
+        return
+
+    if mode == "await_making":
+        _run_demo(api, chat_id, raw, hint="making")
+        return
+
+    if mode in ("await_agent_brief",):
+        _run_demo(api, chat_id, raw, hint="agent", niche=st.get("niche"))
         return
 
     if _looks_bored(raw):
@@ -499,7 +545,7 @@ def main() -> int:
                     cid = chat.get("id") or ((upd.get("callback_query") or {}).get("from") or {}).get("id")
                     if cid:
                         try:
-                            api.send(cid, "Кнопка не прошла. Нажмите ещё раз — Демо, Стратегии или Агенты.", html=False)
+                            api.send(cid, "Кнопка не прошла. Нажмите ещё раз — Лендинг, Движок или Мейкинг.", html=False)
                         except Exception:
                             pass
         except KeyboardInterrupt:

@@ -355,7 +355,7 @@ textarea:focus, input:focus {
   left: 0; right: 0; bottom: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 2px;
   padding: 0.4rem 0.35rem calc(0.45rem + var(--safe-b));
   background: rgba(7, 10, 15, 0.94);
@@ -389,4 +389,178 @@ textarea:focus, input:focus {
 .tabbar button.active {
   color: var(--accent);
   background: rgba(94, 234, 212, 0.08);
+}
+
+/* —— Landing as a room —— */
+@keyframes breathe {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.08); }
+}
+.room {
+  position: relative;
+  padding: 0.2rem 0 0.4rem;
+}
+.room-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.85rem;
+}
+.room-pulse {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 16px var(--accent);
+  animation: breathe 4.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.essay {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.02rem;
+  line-height: 1.72;
+  color: #d7dee8;
+  white-space: pre-wrap;
+  margin: 0.7rem 0 1rem;
+}
+.event-vision {
+  margin-top: 1rem;
+  padding: 1.05rem 1.1rem 1.15rem;
+  border-radius: 16px;
+  border: 1px solid rgba(94, 234, 212, 0.22);
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(94, 234, 212, 0.1), transparent 55%),
+    linear-gradient(180deg, #101820, #0b1118);
+}
+.event-vision .atm {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-bottom: 0.55rem;
+}
+.card-table {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+.fn-card {
+  --flag-accent: #5eead4;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem 0.8rem;
+  border-left: 3px solid var(--flag-accent);
+}
+.fn-card code {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 700;
+}
+.fn-card .des {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-left: 0.4rem;
+}
+.fn-card h4 {
+  font-size: 0.92rem;
+  margin: 0.25rem 0 0.3rem;
+  font-weight: 650;
+}
+.fn-card p { font-size: 0.82rem; color: var(--text-muted); }
+.fn-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.8rem;
+  margin-top: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+.fn-meta b { color: var(--accent-2); font-weight: 650; }
+
+/* —— Quiet assistant (engine) —— */
+.comfort {
+  margin-bottom: 1.2rem;
+  padding: 0.95rem 1rem 1.05rem;
+  border-radius: 16px;
+  border: 1px solid rgba(196, 181, 253, 0.28);
+  background:
+    radial-gradient(90% 80% at 100% 0%, rgba(196, 181, 253, 0.12), transparent 60%),
+    linear-gradient(180deg, #12101a, #0c0b12);
+}
+.comfort-log {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-height: 280px;
+  overflow: auto;
+  margin: 0.6rem 0 0.75rem;
+}
+.bubble {
+  max-width: 92%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+.bubble.you {
+  align-self: flex-end;
+  background: rgba(94, 234, 212, 0.1);
+  border: 1px solid rgba(94, 234, 212, 0.2);
+}
+.bubble.quiet {
+  align-self: flex-start;
+  background: rgba(196, 181, 253, 0.08);
+  border: 1px solid rgba(196, 181, 253, 0.18);
+  font-family: Georgia, "Times New Roman", serif;
+}
+.objects { display: grid; gap: 0.55rem; margin-top: 0.7rem; }
+.obj {
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+.obj .k { color: var(--accent-3); }
+
+/* —— Making chamber —— */
+.chamber {
+  padding: 0.2rem 0 0.6rem;
+}
+.chamber-hero {
+  padding: 1rem 1.05rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  background:
+    radial-gradient(110% 80% at 100% 0%, rgba(251, 191, 36, 0.14), transparent 55%),
+    linear-gradient(180deg, #18140c, #100e0a);
+  margin-bottom: 1rem;
+}
+.day {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: 0.55rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.day .n {
+  color: var(--gold);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+.fear {
+  margin-top: 1rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(253, 164, 175, 0.25);
+  background: rgba(253, 164, 175, 0.06);
+}
+.fee {
+  margin-top: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  background: rgba(251, 191, 36, 0.06);
 }

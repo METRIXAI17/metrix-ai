@@ -118,6 +118,20 @@ class ResonateBody(BaseModel):
     who: str = ""
 
 
+class ComfortBody(BaseModel):
+    message: str = Field(..., min_length=1)
+    history: list[dict] = Field(default_factory=list)
+    brief: str = ""
+    lang: str = "ru"
+
+
+class MakingBody(BaseModel):
+    brief: str = Field(default="", min_length=0)
+    extra: str = ""
+    lang: str = "ru"
+    closer: dict | None = None
+
+
 @router.get("/catalog")
 def catalog(lang: str = "ru") -> dict[str, Any]:
     payload = catalog_payload(lang)
@@ -134,6 +148,103 @@ def catalog(lang: str = "ru") -> dict[str, Any]:
 def hit(item_id: str) -> dict[str, Any]:
     safe = sanitize_text(item_id, max_len=64)
     return {"ok": True, "hits": bump_hit(safe)}
+
+
+@router.post("/landing")
+def landing(body: DemoBody) -> dict[str, Any]:
+    """Landing studio: situation → event vision + abstraction + cards + rewritten prompt."""
+    from backend.core.content_closer import closer_as_artifact, run_closer
+    from backend.core.demo_highway import format_telegram
+    from backend.core.resonance import remember
+
+    brief = sanitize_text(body.brief, max_len=12_000)
+    if len(brief) < 8:
+        raise HTTPException(400, "Напишите, что сейчас движется — хотя бы одно предложение.")
+    pack = run_closer(brief, lang=body.lang or "ru", with_comfort=True, with_making=False)
+    art = closer_as_artifact(pack)
+    remember(art)
+    bump_hit("landing_studio")
+    return {
+        "ok": True,
+        "section": "landing",
+        "closer": pack,
+        "artifact": art,
+        "telegram_html": format_telegram(art),
+    }
+
+
+@router.post("/comfort")
+def comfort(body: ComfortBody) -> dict[str, Any]:
+    """Quiet assistant — top module of the engine section."""
+    from backend.core.content_closer import comfort_turn, run_closer
+
+    msg = sanitize_text(body.message, max_len=8_000)
+    brief = sanitize_text(body.brief, max_len=8_000)
+    closer = None
+    seed = brief or msg
+    if len(seed) >= 8:
+        try:
+            closer = run_closer(seed, lang=body.lang or "ru", with_comfort=False)
+        except Exception:  # noqa: BLE001
+            closer = None
+    hist = body.history[-8:] if isinstance(body.history, list) else []
+    turn = comfort_turn(msg, history=hist, closer=closer, lang=body.lang or "ru")
+    bump_hit("comfort_studio")
+    return {"ok": True, "section": "engine", **turn, "closer_id": (closer or {}).get("id")}
+
+
+@router.post("/making")
+def making(body: MakingBody) -> dict[str, Any]:
+    """Making chamber — last section. New function."""
+    from backend.core.demo_highway import format_telegram
+    from backend.core.functions.making_chamber import run_making_function
+    from backend.core.resonance import remember
+
+    brief = sanitize_text(body.brief or body.extra or "собери неделю", max_len=12_000)
+    if len(brief) < 8:
+        raise HTTPException(400, "Сначала войдите в событие на лендинге — или опишите, что движется.")
+    out = run_making_function(
+        brief,
+        lang=body.lang or "ru",
+        closer=body.closer,
+        extra=sanitize_text(body.extra, max_len=2_000),
+    )
+    if not out.get("ok"):
+        return out
+    making_art = out["making"]
+    remember(making_art)
+    bump_hit("making_chamber")
+    return {
+        "ok": True,
+        "section": "making",
+        **out,
+        "artifact": making_art,
+        "telegram_html": format_telegram(making_art),
+    }
+
+
+@router.post("/closer")
+def closer_full(body: DemoBody) -> dict[str, Any]:
+    """Full closer: abstraction → cards → prompt → making."""
+    from backend.core.content_closer import closer_as_artifact, run_closer
+    from backend.core.resonance import remember
+
+    brief = sanitize_text(body.brief, max_len=12_000)
+    if len(brief) < 8:
+        raise HTTPException(400, "Напишите, что сейчас движется — хотя бы одно предложение.")
+    pack = run_closer(brief, lang=body.lang or "ru", with_comfort=True, with_making=True)
+    art = closer_as_artifact(pack)
+    remember(art)
+    bump_hit("content_closer")
+    return {"ok": True, "closer": pack, "artifact": art}
+
+
+@router.get("/trends")
+def trends(q: str = "", lang: str = "ru") -> dict[str, Any]:
+    from backend.core.content_closer import score_vectors, screen_trends
+
+    vec = score_vectors(q)
+    return {"ok": True, **screen_trends(q, vec, limit=3)}
 
 
 @router.post("/demo")

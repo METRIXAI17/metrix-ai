@@ -87,12 +87,15 @@ def test_functions_and_terminal():
 def test_catalog_and_scheme():
     cat = catalog_payload("ru")
     titles = [f["title"] for f in cat["flagships"]]
-    assert any("Демо" in (t or "") for t in titles)
+    assert any("события" in (t or "").lower() or "Демо" in (t or "") for t in titles)
     assert any("Target Place" in (t or "") for t in titles)
-    assert len(cat["functions"]) == 3
-    assert cat["nav"][1]["title"] == "Демо"
-    assert cat["nav"][2]["title"] == "Стратегии"
-    assert cat["nav"][3]["title"] == "Агенты"
+    assert any("Камера" in (t or "") or "сборк" in (t or "").lower() for t in titles)
+    assert len(cat["functions"]) == 4
+    nav_ids = [n["id"] for n in cat["nav"]]
+    assert nav_ids == ["landing", "engine", "making"]
+    assert cat["nav"][0]["title"] == "Лендинг"
+    assert cat["nav"][1]["title"] == "Движок"
+    assert cat["nav"][2]["title"] == "Мейкинг"
     sch = scheme_payload()
     assert sch["rails"]["rf_cards"]["possible"] is True
     assert sch["unit_90d_conservative"]["gmv_rub"] > 0
