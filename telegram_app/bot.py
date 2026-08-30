@@ -58,11 +58,9 @@ def _token() -> str:
 
 
 def _webapp() -> str:
-    raw = (
-        os.getenv("TELEGRAM_WEBAPP_URL", "").strip()
-        or (os.getenv("METRIX_PUBLIC_URL", "").rstrip("/") + "/tg/")
-        or "https://metrix-ai-production.up.railway.app/tg/"
-    )
+    # Mini App is static on Vercel. Don't inherit METRIX_PUBLIC_URL (Railway API) —
+    # that made the Telegram button open a dead /tg/ whenever the API host was down.
+    raw = os.getenv("TELEGRAM_WEBAPP_URL", "").strip() or "https://metrix-ai.vercel.app/tg/"
     if not raw.endswith("/"):
         raw += "/"
     return raw
