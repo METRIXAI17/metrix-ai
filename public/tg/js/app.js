@@ -35,10 +35,19 @@
     return r.json();
   }
 
-  const VIEWS = ["landing", "engine", "making", "home", "demo", "strategies", "agents", "posts"];
-  const ALIAS = { home: "landing", demo: "landing", strategies: "engine", agents: "engine", posts: "making" };
+  const VIEWS = ["chain", "teammates", "artefacts", "landing", "engine", "making", "home", "demo", "strategies", "agents", "posts"];
+  const ALIAS = {
+    home: "chain",
+    demo: "chain",
+    landing: "chain",
+    strategies: "chain",
+    engine: "teammates",
+    agents: "teammates",
+    posts: "artefacts",
+    making: "artefacts",
+  };
   const state = {
-    view: (location.hash || "").replace("#", "") || "landing",
+    view: (location.hash || "").replace("#", "") || "chain",
     catalog: null,
     last: null,
     closer: null,
@@ -101,6 +110,22 @@
     if (t.closest("#m-run")) {
       ev.preventDefault();
       runMaking();
+    }
+    if (t.closest("#p-run")) {
+      ev.preventDefault();
+      runPanel();
+    }
+    if (t.closest("#o-run")) {
+      ev.preventDefault();
+      runOffer();
+    }
+    if (t.closest("[data-rk]")) {
+      ev.preventDefault();
+      runRisk();
+    }
+    if (t.closest("#wf-run")) {
+      ev.preventDefault();
+      runWorkflow();
     }
   });
 
@@ -272,28 +297,29 @@
     );
   }
 
-  function landingView() {
+  function wallHtml(out) {
+    if (!out || !out.wall) return "";
+    var url = (state.catalog && state.catalog.tribute) || out.tribute || "https://t.me/tribute";
+    var human = (state.catalog && state.catalog.human) || out.human || "https://x.com/karimmetrix";
     return (
-      '<section class="room">' +
-      '<div class="room-head"><span class="room-pulse" aria-hidden="true"></span>' +
-      '<div class="eyebrow">Видение события</div></div>' +
-      "<h1>Не кнопка. <em>Комната.</em></h1>" +
-      "<p class='lead'>Работа и отдых здесь не противоположности. " +
-      "Стремиться к состоянию — значит стремиться к смерти. " +
-      "Событие уже идёт — ты входишь в него, или нет.</p>" +
-      '<label>Что сейчас движется</label>' +
-      '<textarea id="q-brief" placeholder="SaaS 80 человек, фичи пилим, никто не знает, что считается победой…"></textarea>' +
-      '<div class="row"><button type="button" class="btn btn-primary" id="q-run">Войти</button></div>' +
-      '<div id="q-out"></div></section>'
+      '<article class="wall">' +
+      "<h3>Два бесплатных прогона кончились</h3>" +
+      "<p>Metrix Access — 1 490 ₽ / месяц. Одна подписка на Chain, Teammates и Artefacts. " +
+      "Код модели, обновления как есть.</p>" +
+      '<div class="row"><a class="btn btn-primary" href="' +
+      esc(url) +
+      '" target="_blank" rel="noopener">Оплатить в Tribute</a>' +
+      '<a class="btn btn-ghost" href="' +
+      esc(human) +
+      '" target="_blank" rel="noopener">Связаться с человеком</a></div></article>'
     );
   }
 
-  function engineView(c) {
-    var log = state.comfort
-      .map(function (m) {
-        return '<div class="bubble ' + (m.role === "you" ? "you" : "quiet") + '">' + esc(m.text) + "</div>";
-      })
-      .join("");
+  function landingView() {
+    return chainView(state.catalog || {});
+  }
+
+  function chainView(c) {
     var cards = (c.strategies || [])
       .map(function (s) {
         var img = s.image
@@ -316,7 +342,42 @@
         );
       })
       .join("");
-    var niches = (c.niches || [])
+    var acc = (c.access || {}).remaining;
+    var accNote =
+      acc == null
+        ? "Access открыт"
+        : "Бесплатно осталось " + acc + " прогона";
+    return (
+      '<section class="room">' +
+      '<div class="room-head"><span class="room-pulse" aria-hidden="true"></span>' +
+      '<div class="eyebrow">Флагман</div></div>' +
+      "<h1>In-Out <em>Chain</em></h1>" +
+      "<p class='lead'>Снимает рутину. Закрывает решённое и нерешённое. " +
+      "Режет стоимость проекта на входе и на выходе. Одна подписка финансирует развитие.</p>" +
+      '<p class="muted">' +
+      esc(accNote) +
+      "</p>" +
+      '<label>Что стоит дорого на in или на out</label>' +
+      '<textarea id="q-brief" placeholder="SaaS 80 человек, фичи пилим, никто не знает, что считается победой…"></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="q-run">Собрать цепочку</button></div>' +
+      '<div id="q-out"></div>' +
+      '<div class="eyebrow section-label">Четыре модели · код, не сигналы</div>' +
+      '<div class="grid grid-cards">' +
+      cards +
+      "</div>" +
+      '<article class="card card-flag" style="--flag-accent:#fb7185" data-rk="engine">' +
+      '<span class="tag">отдельно</span><h3>Risk Engine</h3>' +
+      "<p>R — мера исхода. Плечо — размер. Движок их не путает.</p></article>" +
+      '<div id="st-out"></div></section>'
+    );
+  }
+
+  function engineView(c) {
+    return teammatesView(c);
+  }
+
+  function teammatesView(c) {
+    var teammates = (c.teammates || c.niches || [])
       .map(function (n) {
         return (
           '<article class="card card-flag" style="--flag-accent:' +
@@ -324,52 +385,66 @@
           '" data-ag="' +
           esc(n.id) +
           '"><span class="tag">' +
-          esc(n.size) +
+          esc(n.codename || n.size || "") +
           "</span><h3>" +
           esc(n.title) +
           "</h3><p>" +
-          esc(n.pain) +
+          esc(n.user_facing || n.pain || "") +
           "</p></article>"
         );
       })
       .join("");
+    var steps = ((c.workflow || {}).steps || [])
+      .map(function (s, i) {
+        return "<li><b>" + (i + 1) + ". " + esc(s.title) + "</b> — " + esc(s.do) + "</li>";
+      })
+      .join("");
+    var human = (c.human || "https://x.com/karimmetrix");
+    var custom = c.tribute_custom || human;
     return (
       '<section class="comfort">' +
-      '<div class="eyebrow">Верхний модуль движка</div>' +
-      " <h1>Тихий <em>ассистент</em></h1>" +
-      "<p class='lead'>Идеи и точки роста. Без подъёма пульса. Можно сесть.</p>" +
-      '<div class="comfort-log" id="c-log">' +
-      (log || '<div class="bubble quiet">Тихо. Напишите, что уже движется — или что бесит.</div>') +
+      '<div class="eyebrow">AI Teammates</div>' +
+      "<h1>Четыре тимейта. <em>Пятый</em> собирается.</h1>" +
+      "<p class='lead'>Тимейт держит финмодель: единицу денег, молчание, артефакт, kill. Не чат.</p>" +
+      '<div class="grid">' +
+      teammates +
       "</div>" +
-      '<textarea id="c-brief" placeholder="слишком много людей, слишком много фич, касса как туман…"></textarea>' +
-      '<div class="row"><button type="button" class="btn btn-primary" id="c-run">Сказать</button></div>' +
-      '<div id="c-out"></div></section>' +
-      '<div class="eyebrow section-label">Модели внутри движка</div><div class="grid grid-cards">' +
-      cards +
-      "</div>" +
-      '<div class="eyebrow section-label">Агенты</div><div class="grid">' +
-      niches +
-      "</div>" +
-      '<div id="st-out"></div><div id="ag-out"></div>'
+      '<div class="eyebrow section-label">Воркфлоу нового решения</div>' +
+      "<ol class='tickets'>" +
+      steps +
+      "</ol>" +
+      '<label>Контур для нового тимейта</label>' +
+      '<textarea id="c-brief" placeholder="агентство, онбординг сжигает маржу, метод в головах…"></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="wf-run">Собрать спеку</button>' +
+      '<a class="btn" href="' +
+      esc(human) +
+      '" target="_blank" rel="noopener">Связаться с человеком</a>' +
+      '<a class="btn btn-ghost" href="' +
+      esc(custom) +
+      '" target="_blank" rel="noopener">Custom · $500</a></div>' +
+      '<div id="c-out"></div><div id="ag-out"></div></section>'
     );
   }
 
   function makingView() {
-    var ready = state.closer && state.closer.cards;
+    return artefactsView();
+  }
+
+  function artefactsView() {
     return (
       '<section class="chamber">' +
       '<div class="chamber-hero">' +
-      '<div class="eyebrow">Камера сборки</div>' +
-      "<h1>Мейкинг. <em>Неделя,</em> не план.</h1>" +
-      "<p class='lead'>Ткёт абстракцию, карточки, промпт и наскриненный тренд в семь дней, которые можно прожить. " +
-      "День 1 — вход в событие. Никогда «исследование».</p></div>" +
-      (ready
-        ? "<p class='muted'>Карточки уже на столе. Можно собрать неделю.</p>"
-        : "<p class='muted'>Если ещё не входили — камера соберёт событие из фразы. Лучше сначала лендинг.</p>") +
-      '<label>Уточнение к сборке (необязательно)</label>' +
-      '<textarea id="m-brief" placeholder="соберите неделю под мой контур… / боюсь менять кассу…"></textarea>' +
-      '<div class="row"><button type="button" class="btn btn-primary" id="m-run">Собрать неделю</button>' +
-      '<button type="button" class="btn btn-ghost" data-go="landing">В комнату</button></div>' +
+      '<div class="eyebrow">Artefacts</div>' +
+      "<h1>Панель и <em>предложение</em>.</h1>" +
+      "<p class='lead'>Метрики как артефакт — читать вслух. Генератор предложений собрал мейкинг и промо в одну папку. " +
+      "Tape Land лежит здесь же, не отдельным сервисом.</p></div>" +
+      '<label>Контур своими словами</label>' +
+      '<textarea id="m-brief" placeholder="касса как туман, онбординг жрёт маржу, хайп без денег…"></textarea>' +
+      '<div class="row">' +
+      '<button type="button" class="btn btn-primary" id="p-run">Панель</button>' +
+      '<button type="button" class="btn" id="o-run">Предложение</button>' +
+      '<button type="button" class="btn btn-ghost" data-st="two_leg_tape">Tape Land</button>' +
+      "</div>" +
       '<div id="m-out"></div></section>'
     );
   }
@@ -386,9 +461,9 @@
     }
     var c = state.catalog;
     var html = "";
-    if (state.view === "engine") html = engineView(c);
-    else if (state.view === "making") html = makingView();
-    else html = landingView();
+    if (state.view === "teammates" || state.view === "engine") html = teammatesView(c);
+    else if (state.view === "artefacts" || state.view === "making") html = artefactsView();
+    else html = chainView(c);
     viewEl.innerHTML = html;
     bind();
   }
@@ -456,6 +531,10 @@
     box.innerHTML = "<p class='status'>Собираю комнату…</p>";
     try {
       var out = await post("/api/v1/miniapp/landing", { brief: brief, lang: "ru" });
+      if (out.wall) {
+        box.innerHTML = wallHtml(out);
+        return;
+      }
       if (!out.ok) {
         box.innerHTML = "<p class='muted'>" + esc(out.detail || out.error || "Не собралось") + "</p>";
         return;
@@ -540,22 +619,87 @@
   }
 
   async function runStrategy(id) {
-    var extra = (document.getElementById("c-brief") || {}).value || id;
-    var box = document.getElementById("st-out") || document.getElementById("c-out");
+    var extra = (document.getElementById("q-brief") || document.getElementById("c-brief") || {}).value || id;
+    var box = document.getElementById("st-out") || document.getElementById("m-out") || document.getElementById("c-out");
     if (!box) return;
-    box.innerHTML = "<p class='status'>Собираю карту…</p>";
+    box.innerHTML = "<p class='status'>Собираю код модели…</p>";
     var out = await post("/api/v1/miniapp/strategy", { brief: extra, strategy: id });
+    if (out.wall) {
+      box.innerHTML = wallHtml(out);
+      return;
+    }
     box.innerHTML = artHtml(out.artifact);
     bindResonate(box);
   }
 
   async function runAgent(id) {
     var extra = (document.getElementById("c-brief") || {}).value || "";
-    if (extra.length < 8) extra = "Собрать агента для ниши " + id;
+    if (extra.length < 8) extra = "Собрать тимейта для ниши " + id;
     var box = document.getElementById("ag-out") || document.getElementById("c-out");
     if (!box) return;
     box.innerHTML = "<p class='status'>Собираю спеку…</p>";
-    var out = await post("/api/v1/miniapp/agent", { brief: extra, niche: id });
+    var out = await post("/api/v1/miniapp/teammate", { brief: extra, niche: id });
+    if (out.wall) {
+      box.innerHTML = wallHtml(out);
+      return;
+    }
+    box.innerHTML = artHtml(out.artifact);
+    bindResonate(box);
+  }
+
+  async function runRisk() {
+    var extra = (document.getElementById("q-brief") || {}).value || "риск без путаницы R и плеча";
+    var box = document.getElementById("st-out") || document.getElementById("q-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Риск-движок…</p>";
+    var out = await post("/api/v1/miniapp/risk", { brief: extra });
+    if (out.wall) {
+      box.innerHTML = wallHtml(out);
+      return;
+    }
+    box.innerHTML = artHtml(out.artifact);
+    bindResonate(box);
+  }
+
+  async function runPanel() {
+    var extra = (document.getElementById("m-brief") || {}).value || "панель контура";
+    var box = document.getElementById("m-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Панель…</p>";
+    var out = await post("/api/v1/miniapp/panel", { brief: extra });
+    if (out.wall) {
+      box.innerHTML = wallHtml(out);
+      return;
+    }
+    box.innerHTML = artHtml(out.artifact);
+    bindResonate(box);
+  }
+
+  async function runOffer() {
+    var extra = (document.getElementById("m-brief") || {}).value || "собери предложение";
+    var box = document.getElementById("m-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Предложение…</p>";
+    var out = await post("/api/v1/miniapp/offer", { brief: extra });
+    if (out.wall) {
+      box.innerHTML = wallHtml(out);
+      return;
+    }
+    box.innerHTML = artHtml(out.artifact);
+    bindResonate(box);
+  }
+
+  async function runWorkflow() {
+    var extra = (document.getElementById("c-brief") || {}).value || "";
+    if (extra.length < 8) extra = "собрать нового тимейта под живой контур";
+    var box = document.getElementById("c-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Воркфлоу…</p>";
+    var out = await post("/api/v1/miniapp/teammate", { brief: extra });
+    if (out.wall) {
+      box.innerHTML = wallHtml(out);
+      return;
+    }
     box.innerHTML = artHtml(out.artifact);
     bindResonate(box);
   }

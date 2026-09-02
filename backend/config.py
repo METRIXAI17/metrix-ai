@@ -70,6 +70,13 @@ TELEGRAM_PROVIDER_TOKEN = os.getenv("TELEGRAM_PROVIDER_TOKEN", "").strip()
 TELEGRAM_WEBAPP_URL = os.getenv("TELEGRAM_WEBAPP_URL", "").rstrip("/")
 # Payments off until ЮKassa / Tribute / Stars are wired.
 TELEGRAM_PAYMENTS = os.getenv("TELEGRAM_PAYMENTS", "0") == "1"
+# Tribute — merchant of record. We store HMAC entitlements, not questionnaires.
+TRIBUTE_API_KEY = os.getenv("TRIBUTE_API_KEY", "").strip()
+TRIBUTE_ACCESS_URL = os.getenv("TRIBUTE_ACCESS_URL", "").rstrip("/")
+TRIBUTE_CUSTOM_URL = os.getenv("TRIBUTE_CUSTOM_URL", "").rstrip("/")
+METRIX_TOKEN_SECRET = os.getenv("METRIX_TOKEN_SECRET", "").strip()
+HUMAN_CONTACT_URL = os.getenv("METRIX_HUMAN_URL", "https://x.com/karimmetrix").rstrip("/")
+FREE_RUNS = int(os.getenv("METRIX_FREE_RUNS", "2"))
 
 # ── Client niches (public site + process API) ────────────────────────────────
 INDUSTRIES: dict[str, dict[str, Any]] = {

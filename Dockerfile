@@ -26,6 +26,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend ./backend
 COPY public ./public
 COPY telegram_app ./telegram_app
+COPY robots ./robots
 COPY start.sh ./start.sh
 
 # Writable runtime dirs (ephemeral on Railway unless a volume is attached)

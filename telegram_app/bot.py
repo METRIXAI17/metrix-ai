@@ -17,6 +17,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from backend.config import HUMAN_CONTACT_URL, TRIBUTE_ACCESS_URL, TRIBUTE_CUSTOM_URL
+from backend.core.access import consume, is_entitled, redeem, subject_hash
 from backend.core.agent_studio import list_niches
 from backend.core.demo_highway import (
     build_demo,
@@ -28,6 +30,7 @@ from backend.core.demo_highway import (
 from backend.core.resonance import load as load_art
 from backend.core.resonance import resonate
 from backend.core.strategies import list_strategies
+from backend.core.teammates import list_teammates, workflow_payload
 from backend.core.x_posts import list_posts
 from backend.core.voice import IDLE_HINT
 from telegram_app import sessions
@@ -69,8 +72,8 @@ def _webapp() -> str:
 def main_keyboard() -> dict:
     return {
         "keyboard": [
-            [{"text": texts.MENU_LANDING}, {"text": texts.MENU_ENGINE}],
-            [{"text": texts.MENU_MAKING}],
+            [{"text": texts.MENU_CHAIN}, {"text": texts.MENU_TEAMMATES}],
+            [{"text": texts.MENU_ARTEFACTS}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -78,20 +81,37 @@ def main_keyboard() -> dict:
 
 
 def webapp_row(webapp: str) -> list[dict]:
-    return [{"text": "Лендинг-студия", "web_app": {"url": webapp}}]
+    return [{"text": "In-Out Chain", "web_app": {"url": webapp}}]
+
+
+def _tribute_url() -> str:
+    return TRIBUTE_ACCESS_URL or "https://t.me/tribute"
+
+
+def _human_url() -> str:
+    return HUMAN_CONTACT_URL or "https://x.com/karimmetrix"
+
+
+def subscribe_row() -> list[dict]:
+    return [{"text": "Access · 1 490 ₽", "url": _tribute_url()}]
+
+
+def human_row() -> list[dict]:
+    return [{"text": "Связаться с человеком", "url": _human_url()}]
 
 
 def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
     """Primary nav — three sections. Reply keyboard is a fallback; Telegram often hides it."""
     rows = [
         [
-            {"text": "Лендинг", "callback_data": "m:landing"},
-            {"text": "Движок", "callback_data": "m:engine"},
+            {"text": "In-Out Chain", "callback_data": "m:chain"},
+            {"text": "AI Teammates", "callback_data": "m:teammates"},
         ],
         [
-            {"text": "Мейкинг", "callback_data": "m:making"},
+            {"text": "Artefacts", "callback_data": "m:artefacts"},
         ],
         webapp_row(webapp),
+        subscribe_row(),
         [{"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"}],
     ]
     if extra:
@@ -121,6 +141,8 @@ def strategies_kb() -> dict:
             [{"text": "Target Place · золото", "callback_data": "st:target_place"}],
             [{"text": "Demand · крипта", "callback_data": "st:demand"}],
             [{"text": "Ampli · Америка", "callback_data": "st:ampli"}],
+            [{"text": "Two-Leg Tape · Tape Land", "callback_data": "st:two_leg_tape"}],
+            [{"text": "Risk Engine · отдельно", "callback_data": "rk:engine"}],
         ]
     }
 
@@ -128,10 +150,11 @@ def strategies_kb() -> dict:
 def niches_kb() -> dict:
     return {
         "inline_keyboard": [
-            [{"text": "SaaS / IT 50–500", "callback_data": "ag:saas"}],
-            [{"text": "Агентства digital / performance", "callback_data": "ag:agency"}],
-            [{"text": "Школы и обучение", "callback_data": "ag:edu"}],
-            [{"text": "E-com с высоким чеком", "callback_data": "ag:ecom"}],
+            [{"text": "Unit Desk · SaaS 50–500", "callback_data": "ag:saas"}],
+            [{"text": "Onboard Geometry · агентства", "callback_data": "ag:agency"}],
+            [{"text": "Cohort Step · школы", "callback_data": "ag:edu"}],
+            [{"text": "Order Cycle · e-com чек", "callback_data": "ag:ecom"}],
+            human_row(),
         ]
     }
 
@@ -208,7 +231,7 @@ class BotAPI:
                 )
                 self.send(
                     chat_id,
-                    "Лендинг · Движок · Мейкинг — кнопки под этим сообщением.",
+                    "In-Out Chain · AI Teammates · Artefacts — кнопки под этим сообщением.",
                     markup=kb,
                     html=False,
                 )
@@ -216,7 +239,7 @@ class BotAPI:
         self.send(chat_id, texts.START, markup=main_keyboard())
         self.send(
             chat_id,
-            "Лендинг · Движок · Мейкинг — кнопки под этим сообщением.",
+            "In-Out Chain · AI Teammates · Artefacts — кнопки под этим сообщением.",
             markup=kb,
             html=False,
         )
@@ -225,16 +248,16 @@ class BotAPI:
 def bootstrap(api: BotAPI, webapp: str) -> None:
     api.call(
         "setChatMenuButton",
-        menu_button={"type": "web_app", "text": "Лендинг", "web_app": {"url": webapp}},
+        menu_button={"type": "web_app", "text": "Chain", "web_app": {"url": webapp}},
     )
     api.call(
         "setMyCommands",
         commands=[
             {"command": "start", "description": "Кто я и как это работает"},
-            {"command": "landing", "description": "Видение события — войти в комнату"},
-            {"command": "engine", "description": "Тихий ассистент · идеи и точки роста"},
-            {"command": "making", "description": "Камера сборки — неделя, не план"},
-            {"command": "demo", "description": "Синоним лендинга"},
+            {"command": "chain", "description": "In-Out Chain — модели и подписка"},
+            {"command": "teammates", "description": "AI Teammates — агенты и воркфлоу"},
+            {"command": "artefacts", "description": "Artefacts — панель и предложения"},
+            {"command": "access", "description": "Metrix Access · 1 490 ₽"},
         ],
     )
     api.call("setMyDescription", description=texts.DESC)
@@ -261,7 +284,20 @@ def _send_artifact(api: BotAPI, chat_id: int, art: dict) -> None:
     api.send(chat_id, format_telegram(art), markup=resonance_kb(art["id"]))
 
 
+def _gate(api: BotAPI, chat_id: int, feature: str, webapp: str) -> bool:
+    sub = subject_hash(chat_id)
+    gate = consume(sub, feature)
+    if gate.get("allowed"):
+        return True
+    extra = [subscribe_row()]
+    api.send(chat_id, texts.ASK_ACCESS, markup=nav_inline(webapp, extra=extra), html=False)
+    return False
+
+
 def _run_demo(api: BotAPI, chat_id: int, brief: str, **kw) -> None:
+    feature = "strategy" if kw.get("strategy") or kw.get("hint") == "strategy" else "teammate" if kw.get("niche") or kw.get("hint") in ("agent", "teammates") else "artefact_panel"
+    if not _gate(api, chat_id, feature, _webapp()):
+        return
     api.send(chat_id, "Собираю…")
     try:
         art = build_demo(brief, **kw)
@@ -284,7 +320,7 @@ def _esc(s: str) -> str:
 
 
 def show_strategies(api: BotAPI, chat_id: int, webapp: str) -> None:
-    lines = ["<b>Три модели. Не сигналы.</b>\n"]
+    lines = ["<b>Четыре модели. Код, не сигналы.</b> Риск-движок — отдельно.\n"]
     for s in list_strategies():
         lines.append(
             f"<b>{_esc(s['name'])}</b> · {_esc(s['market'])}\n"
@@ -296,9 +332,13 @@ def show_strategies(api: BotAPI, chat_id: int, webapp: str) -> None:
 
 
 def show_agents(api: BotAPI, chat_id: int, webapp: str) -> None:
-    lines = ["<b>Билдер агентов.</b> Агент держит финмодель, не болтает.\n"]
-    for n in list_niches():
-        lines.append(f"<b>{_esc(n['title'])}</b>\n{_esc(n['pain'])}\n")
+    lines = ["<b>AI Teammates.</b> Тимейт держит финмодель, не болтает.\n"]
+    for n in list_teammates():
+        lines.append(f"<b>{_esc(n['codename'])}</b> · {_esc(n['title'])}\n{_esc(n['user_facing'])}\n")
+    wf = workflow_payload()
+    lines.append("<b>Воркфлоу нового решения</b>")
+    for step in wf["steps"]:
+        lines.append(f"· {_esc(step['title'])}: {_esc(step['do'])}")
     extra = niches_kb()["inline_keyboard"]
     api.send(chat_id, "\n".join(lines), markup=nav_inline(webapp, extra=extra))
 
@@ -308,25 +348,47 @@ def show_posts(api: BotAPI, chat_id: int, webapp: str) -> None:
     api.send(chat_id, texts.POSTS_INTRO, markup=nav_inline(webapp, extra=extra))
 
 
-def show_landing(api: BotAPI, chat_id: int, webapp: str) -> None:
+def show_chain(api: BotAPI, chat_id: int, webapp: str) -> None:
     sessions.set_mode(chat_id, "await_landing")
-    api.send(chat_id, texts.ASK_LANDING, markup=nav_inline(webapp), html=False)
+    extra = strategies_kb()["inline_keyboard"]
+    api.send(chat_id, texts.ASK_CHAIN, markup=nav_inline(webapp, extra=extra), html=False)
+
+
+def show_landing(api: BotAPI, chat_id: int, webapp: str) -> None:
+    show_chain(api, chat_id, webapp)
+
+
+def show_teammates(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_engine")
+    extra = niches_kb()["inline_keyboard"]
+    api.send(chat_id, texts.ASK_TEAMMATES, markup=nav_inline(webapp, extra=extra), html=False)
 
 
 def show_engine(api: BotAPI, chat_id: int, webapp: str) -> None:
-    sessions.set_mode(chat_id, "await_engine")
-    extra = strategies_kb()["inline_keyboard"] + niches_kb()["inline_keyboard"]
-    api.send(chat_id, texts.ASK_ENGINE, markup=nav_inline(webapp, extra=extra), html=False)
+    show_teammates(api, chat_id, webapp)
+
+
+def show_artefacts(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_making")
+    extra = [
+        [{"text": "Аналитическая панель", "callback_data": "af:panel"}],
+        [{"text": "Генератор предложений", "callback_data": "af:offer"}],
+        [{"text": "Tape Land · two-leg-tape", "callback_data": "st:two_leg_tape"}],
+    ]
+    api.send(chat_id, texts.ASK_ARTEFACTS, markup=nav_inline(webapp, extra=extra), html=False)
 
 
 def show_making(api: BotAPI, chat_id: int, webapp: str) -> None:
-    sessions.set_mode(chat_id, "await_making")
-    extra = posts_kb()["inline_keyboard"]
-    api.send(chat_id, texts.ASK_MAKING, markup=nav_inline(webapp, extra=extra), html=False)
+    show_artefacts(api, chat_id, webapp)
+
+
+def show_access(api: BotAPI, chat_id: int, webapp: str) -> None:
+    extra = [subscribe_row(), human_row()]
+    api.send(chat_id, texts.ASK_ACCESS, markup=nav_inline(webapp, extra=extra), html=False)
 
 
 def show_demo_prompt(api: BotAPI, chat_id: int, webapp: str) -> None:
-    show_landing(api, chat_id, webapp)
+    show_chain(api, chat_id, webapp)
 
 
 def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
@@ -337,14 +399,17 @@ def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
     if action == "help":
         api.send(chat_id, texts.HELP, markup=nav_inline(webapp), html=False)
         return
-    if action in ("landing", "demo"):
-        show_landing(api, chat_id, webapp)
+    if action == "access":
+        show_access(api, chat_id, webapp)
         return
-    if action in ("engine", "strategies", "agents"):
-        show_engine(api, chat_id, webapp)
+    if action in ("chain", "landing", "demo", "strategies"):
+        show_chain(api, chat_id, webapp)
         return
-    if action in ("making", "posts"):
-        show_making(api, chat_id, webapp)
+    if action in ("teammates", "engine", "agents"):
+        show_teammates(api, chat_id, webapp)
+        return
+    if action in ("artefacts", "making", "posts"):
+        show_artefacts(api, chat_id, webapp)
         return
 
 
@@ -359,14 +424,18 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
         return
     if data.startswith("m:"):
         action = {
-            "landing": "landing",
-            "demo": "landing",
-            "engine": "engine",
-            "strat": "engine",
-            "strategies": "engine",
-            "agents": "engine",
-            "making": "making",
-            "posts": "making",
+            "chain": "chain",
+            "landing": "chain",
+            "demo": "chain",
+            "teammates": "teammates",
+            "engine": "teammates",
+            "strat": "chain",
+            "strategies": "chain",
+            "agents": "teammates",
+            "artefacts": "artefacts",
+            "making": "artefacts",
+            "posts": "artefacts",
+            "access": "access",
         }.get(data.split(":", 1)[1])
         if action:
             dispatch_menu(api, chat_id, action, webapp)
@@ -390,7 +459,29 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
         sessions.set_mode(chat_id, "idle", strategy=sid)
         _run_demo(api, chat_id, f"стратегия {sid}", hint="strategy", strategy=sid)
         return
-    if data.startswith("ag:"):
+    if data.startswith("rk:"):
+        from backend.core.risk_engine import demo_card
+        from backend.core.resonance import remember
+
+        if not _gate(api, chat_id, "risk", webapp):
+            return
+        art = demo_card("риск-движок из бота")
+        art["id"] = art.get("id") or "risk"
+        remember(art)
+        api.send(chat_id, format_telegram(art), markup=resonance_kb(art["id"]))
+        return
+    if data.startswith("af:"):
+        kind = data.split(":", 1)[1]
+        if not _gate(api, chat_id, "artefact_panel" if kind == "panel" else "offer_gen", webapp):
+            return
+        from backend.core.artefacts import analytical_panel, offer_generator
+        from backend.core.resonance import remember
+
+        art = analytical_panel("контур из бота") if kind == "panel" else offer_generator("предложение из бота")
+        remember(art)
+        api.send(chat_id, format_telegram(art), markup=resonance_kb(art["id"]))
+        return
+    if data.startswith("ag:")
         nid = data.split(":", 1)[1]
         sessions.set_mode(chat_id, "await_agent_brief", niche=nid)
         api.send(chat_id, texts.ASK_AGENT, markup=nav_inline(webapp), html=False)
@@ -422,6 +513,15 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
     action = menu_action(raw)
     if action:
         dispatch_menu(api, chat_id, action, webapp)
+        return
+
+    if raw.startswith("mx_") or raw.lower().startswith("/access "):
+        token = raw.split(maxsplit=1)[-1].strip()
+        out = redeem(token, bind_subject=subject_hash(chat_id))
+        if out.get("ok"):
+            api.send(chat_id, "Access открыт. Одна подписка на все три вкладки.", markup=nav_inline(webapp))
+        else:
+            api.send(chat_id, "Токен не принят. Если только что оплатили Tribute — подождите минуту или напишите «связаться с человеком».")
         return
 
     if mode == "await_almost":
@@ -543,7 +643,7 @@ def main() -> int:
                     cid = chat.get("id") or ((upd.get("callback_query") or {}).get("from") or {}).get("id")
                     if cid:
                         try:
-                            api.send(cid, "Кнопка не прошла. Нажмите ещё раз — Лендинг, Движок или Мейкинг.", html=False)
+                            api.send(cid, "Кнопка не прошла. Нажмите ещё раз — In-Out Chain, AI Teammates или Artefacts.", html=False)
                         except Exception:
                             pass
         except KeyboardInterrupt:

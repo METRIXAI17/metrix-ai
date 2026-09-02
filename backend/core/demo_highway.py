@@ -24,9 +24,9 @@ def _has(text: str, *words: str) -> bool:
 
 def detect_lane(brief: str, hint: str = "") -> str:
     h = (hint or "").strip().lower()
-    if h in ("strategy", "agent", "model", "landing", "engine", "making"):
-        return h
-    if h in ("target_place", "demand", "ampli", "gold", "crypto", "us"):
+    if h in ("strategy", "agent", "model", "landing", "engine", "making", "chain", "teammates", "artefacts"):
+        return {"landing": "chain", "engine": "teammates", "making": "artefacts"}.get(h, h)
+    if h in ("target_place", "demand", "ampli", "two_leg_tape", "gold", "crypto", "us", "tape", "risk"):
         return "strategy"
     if h in ("saas", "agency", "edu", "ecom"):
         return "agent"
@@ -199,7 +199,7 @@ def build_demo(
         from backend.core.content_closer import run_closer
 
         closer_as_artifact = _caa
-        want_making = (hint or "").strip().lower() in ("making", "мейкинг")
+        want_making = (hint or "").strip().lower() in ("making", "мейкинг", "artefacts")
         closer = run_closer(
             text,
             lang="ru",
@@ -215,13 +215,13 @@ def build_demo(
     if niche and not strategy:
         lane = "agent"
 
-    if lane == "landing":
+    if lane in ("landing", "chain"):
         art = (
             closer_as_artifact(closer)
             if closer and closer_as_artifact
             else _model_artifact(text, {})
         )
-    elif lane == "making":
+    elif lane in ("making", "artefacts"):
         from backend.core.content_closer.making import MakingRefused, run_making_chamber
 
         if closer and closer.get("making"):
@@ -240,12 +240,14 @@ def build_demo(
             art = _model_artifact(text, harvested)
     elif lane == "strategy":
         art = run_strategy(strategy or hint, text)
-    elif lane == "agent":
-        art = build_agent(niche or hint, text)
+    elif lane in ("agent", "teammates"):
+        from backend.core.teammates import build_teammate
+
+        art = build_teammate(niche or hint, text)
     else:
         harvested = _harvest_pipeline(text, _industry_for(text, lane))
         art = _model_artifact(text, harvested)
-        if closer and lane in ("model", "engine"):
+        if closer and lane in ("model", "engine", "teammates"):
             # engine answers lead with the figure, then the model
             arch = (closer.get("abstraction") or {}).get("archetype")
             if arch and not str(art.get("title") or "").startswith(arch):

@@ -1,8 +1,10 @@
-"""Three named trading models. Models, not signals.
+"""Four named models. Code of an agreed model, not signals.
 
 1. Target Place — gold: entry/exit as places
 2. Demand — crypto: local names that fire inside a time window
 3. Ampli — US: collect amplitude, do not predict direction
+4. Two-Leg Tape — Tape Land: attention × money confirmation
+Risk engine is a separate module. It does not live inside these four.
 """
 
 from __future__ import annotations
@@ -45,11 +47,21 @@ STRATEGIES: dict[str, dict[str, Any]] = {
         "for_whom": "Кто торгует американскую сессию и путает мнение с расширением диапазона.",
         "image": "/assets/x-posts/ampli-us.jpg",
     },
+    "two_leg_tape": {
+        "id": "two_leg_tape",
+        "name": "Two-Leg Tape",
+        "market": "Tape Land",
+        "market_en": "tape",
+        "accent": "#67e8f9",
+        "one_liner": "Внимание обгоняет цену. Деньги подтверждают. Без плеча.",
+        "for_whom": "Кто путает хайп с ногой капитала и крутит множитель как плечо.",
+        "image": "/assets/x-posts/in-out-chain.jpg",
+    },
 }
 
 
 def list_strategies() -> list[dict[str, Any]]:
-    return [dict(STRATEGIES[k]) for k in ("target_place", "demand", "ampli")]
+    return [dict(STRATEGIES[k]) for k in ("target_place", "demand", "ampli", "two_leg_tape")]
 
 
 def _has(text: str, *words: str) -> bool:
@@ -199,10 +211,52 @@ def _ampli(brief: str) -> dict[str, Any]:
     }
 
 
+def _two_leg_tape(brief: str) -> dict[str, Any]:
+    hype = _has(brief, "памп", "хайп", "упомина", "twitter", "x.com", "плеч", "x10", "x20")
+    title = "Two-Leg Tape · две ноги"
+    if hype:
+        title = "Two-Leg Tape · не хайп и не плечо"
+    return {
+        "kind": "strategy.two_leg_tape",
+        "title": title,
+        "one_liner": "Нога A — внимание обгоняет цену. Нога C — деньги подтверждают. LIVE только вместе.",
+        "break": (
+            "Сырые упоминания не являются ногой. Плечо не является мультипликатором модели. "
+            "Пустой нарратив (хайп без денег) — серый список, не вход."
+        ),
+        "move": (
+            "A_score: внимание (объём / dominance) минус штраф за уже ушедшую цену. "
+            "C_score: объём к медиане, расширение диапазона, без перегретого funding. "
+            "LIVE — обе ноги на месте и цена держит. Выход — слом любой ноги. "
+            "Риск-движок считает размер отдельно: от стоп-триггера, не от «хочу 3R»."
+        ),
+        "steps": [
+            "Отметить ногу A: внимание растёт быстрее цены. Mentions сырьём не считать.",
+            "Отметить ногу C: деньги есть (объём / OI / приток). Без C — EMPTY.",
+            "LIVE только если обе ноги живы. Код события, не «сигнал на вход».",
+            "Стоп-триггер — слом ноги. Закрывающий триггер — конец подтверждения. Плечо = 0 в рекомендации.",
+        ],
+        "artifact_week": (
+            "Лист: 3 имени с режимом (LIVE / EMPTY / QUIET), A и C отдельно, "
+            "стоп-триггер, закрывающий триггер, поле leverage всегда пустое."
+        ),
+        "anti": [
+            "Не входить на хайпе без ноги денег.",
+            "Не называть LIVE-множитель плечом.",
+            "Не держать, когда любая нога сломалась.",
+        ],
+        "entry": "LIVE: внимание обгоняет цену и деньги подтверждают.",
+        "exit": "Слом ноги A или C — закрывающий триггер.",
+        "invalidation": "EMPTY_NARRATIVE или CROWDED — тезис мёртв.",
+        "window": "пока обе ноги живы",
+    }
+
+
 _BUILDERS = {
     "target_place": _target_place,
     "demand": _demand,
     "ampli": _ampli,
+    "two_leg_tape": _two_leg_tape,
 }
 
 
@@ -222,6 +276,11 @@ def resolve_strategy(name: str | None, brief: str = "") -> str:
         "америка": "ampli",
         "spy": "ampli",
         "nasdaq": "ampli",
+        "tape": "two_leg_tape",
+        "two_leg": "two_leg_tape",
+        "twoleg": "two_leg_tape",
+        "лента": "two_leg_tape",
+        "тейп": "two_leg_tape",
     }
     if key in STRATEGIES:
         return key
@@ -233,6 +292,8 @@ def resolve_strategy(name: str | None, brief: str = "") -> str:
         return "demand"
     if _has(brief, "америк", "nasdaq", "spy", "us500", "es "):
         return "ampli"
+    if _has(brief, "tape", "двух ног", "две ноги", "attention", "хайп"):
+        return "two_leg_tape"
     return key if key in STRATEGIES else "target_place"
 
 
@@ -261,6 +322,9 @@ def run_strategy(name: str | None = None, brief: str = "") -> dict[str, Any]:
             "invalidation": body.get("invalidation"),
             "places": body.get("places"),
             "window": body.get("window"),
+            "stop_trigger": body.get("invalidation"),
+            "close_trigger": body.get("exit"),
+            "legal": "код согласованной модели, не сигнал",
         },
         "disclaimer": DISCLAIMER,
         "highway": {

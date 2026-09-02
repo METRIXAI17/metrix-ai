@@ -48,26 +48,28 @@ BRIEF_METHOD = (
 
 
 def test_menu_three_sections():
-    assert menu_action("Лендинг") == "landing"
-    assert menu_action("Движок") == "engine"
-    assert menu_action("Мейкинг") == "making"
-    assert menu_action("/landing") == "landing"
-    assert menu_action("/engine@karimmetrixbot") == "engine"
-    assert menu_action("/making") == "making"
-    # old labels still resolve into the three
-    assert menu_action("Демо") == "landing"
-    assert menu_action("Стратегии") == "engine"
-    assert menu_action("Агенты") == "engine"
-    assert menu_action("Посты") == "making"
-    assert menu_action("/demo") == "landing"
+    assert menu_action("In-Out Chain") == "chain"
+    assert menu_action("AI Teammates") == "teammates"
+    assert menu_action("Artefacts") == "artefacts"
+    assert menu_action("Лендинг") == "chain"
+    assert menu_action("Движок") == "teammates"
+    assert menu_action("Мейкинг") == "artefacts"
+    assert menu_action("/landing") == "chain"
+    assert menu_action("/engine@karimmetrixbot") == "teammates"
+    assert menu_action("/making") == "artefacts"
+    assert menu_action("Демо") == "chain"
+    assert menu_action("Стратегии") == "chain"
+    assert menu_action("Агенты") == "teammates"
+    assert menu_action("Посты") == "artefacts"
+    assert menu_action("/demo") == "chain"
     assert menu_action("/start") == "start"
     assert menu_action("SaaS 80 человек без экономики") is None
 
 
 def test_lane_landing_making():
-    assert detect_lane("что угодно", "landing") == "landing"
-    assert detect_lane("что угодно", "making") == "making"
-    assert detect_lane("что угодно", "engine") == "engine"
+    assert detect_lane("что угодно", "landing") == "chain"
+    assert detect_lane("что угодно", "making") == "artefacts"
+    assert detect_lane("что угодно", "engine") == "teammates"
     assert detect_lane("торгую золото, догоняю ход") == "strategy"
 
 

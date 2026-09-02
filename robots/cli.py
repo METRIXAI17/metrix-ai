@@ -1,4 +1,4 @@
-"""CLI: python -m robots scan|paper|live|backtest <target_place|demand|ampli>"""
+"""CLI: python -m robots scan|paper|live|backtest <target_place|demand|ampli|two_leg_tape>"""
 
 from __future__ import annotations
 
@@ -46,6 +46,18 @@ def _scan_ampli() -> None:
     print(scan_line(Ampli(US_SYMBOL, US_OR_MINUTES).on_bars(bars)))
 
 
+def _scan_tape() -> None:
+    from robots.config import CRYPTO_TF, CRYPTO_WATCH
+    from robots.core.engine import scan_line
+    from robots.datafeed.binance_pub import fetch_binance
+    from robots.strategies.two_leg_tape import TwoLegTape
+
+    strat = TwoLegTape()
+    for symbol in CRYPTO_WATCH:
+        bars = fetch_binance(symbol, CRYPTO_TF, 200)
+        print(scan_line(strat.on_bars(bars, symbol)))
+
+
 def _backtest_target() -> None:
     from robots.brokers.paper import PaperBroker
     from robots.config import GOLD_SYMBOL, GOLD_TF, GOLD_YAHOO
@@ -85,7 +97,7 @@ def _backtest_target() -> None:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Target Place / Demand / Ampli robots")
     p.add_argument("cmd", choices=["scan", "paper", "live", "backtest"])
-    p.add_argument("robot", choices=["target_place", "demand", "ampli", "all"])
+    p.add_argument("robot", choices=["target_place", "demand", "ampli", "two_leg_tape", "all"])
     args = p.parse_args(argv)
 
     if args.cmd == "live":
@@ -94,7 +106,13 @@ def main(argv: list[str] | None = None) -> int:
         os.environ["ROBOT_MODE"] = "paper"
 
     if args.cmd == "scan":
-        {"target_place": _scan_target, "demand": _scan_demand, "ampli": _scan_ampli, "all": lambda: (_scan_target(), _scan_demand(), _scan_ampli())}[args.robot]()
+        {
+            "target_place": _scan_target,
+            "demand": _scan_demand,
+            "ampli": _scan_ampli,
+            "two_leg_tape": _scan_tape,
+            "all": lambda: (_scan_target(), _scan_demand(), _scan_ampli(), _scan_tape()),
+        }[args.robot]()
         return 0
     if args.cmd == "backtest":
         if args.robot not in ("target_place", "all"):
@@ -114,6 +132,10 @@ def main(argv: list[str] | None = None) -> int:
         from robots.bots.demand_bot import main as d
 
         d()
+        return 0
+    if args.robot == "two_leg_tape":
+        print("two_leg_tape: scan-only в 1.8.0 (без автоордера). py -m robots scan two_leg_tape")
+        _scan_tape()
         return 0
     from robots.bots.ampli_bot import main as a
 

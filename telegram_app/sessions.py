@@ -1,4 +1,4 @@
-"""Tiny file-backed sessions for the Telegram bot."""
+"""Tiny file-backed sessions. Filename is HMAC of chat_id, never the raw id."""
 
 from __future__ import annotations
 
@@ -8,13 +8,14 @@ from pathlib import Path
 from typing import Any
 
 from backend.config import DATA_DIR
+from backend.core.access import subject_hash
 
 DIR = DATA_DIR / "bot_sessions"
 
 
 def _path(chat_id: int) -> Path:
     DIR.mkdir(parents=True, exist_ok=True)
-    return DIR / f"{int(chat_id)}.json"
+    return DIR / f"{subject_hash(chat_id)}.json"
 
 
 def load(chat_id: int) -> dict[str, Any]:

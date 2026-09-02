@@ -45,7 +45,7 @@ def test_ampli_does_not_predict():
 
 def test_three_strategies_listed():
     ids = {s["id"] for s in list_strategies()}
-    assert ids == {"target_place", "demand", "ampli"}
+    assert ids == {"target_place", "demand", "ampli", "two_leg_tape"}
 
 
 def test_agent_niches_and_why_builder():
@@ -60,7 +60,7 @@ def test_agent_niches_and_why_builder():
 def test_demo_highway_and_resonance():
     art = build_demo("агентство performance, онбординг съедает маржу на каждом клиенте")
     assert art["id"]
-    assert art["lane"] in ("agent", "model")
+    assert art["lane"] in ("agent", "teammate", "model")
     html = format_telegram(art)
     assert "Где ломается" in html
     hit = resonate(art["id"], "зашло")

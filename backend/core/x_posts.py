@@ -12,6 +12,21 @@ from backend.core.voice import HANDLE, X_URL
 
 POSTS: list[dict[str, Any]] = [
     {
+        "id": "p00_in_out_chain",
+        "theme": "In-Out Chain",
+        "body": (
+            "In-Out Chain is live.\n\n"
+            "It kills routine, closes work that is already solved — and work that is not — "
+            "and cuts project cost on the way in and the way out.\n\n"
+            "Four models + a risk engine that does not confuse R-multiple with leverage. "
+            "Code of an agreed model, updated as-is. Not signals.\n\n"
+            "One subscription. Two free runs.\n"
+            "https://metrix-ai.vercel.app/chain — or the bot."
+        ),
+        "image": "/assets/x-posts/in-out-chain.jpg",
+        "lang": "en",
+    },
+    {
         "id": "p01_models_not_slides",
         "theme": "финансовые модели",
         "body": (

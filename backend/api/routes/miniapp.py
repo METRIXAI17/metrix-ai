@@ -18,6 +18,14 @@ from backend.core.functions import (
     run_digital_mockup,
     run_solution_logger,
 )
+from backend.core.access import (
+    apply_tribute_event,
+    consume,
+    quota_status,
+    redeem,
+    subject_hash,
+    verify_tribute_signature,
+)
 from backend.core.miniapp_catalog import bump_hit, catalog_payload
 from backend.core.order_terminal import mine_orders
 from backend.core.promo_lite import run_promo_lite
@@ -69,6 +77,23 @@ class InitHeaders:
 
 def _auth(x_telegram_init_data: str | None) -> dict[str, Any]:
     return validate_init_data(x_telegram_init_data or "")
+
+
+def _try_auth(x_telegram_init_data: str | None) -> dict[str, Any]:
+    try:
+        return validate_init_data(x_telegram_init_data or "")
+    except HTTPException:
+        return {"ok": False, "user": None}
+
+
+def _subject(auth: dict[str, Any]) -> str | None:
+    user = auth.get("user") or {}
+    uid = user.get("id") if isinstance(user, dict) else None
+    return subject_hash(uid) if uid else None
+
+
+def _gate(subject: str | None, feature: str) -> dict[str, Any]:
+    return consume(subject, feature)
 
 
 class BriefBody(BaseModel):
@@ -132,16 +157,74 @@ class MakingBody(BaseModel):
     closer: dict | None = None
 
 
+def _wall(gate: dict[str, Any]) -> dict[str, Any]:
+    from backend.config import HUMAN_CONTACT_URL, TRIBUTE_ACCESS_URL
+    from backend.core.product_180 import PRICING
+
+    return {
+        "ok": False,
+        "wall": True,
+        "cta": "Metrix Access · 1 490 ₽ / месяц",
+        "tribute": TRIBUTE_ACCESS_URL,
+        "human": HUMAN_CONTACT_URL,
+        "pricing": PRICING["access"],
+        **gate,
+    }
+
+
 @router.get("/catalog")
-def catalog(lang: str = "ru") -> dict[str, Any]:
+def catalog(
+    lang: str = "ru",
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
     payload = catalog_payload(lang)
-    from backend.config import TELEGRAM_PAYMENTS
+    from backend.config import HUMAN_CONTACT_URL, TELEGRAM_PAYMENTS, TRIBUTE_ACCESS_URL, TRIBUTE_CUSTOM_URL
 
     payload["payments"] = bool(TELEGRAM_PAYMENTS)
     payload["payments_note"] = (
         "free_launch" if not TELEGRAM_PAYMENTS else "invoices_on"
     )
+    auth = _try_auth(x_telegram_init_data)
+    payload["access"] = quota_status(_subject(auth))
+    payload["tribute"] = TRIBUTE_ACCESS_URL
+    payload["tribute_custom"] = TRIBUTE_CUSTOM_URL
+    payload["human"] = HUMAN_CONTACT_URL
     return {"ok": True, **payload}
+
+
+@router.get("/access")
+def access_get(x_telegram_init_data: str | None = Header(default=None)) -> dict[str, Any]:
+    return {"ok": True, **quota_status(_subject(_try_auth(x_telegram_init_data)))}
+
+
+class RedeemBody(BaseModel):
+    token: str = Field(..., min_length=8)
+
+
+@router.post("/access/redeem")
+def access_redeem(
+    body: RedeemBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    sub = _subject(_try_auth(x_telegram_init_data))
+    out = redeem(sanitize_text(body.token, max_len=128), bind_subject=sub)
+    return out
+
+
+@router.post("/tribute/webhook")
+async def tribute_webhook(request: Request) -> dict[str, Any]:
+    body = await request.body()
+    sig = request.headers.get("trbt-signature") or request.headers.get("Trbt-Signature") or ""
+    key = os.getenv("TRIBUTE_API_KEY", "")
+    if key and not verify_tribute_signature(body, sig, key):
+        raise HTTPException(401, "bad tribute signature")
+    try:
+        payload = json.loads(body.decode("utf-8") or "{}")
+    except json.JSONDecodeError as exc:
+        raise HTTPException(400, "bad json") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "bad payload")
+    return apply_tribute_event(payload)
 
 
 @router.post("/hit/{item_id}")
@@ -293,15 +376,94 @@ def strategies() -> dict[str, Any]:
 
 
 @router.post("/strategy")
-def strategy_run(body: DemoBody) -> dict[str, Any]:
+def strategy_run(
+    body: DemoBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
     from backend.core.demo_highway import format_telegram
     from backend.core.strategies import run_strategy
     from backend.core.resonance import remember
 
+    gate = _gate(_subject(_try_auth(x_telegram_init_data)), "strategy")
+    if not gate.get("allowed"):
+        return _wall(gate)
     brief = sanitize_text(body.brief or body.strategy or "карта мест", max_len=8_000)
     art = run_strategy(body.strategy or body.hint, brief)
     remember(art)
     bump_hit(art.get("strategy_id") or "target_place")
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
+@router.post("/risk")
+def risk_run(
+    body: DemoBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    from backend.core.demo_highway import format_telegram
+    from backend.core.resonance import remember
+    from backend.core.risk_engine import demo_card
+
+    gate = _gate(_subject(_try_auth(x_telegram_init_data)), "risk")
+    if not gate.get("allowed"):
+        return _wall(gate)
+    art = demo_card(sanitize_text(body.brief, max_len=4_000))
+    remember(art)
+    bump_hit("risk_engine")
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
+@router.post("/panel")
+def panel_run(
+    body: DemoBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    from backend.core.artefacts import analytical_panel
+    from backend.core.demo_highway import format_telegram
+    from backend.core.resonance import remember
+
+    gate = _gate(_subject(_try_auth(x_telegram_init_data)), "artefact_panel")
+    if not gate.get("allowed"):
+        return _wall(gate)
+    art = analytical_panel(sanitize_text(body.brief, max_len=8_000), lang=body.lang or "ru")
+    remember(art)
+    bump_hit("artefact_panel")
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
+@router.post("/offer")
+def offer_run(
+    body: DemoBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    from backend.core.artefacts import offer_generator
+    from backend.core.demo_highway import format_telegram
+    from backend.core.resonance import remember
+
+    gate = _gate(_subject(_try_auth(x_telegram_init_data)), "offer_gen")
+    if not gate.get("allowed"):
+        return _wall(gate)
+    art = offer_generator(sanitize_text(body.brief, max_len=8_000), lang=body.lang or "ru")
+    remember(art)
+    bump_hit("offer_gen")
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
+@router.post("/teammate")
+def teammate_run(
+    body: DemoBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    from backend.core.demo_highway import format_telegram
+    from backend.core.resonance import remember
+    from backend.core.teammates import build_teammate
+
+    gate = _gate(_subject(_try_auth(x_telegram_init_data)), "teammate")
+    if not gate.get("allowed"):
+        return _wall(gate)
+    brief = sanitize_text(body.brief, max_len=8_000)
+    art = build_teammate(body.niche or body.hint, brief)
+    remember(art)
+    bump_hit("agent_studio")
     return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
 
 
@@ -313,13 +475,19 @@ def niches() -> dict[str, Any]:
 
 
 @router.post("/agent")
-def agent_run(body: DemoBody) -> dict[str, Any]:
-    from backend.core.agent_studio import build_agent
+def agent_run(
+    body: DemoBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
     from backend.core.demo_highway import format_telegram
     from backend.core.resonance import remember
+    from backend.core.teammates import build_teammate
 
+    gate = _gate(_subject(_try_auth(x_telegram_init_data)), "teammate")
+    if not gate.get("allowed"):
+        return _wall(gate)
     brief = sanitize_text(body.brief, max_len=8_000)
-    art = build_agent(body.niche or body.hint, brief)
+    art = build_teammate(body.niche or body.hint, brief)
     remember(art)
     bump_hit("agent_studio")
     return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
