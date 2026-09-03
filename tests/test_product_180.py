@@ -68,6 +68,27 @@ def test_risk_does_not_confuse_r_with_leverage():
     assert r_after_close(entry=100, exit_px=103, stop=99, side="buy") == 3.0
 
 
+def test_geo_card_images_shipped():
+    root = ROOT / "public"
+    for s in list_strategies():
+        rel = str(s.get("image") or "").lstrip("/")
+        assert rel.startswith("assets/x-posts/geo-"), s
+        assert (root / rel).is_file(), rel
+    for t in list_teammates():
+        rel = str(t.get("image") or "").lstrip("/")
+        assert rel.startswith("assets/x-posts/geo-"), t
+        assert (root / rel).is_file(), rel
+    for name in (
+        "geo-chain.jpg",
+        "geo-start.jpg",
+        "geo-risk.jpg",
+        "geo-artefacts.jpg",
+        "geo-saas.jpg",
+    ):
+        assert (root / "tg" / "assets" / name).is_file(), name
+        assert (root / "assets" / "x-posts" / name).is_file(), name
+
+
 def test_teammates_user_facing():
     ids = {t["id"] for t in list_teammates()}
     assert ids == {"saas", "agency", "edu", "ecom"}

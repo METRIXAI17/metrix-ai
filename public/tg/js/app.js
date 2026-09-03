@@ -136,6 +136,37 @@
       .replace(/>/g, "&gt;");
   }
 
+  var GEO = {
+    chain: "/tg/assets/geo-chain.jpg",
+    target_place: "/tg/assets/geo-gold.jpg",
+    demand: "/tg/assets/geo-demand.jpg",
+    ampli: "/tg/assets/geo-ampli.jpg",
+    two_leg_tape: "/tg/assets/geo-tape.jpg",
+    risk: "/tg/assets/geo-risk.jpg",
+    saas: "/tg/assets/geo-saas.jpg",
+    agency: "/tg/assets/geo-agency.jpg",
+    edu: "/tg/assets/geo-edu.jpg",
+    ecom: "/tg/assets/geo-ecom.jpg",
+    artefacts: "/tg/assets/geo-artefacts.jpg",
+  };
+
+  function photoSrc(id, remote) {
+    return GEO[id] || remote || "";
+  }
+
+  function photoHtml(src, alt, cls) {
+    if (!src) return "";
+    return (
+      '<img class="' +
+      (cls || "card-photo") +
+      '" src="' +
+      esc(src) +
+      '" alt="' +
+      esc(alt || "") +
+      '" />'
+    );
+  }
+
   function cardsHtml(cards) {
     var items = (cards && cards.items) || [];
     if (!items.length) return "";
@@ -324,9 +355,7 @@
   function chainView(c) {
     var cards = (c.strategies || [])
       .map(function (s) {
-        var img = s.image
-          ? '<img class="card-photo" src="' + esc(s.image) + '" alt="' + esc(s.name) + '" />'
-          : "";
+        var img = photoHtml(photoSrc(s.id, s.image), s.name);
         return (
           '<article class="card card-flag" style="--flag-accent:' +
           esc(s.accent) +
@@ -351,6 +380,9 @@
         : "Бесплатно осталось " + acc + " результат(а)";
     return (
       '<section class="room">' +
+      '<div class="geo-hero">' +
+      photoHtml(GEO.chain, "In-Out Chain", "geo-hero-img") +
+      "</div>" +
       '<div class="room-head"><span class="room-pulse" aria-hidden="true"></span>' +
       '<div class="eyebrow">Флагман</div></div>' +
       "<h1>In-Out <em>Chain</em></h1>" +
@@ -368,6 +400,7 @@
       cards +
       "</div>" +
       '<article class="card card-flag" style="--flag-accent:#fb7185" data-rk="engine">' +
+      photoHtml(GEO.risk, "Risk Engine") +
       '<span class="tag">отдельно</span><h3>Risk Engine</h3>' +
       "<p>R — мера исхода. Плечо — размер. Движок их не путает.</p></article>" +
       '<div id="st-out"></div></section>'
@@ -386,7 +419,9 @@
           esc(n.accent) +
           '" data-ag="' +
           esc(n.id) +
-          '"><span class="tag">' +
+          '">' +
+          photoHtml(photoSrc(n.id, n.image), n.codename || n.title) +
+          '<span class="tag">' +
           esc(n.codename || n.size || "") +
           "</span><h3>" +
           esc(n.title) +
@@ -405,6 +440,9 @@
     var custom = c.tribute_custom || human;
     return (
       '<section class="comfort">' +
+      '<div class="geo-hero">' +
+      photoHtml(GEO.saas, "AI Teammates", "geo-hero-img") +
+      "</div>" +
       '<div class="eyebrow">AI Teammates</div>' +
       "<h1>Четыре тимейта. <em>Пятый</em> собирается.</h1>" +
       "<p class='lead'>Тимейт держит финмодель: единицу денег, молчание, артефакт, kill. Не чат.</p>" +
@@ -436,6 +474,7 @@
     return (
       '<section class="chamber">' +
       '<div class="chamber-hero">' +
+      photoHtml(GEO.artefacts, "Artefacts", "chamber-photo") +
       '<div class="eyebrow">Artefacts</div>' +
       "<h1>Панель и <em>предложение</em>.</h1>" +
       "<p class='lead'>Метрики как артефакт — читать вслух. Генератор предложений собрал мейкинг и промо в одну папку. " +

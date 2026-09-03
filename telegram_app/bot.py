@@ -6,6 +6,7 @@ Env: TELEGRAM_BOT_TOKEN, TELEGRAM_WEBAPP_URL, METRIX_PUBLIC_URL
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import time
@@ -40,6 +41,18 @@ from telegram_app.menu import menu_action
 HERE = Path(__file__).resolve().parent
 AVATAR = HERE / "avatar.jpg"
 MARK = ROOT / "public" / "tg" / "assets" / "mark.jpg"
+PHOTO_ROOT = ROOT / "public" / "assets" / "x-posts"
+SECTION_PHOTO = {
+    "start": PHOTO_ROOT / "geo-start.jpg",
+    "chain": PHOTO_ROOT / "geo-chain.jpg",
+    "teammates": PHOTO_ROOT / "geo-saas.jpg",
+    "artefacts": PHOTO_ROOT / "geo-artefacts.jpg",
+    "target_place": PHOTO_ROOT / "geo-gold.jpg",
+    "demand": PHOTO_ROOT / "geo-demand.jpg",
+    "ampli": PHOTO_ROOT / "geo-ampli.jpg",
+    "two_leg_tape": PHOTO_ROOT / "geo-tape.jpg",
+    "risk": PHOTO_ROOT / "geo-risk.jpg",
+}
 
 
 def _load_dotenv() -> None:
@@ -205,38 +218,72 @@ class BotAPI:
             data = self.call("sendMessage", **payload)
         return data
 
-    def send_start(self, chat_id: int, webapp: str) -> None:
-        photo = AVATAR if AVATAR.exists() else MARK
-        kb = start_inline(webapp)
-        if photo.exists():
-            with photo.open("rb") as f:
+    def send_photo(
+        self,
+        chat_id: int,
+        path: Path,
+        caption: str = "",
+        *,
+        markup: dict | None = None,
+        html: bool = True,
+    ) -> dict:
+        if not path or not path.exists():
+            return self.send(chat_id, caption or "…", markup=markup, html=html)
+        data: dict = {"chat_id": str(chat_id)}
+        cap = (caption or "")[:1024]
+        if cap:
+            data["caption"] = cap
+            if html:
+                data["parse_mode"] = "HTML"
+        if markup:
+            data["reply_markup"] = json.dumps(markup)
+        with path.open("rb") as f:
+            r = self.client.post(
+                f"{self.base}/sendPhoto",
+                data=data,
+                files={"photo": (path.name, f, "image/jpeg")},
+            )
+        try:
+            out = r.json()
+        except Exception:
+            out = {"ok": False}
+        if not out.get("ok") and html:
+            data.pop("parse_mode", None)
+            with path.open("rb") as f:
                 r = self.client.post(
                     f"{self.base}/sendPhoto",
-                    data={
-                        "chat_id": str(chat_id),
-                        "caption": texts.START,
-                        "parse_mode": "HTML",
-                    },
-                    files={"photo": ("mark.jpg", f, "image/jpeg")},
+                    data=data,
+                    files={"photo": (path.name, f, "image/jpeg")},
                 )
             try:
-                data = r.json()
+                out = r.json()
             except Exception:
-                data = {"ok": False}
-            if data.get("ok"):
-                self.send(
-                    chat_id,
-                    IDLE_HINT,
-                    markup=main_keyboard(),
-                    html=False,
-                )
-                self.send(
-                    chat_id,
-                    "In-Out Chain · AI Teammates · Artefacts — кнопки под этим сообщением.",
-                    markup=kb,
-                    html=False,
-                )
-                return
+                out = {"ok": False}
+        if not out.get("ok"):
+            print("tg error sendPhoto", out)
+            return self.send(chat_id, caption or "…", markup=markup, html=html)
+        return out
+
+    def send_start(self, chat_id: int, webapp: str) -> None:
+        photo = SECTION_PHOTO["start"]
+        if not photo.exists():
+            photo = AVATAR if AVATAR.exists() else MARK
+        kb = start_inline(webapp)
+        sent = self.send_photo(chat_id, photo, texts.START)
+        if sent.get("ok"):
+            self.send(
+                chat_id,
+                IDLE_HINT,
+                markup=main_keyboard(),
+                html=False,
+            )
+            self.send(
+                chat_id,
+                "In-Out Chain · AI Teammates · Artefacts — кнопки под этим сообщением.",
+                markup=kb,
+                html=False,
+            )
+            return
         self.send(chat_id, texts.START, markup=main_keyboard())
         self.send(
             chat_id,
@@ -360,7 +407,13 @@ def show_posts(api: BotAPI, chat_id: int, webapp: str) -> None:
 def show_chain(api: BotAPI, chat_id: int, webapp: str) -> None:
     sessions.set_mode(chat_id, "await_landing")
     extra = strategies_kb()["inline_keyboard"]
-    api.send(chat_id, texts.ASK_CHAIN, markup=nav_inline(webapp, extra=extra), html=False)
+    api.send_photo(
+        chat_id,
+        SECTION_PHOTO["chain"],
+        texts.ASK_CHAIN,
+        markup=nav_inline(webapp, extra=extra),
+        html=False,
+    )
 
 
 def show_landing(api: BotAPI, chat_id: int, webapp: str) -> None:
@@ -370,7 +423,13 @@ def show_landing(api: BotAPI, chat_id: int, webapp: str) -> None:
 def show_teammates(api: BotAPI, chat_id: int, webapp: str) -> None:
     sessions.set_mode(chat_id, "await_engine")
     extra = niches_kb()["inline_keyboard"]
-    api.send(chat_id, texts.ASK_TEAMMATES, markup=nav_inline(webapp, extra=extra), html=False)
+    api.send_photo(
+        chat_id,
+        SECTION_PHOTO["teammates"],
+        texts.ASK_TEAMMATES,
+        markup=nav_inline(webapp, extra=extra),
+        html=False,
+    )
 
 
 def show_engine(api: BotAPI, chat_id: int, webapp: str) -> None:
@@ -384,7 +443,13 @@ def show_artefacts(api: BotAPI, chat_id: int, webapp: str) -> None:
         [{"text": "Генератор предложений", "callback_data": "af:offer"}],
         [{"text": "Tape Land · two-leg-tape", "callback_data": "st:two_leg_tape"}],
     ]
-    api.send(chat_id, texts.ASK_ARTEFACTS, markup=nav_inline(webapp, extra=extra), html=False)
+    api.send_photo(
+        chat_id,
+        SECTION_PHOTO["artefacts"],
+        texts.ASK_ARTEFACTS,
+        markup=nav_inline(webapp, extra=extra),
+        html=False,
+    )
 
 
 def show_making(api: BotAPI, chat_id: int, webapp: str) -> None:

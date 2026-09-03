@@ -51,6 +51,7 @@ TEAMMATES: dict[str, dict[str, Any]] = {
         "codename": "Unit Desk",
         "title": "Unit Desk · SaaS / IT 50–500",
         "accent": "#a5b4fc",
+        "image": "/assets/x-posts/geo-saas.jpg",
         "size": "50–500 человек",
         "industry": "saas-founders",
         "job": (
@@ -94,6 +95,7 @@ TEAMMATES: dict[str, dict[str, Any]] = {
         "codename": "Onboard Geometry",
         "title": "Onboard Geometry · digital / performance",
         "accent": "#5eead4",
+        "image": "/assets/x-posts/geo-agency.jpg",
         "size": "агентства",
         "industry": "ai-agencies",
         "job": (
@@ -134,6 +136,7 @@ TEAMMATES: dict[str, dict[str, Any]] = {
         "codename": "Cohort Step",
         "title": "Cohort Step · школы и когорты",
         "accent": "#fda4af",
+        "image": "/assets/x-posts/geo-edu.jpg",
         "size": "онлайн-школы, когорты",
         "industry": "education",
         "job": (
@@ -174,6 +177,7 @@ TEAMMATES: dict[str, dict[str, Any]] = {
         "codename": "Order Cycle",
         "title": "Order Cycle · e-com с высоким чеком",
         "accent": "#fbbf24",
+        "image": "/assets/x-posts/geo-ecom.jpg",
         "size": "B2B и B2C, высокий чек",
         "industry": "ecommerce",
         "job": (
@@ -223,6 +227,7 @@ def list_teammates() -> list[dict[str, Any]]:
                 "title": t["title"],
                 "size": t["size"],
                 "accent": t["accent"],
+                "image": t.get("image") or "",
                 "job": t["job"],
                 "pain": t["pain"],
                 "user_facing": t["user_facing"],

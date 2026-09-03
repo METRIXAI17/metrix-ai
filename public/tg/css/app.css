@@ -203,13 +203,44 @@ h3 { font-size: 1.05rem; letter-spacing: -0.02em; }
   background: var(--flag-accent);
   border-radius: var(--radius) 0 0 var(--radius);
 }
+.geo-hero {
+  position: relative;
+  margin: 0 -1rem 1rem;
+  height: 176px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.geo-hero-img {
+  width: 100%;
+  height: 176px;
+  object-fit: cover;
+  object-position: center 42%;
+  display: block;
+}
+.geo-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 38%, var(--bg) 100%);
+  pointer-events: none;
+}
+.comfort .geo-hero {
+  margin: -0.95rem -1rem 0.95rem;
+  border-bottom-color: rgba(196, 181, 253, 0.22);
+}
+.comfort .geo-hero::after {
+  background: linear-gradient(180deg, transparent 38%, #12101a 100%);
+}
+
 .card-photo {
   width: calc(100% + 2.1rem);
   margin: -1rem -1.05rem 0.7rem;
-  height: 112px;
+  height: 158px;
   object-fit: cover;
+  object-position: center 40%;
   display: block;
   border-bottom: 1px solid var(--border);
+  filter: saturate(1.05) contrast(1.04);
 }
 .card-flag h3 { padding-left: 0.15rem; }
 .card-flag p { color: var(--text-muted); font-size: 0.86rem; flex: 1; }
@@ -497,6 +528,7 @@ textarea:focus, input:focus {
   margin-bottom: 1.2rem;
   padding: 0.95rem 1rem 1.05rem;
   border-radius: 16px;
+  overflow: hidden;
   border: 1px solid rgba(196, 181, 253, 0.28);
   background:
     radial-gradient(90% 80% at 100% 0%, rgba(196, 181, 253, 0.12), transparent 60%),
@@ -543,14 +575,25 @@ textarea:focus, input:focus {
   padding: 0.2rem 0 0.6rem;
 }
 .chamber-hero {
-  padding: 1rem 1.05rem 1.1rem;
+  padding: 0 1.05rem 1.1rem;
   border-radius: 16px;
   border: 1px solid rgba(251, 191, 36, 0.28);
   background:
     radial-gradient(110% 80% at 100% 0%, rgba(251, 191, 36, 0.14), transparent 55%),
     linear-gradient(180deg, #18140c, #100e0a);
   margin-bottom: 1rem;
+  overflow: hidden;
 }
+.chamber-photo {
+  width: calc(100% + 2.1rem);
+  margin: 0 -1.05rem 0.9rem;
+  height: 158px;
+  object-fit: cover;
+  object-position: center 45%;
+  display: block;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.22);
+}
+.chamber-hero .eyebrow { padding-top: 0.15rem; }
 .day {
   display: grid;
   grid-template-columns: 2.2rem 1fr;

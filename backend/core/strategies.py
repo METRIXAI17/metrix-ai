@@ -25,7 +25,7 @@ STRATEGIES: dict[str, dict[str, Any]] = {
         "accent": "#fbbf24",
         "one_liner": "Вход и выход — это места, не ощущения.",
         "for_whom": "Кто торгует золото и устал входить «потому что пошло».",
-        "image": "/assets/x-posts/target-place-gold.jpg",
+        "image": "/assets/x-posts/geo-gold.jpg",
     },
     "demand": {
         "id": "demand",
@@ -35,7 +35,7 @@ STRATEGIES: dict[str, dict[str, Any]] = {
         "accent": "#c4b5fd",
         "one_liner": "Сначала окно спроса, потом имя. Не наоборот.",
         "for_whom": "Кто смотрит местные истории, которые стреляют коротко.",
-        "image": "/assets/x-posts/demand-crypto.jpg",
+        "image": "/assets/x-posts/geo-demand.jpg",
     },
     "ampli": {
         "id": "ampli",
@@ -45,7 +45,7 @@ STRATEGIES: dict[str, dict[str, Any]] = {
         "accent": "#38bdf8",
         "one_liner": "Собирает амплитуду. Направление не угадывает.",
         "for_whom": "Кто торгует американскую сессию и путает мнение с расширением диапазона.",
-        "image": "/assets/x-posts/ampli-us.jpg",
+        "image": "/assets/x-posts/geo-ampli.jpg",
     },
     "two_leg_tape": {
         "id": "two_leg_tape",
@@ -55,7 +55,7 @@ STRATEGIES: dict[str, dict[str, Any]] = {
         "accent": "#67e8f9",
         "one_liner": "Внимание обгоняет цену. Деньги подтверждают. Без плеча.",
         "for_whom": "Кто путает хайп с ногой капитала и крутит множитель как плечо.",
-        "image": "/assets/x-posts/in-out-chain.jpg",
+        "image": "/assets/x-posts/geo-tape.jpg",
     },
 }
 
