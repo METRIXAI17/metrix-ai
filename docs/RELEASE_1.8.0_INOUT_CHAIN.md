@@ -8,7 +8,7 @@
 |---|---|---|
 | Имя флагмана | **In-Out Chain** | Формальный термин. Суть из текста: рутина + решённое/нерешённое + стоимость in и out |
 | Вкладки | Chain · AI Teammates · Artefacts | Как просили: chain / ai teammate / artefacts |
-| Подписка | **1 490 ₽ / мес** одна на всё | $5 не покрывает Tribute 10% + Railway floor + развитие |
+| Подписка | **3 290 ₽ / мес** одна на всё | Движок: две лестницы цен оставляли revenue_hinge дырявым. $5 не покрывает хостинг. |
 | Базовый бот | $200 | AI-tools |
 | Кастом | $500 | Custom Teammate |
 | Tape Land | от $2 490 | сложные проекты, отношение параметров |
@@ -46,7 +46,7 @@ Net Tribute с Access: 1 341 ₽. Payback < 1 месяца при удержан
 
 ## Tribute. Пошагово
 
-1. @tribute → продукт **Metrix Access**, 1 490 ₽ / месяц.
+1. @tribute → продукт **Metrix Access**, 3 290 ₽ / месяц.
 2. Settings → API Keys → ключ + Webhook URL = `https://metrix-ai-production.up.railway.app/api/v1/miniapp/tribute/webhook`
 3. Railway Variables: `TRIBUTE_API_KEY`, `TRIBUTE_ACCESS_URL` (ссылка на продукт), опционально `TRIBUTE_CUSTOM_URL` на $500.
 4. Проверка: тестовая оплата → бот «Access открыт» без просьбы имени.

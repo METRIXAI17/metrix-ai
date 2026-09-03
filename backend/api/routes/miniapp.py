@@ -164,7 +164,7 @@ def _wall(gate: dict[str, Any]) -> dict[str, Any]:
     return {
         "ok": False,
         "wall": True,
-        "cta": "Metrix Access · 1 490 ₽ / месяц",
+        "cta": "Metrix Access · 3 290 ₽ / месяц",
         "tribute": TRIBUTE_ACCESS_URL,
         "human": HUMAN_CONTACT_URL,
         "pricing": PRICING["access"],

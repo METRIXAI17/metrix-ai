@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from typing import Any
 
-VERSION = "1.8.0"
+VERSION = "1.8.1"
 CODENAME = "IN-OUT CHAIN"
-RELEASE = "2026-09-03-in-out-chain"
+RELEASE = "2026-09-03-access-3290"
 
 # ── Flagship ────────────────────────────────────────────────────────────────
 FLAGSHIP = {
@@ -59,22 +59,26 @@ TABS = [
 PRICING = {
     "access": {
         "sku": "access_month",
-        "rub": 1490,
-        "usd": 16,
+        "rub": 3290,
+        "usd": 35,
         "period": "month",
         "name": "Metrix Access",
         "covers": "все три вкладки, 4 модели, риск-движок, артефакты, обновления кода как есть",
         "why_not_5usd": (
             "После комиссии Tribute 10% с $5 остаётся $4.50. "
-            "Railway Hobby — это пол $5, не потолок. Второй сервис (отдельный рендер Tape Land) "
-            "съедает ещё $5–12. $5-подписка финансирует хостинг в ноль или в минус "
-            "и не оплачивает обновления моделей."
+            "Railway Hobby — это пол $5, не потолок. Access 3290 ₽ закрывает хостинг, "
+            "комиссию Tribute и развитие моделей. $2490 Main — другой SKU, после пилота."
+        ),
+        "why_3290": (
+            "Движок: две лестницы цен оставляли revenue_hinge дырявым. "
+            "Один публичный SKU Access = 3290 ₽. Net Tribute ≈ 2961 ₽. "
+            "Год = 32 900 ₽ (10 месяцев)."
         ),
     },
     "access_year": {
         "sku": "access_year",
-        "rub": 12900,
-        "usd": 139,
+        "rub": 32900,
+        "usd": 350,
         "period": "year",
         "name": "Metrix Access · год",
     },
@@ -189,16 +193,15 @@ RAILWAY = {
 # ── Unit economics (lead) ───────────────────────────────────────────────────
 LEAD = {
     "access": {
-        "price_rub": 1490,
-        "tribute_net_rub": round(1490 * 0.90),
-        "predicted_cac_rub": 650,
+        "price_rub": 3290,
+        "tribute_net_rub": round(3290 * 0.90),
+        "predicted_cac_rub": 900,
         "note": (
-            "Органика X + Telegram, без закупки на старте. "
-            "CAC ≈ время Карима на пост/ответ, приведённое к 650 ₽ на конверт. "
-            "Payback < 1 месяца при удержании ≥ 2 циклов."
+            "Органика X + Telegram. Стена 3290 жёстче, чем 1490. "
+            "Net Tribute ≈ 2961 ₽. Payback < 1 месяца при удержании ≥ 1 цикла."
         ),
-        "ltv_3mo_rub": 1490 * 3,
-        "conversion_from_paywall": "4–8% тех, кто получил hit-артефакт",
+        "ltv_3mo_rub": 3290 * 3,
+        "conversion_from_paywall": "3–6% тех, кто получил hit-артефакт",
     },
     "custom_teammate": {
         "price_usd": 500,

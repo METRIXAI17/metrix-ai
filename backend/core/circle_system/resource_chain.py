@@ -68,6 +68,8 @@ KIND_TO_SLOTS = {
     "market_unit_id": ("product_sol", "revenue_hinge", "role_lattice"),
     "artefact_id": (),  # filled from artefact.affects
     "human_note": ("outcome_frame",),
+    "terms": ("void_membrane", "revenue_hinge", "bound_shell"),
+    "legal": ("void_membrane", "bound_shell"),
     "data": ("signal_port", "success_gauge"),
     "compute": ("cloud_sol", "infra_sol"),
     "human": ("role_lattice", "product_sol"),

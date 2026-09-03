@@ -445,6 +445,14 @@ def paid_core_preview(body: AnalyticsBody) -> dict[str, Any]:
     }
 
 
+@router.get("/sales-readiness")
+def sales_readiness() -> dict[str, Any]:
+    """Access 3290 offer + ops gates. Main $2490 is not this SKU."""
+    from backend.core.sales_offer import sales_readiness as _sr
+
+    return _sr()
+
+
 @router.get("/circle-system")
 def circle_system_info() -> dict[str, Any]:
     """Circle-System overview + lexicon catalog (read/write words)."""

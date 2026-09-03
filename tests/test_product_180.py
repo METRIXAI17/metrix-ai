@@ -9,6 +9,7 @@ sys.path.insert(0, str(ROOT))
 from backend.core.access import consume, mint_token, redeem, subject_hash, token_hash
 from backend.core.artefacts import analytical_panel, offer_generator
 from backend.core.product_180 import FLAGSHIP, PRICING, VERSION
+from backend.core.sales_offer import ACCESS_RUB, access_offer, sales_readiness
 from backend.core.risk_engine import r_after_close, size
 from backend.core.strategies import list_strategies, run_strategy
 from backend.core.teammates import build_teammate, list_teammates
@@ -18,10 +19,17 @@ from telegram_app.menu import menu_action
 
 
 def test_version_and_flagship():
-    assert VERSION == "1.8.0"
+    assert VERSION.startswith("1.8")
     assert FLAGSHIP["name"] == "In-Out Chain"
-    assert PRICING["access"]["rub"] == 1490
+    assert PRICING["access"]["rub"] == 3290
+    assert ACCESS_RUB == 3290
     assert PRICING["access"]["usd"] != 5
+    offer = access_offer(lang="ru")
+    assert "3290" in offer["cta_ru"]
+    assert "гарантир" not in offer["copy"]["text"].lower()
+    ready = sales_readiness()
+    assert ready["access"]["rub"] == 3290
+    assert ready["main_package_ready"] is False
 
 
 def test_menu_three_formal_tabs():

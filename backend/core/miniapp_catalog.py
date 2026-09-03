@@ -9,6 +9,7 @@ from typing import Any
 from backend.config import DATA_DIR
 from backend.core.agent_studio import list_niches
 from backend.core.product_180 import catalog_overlay
+from backend.core.sales_offer import access_offer
 from backend.core.teammates import list_teammates, workflow_payload
 from backend.core.functions import FUNCTIONS
 from backend.core.strategies import list_strategies
@@ -222,6 +223,7 @@ def catalog_payload(lang: str = "ru") -> dict[str, Any]:
         "scheme": scheme_payload(),
         "promise": (
             "In-Out Chain → AI Teammates → Artefacts. "
-            "Одна подписка. Код согласованной модели, не сигналы."
+            "Одна подписка 3 290 ₽. Код согласованной модели, не сигналы."
         ),
+        "sales": access_offer(lang=lang),
     }

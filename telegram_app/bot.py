@@ -93,7 +93,7 @@ def _human_url() -> str:
 
 
 def subscribe_row() -> list[dict]:
-    return [{"text": "Access · 1 490 ₽", "url": _tribute_url()}]
+    return [{"text": "Access · 3 290 ₽", "url": _tribute_url()}]
 
 
 def human_row() -> list[dict]:
@@ -257,7 +257,7 @@ def bootstrap(api: BotAPI, webapp: str) -> None:
             {"command": "chain", "description": "In-Out Chain — модели и подписка"},
             {"command": "teammates", "description": "AI Teammates — агенты и воркфлоу"},
             {"command": "artefacts", "description": "Artefacts — панель и предложения"},
-            {"command": "access", "description": "Metrix Access · 1 490 ₽"},
+            {"command": "access", "description": "Metrix Access · 3 290 ₽"},
         ],
     )
     api.call("setMyDescription", description=texts.DESC)

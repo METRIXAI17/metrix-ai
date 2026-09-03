@@ -13,11 +13,11 @@ from typing import Any
 # Prices: RUB for RF cards (YooKassa), USD showcase, Stars for TG-native.
 SKUS: dict[str, dict[str, Any]] = {
     "access_month": {
-        "rub": 1490, "usd": 16, "stars": 0, "tier": "access",
+        "rub": 3290, "usd": 35, "stars": 0, "tier": "access",
         "name": "Metrix Access · месяц (все вкладки)",
     },
     "access_year": {
-        "rub": 12900, "usd": 139, "stars": 0, "tier": "access",
+        "rub": 32900, "usd": 350, "stars": 0, "tier": "access",
         "name": "Metrix Access · год",
     },
     "ai_tools_base": {
