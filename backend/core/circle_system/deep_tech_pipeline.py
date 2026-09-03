@@ -25,6 +25,7 @@ from backend.core.circle_system.ops_rules import OperationalRulesEngine
 from backend.core.circle_system.orchestration import DynamicOrchestrator
 from backend.core.circle_system.parameter_assembly import ParameterAssemblyEngine
 from backend.core.circle_system.pilot_predictor import PilotAccuracyPredictor
+from backend.core.circle_system.resource_chain import ResourceAssemblyEngine
 from backend.core.circle_system.resource_match import ResourceMatchEngine
 from backend.core.circle_system.super_program import SuperProgramMatcher
 from backend.core.circle_system.super_speed_assistant import SuperSpeedAssistant
@@ -36,7 +37,7 @@ class DeepTechMetrixPipeline:
     """End-to-end Deep Tech Metrix / Circle-System runner."""
 
     name = "Deep Tech Metrix Pipeline (3 global steps)"
-    version = "2026-07-30"
+    version = "2026-09-03"
 
     def __init__(self) -> None:
         self.certainty = CertaintyAnalyzer()
@@ -48,6 +49,7 @@ class DeepTechMetrixPipeline:
         self.terminals = TerminalSpecBuilder()
         self.orchestrator = DynamicOrchestrator()
         self.resources = ResourceMatchEngine()
+        self.resource_assembly = ResourceAssemblyEngine()
         self.ops_rules = OperationalRulesEngine()
         self.integrations = IntegrationLibrary()
         self.pilot_pred = PilotAccuracyPredictor()
@@ -70,13 +72,58 @@ class DeepTechMetrixPipeline:
         pilot_horizon_days: int = 21,
         core_metrics: dict[str, Any] | None = None,
         collab_authors: list[dict[str, Any]] | None = None,
+        resources: list[dict[str, Any]] | None = None,
+        vvi: float | None = None,
+        artefact_priors: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
+        # ── Act 0: Resource Assembly (no bind → no chain_id) ─────────────
+        ra = self.resource_assembly.bind(
+            resources,
+            request_payload={
+                "industry_id": industry_id,
+                "business": text,
+                "certainty": None,
+            },
+            voids={"vvi": float(vvi if vvi is not None else (core_metrics or {}).get("vvi") or 0.4)},
+        )
+
         # ── Global step 1–2 ──────────────────────────────────────────────
-        cert = self.certainty.run(text, industry_id=industry_id, lang=lang)
+        cert = self.certainty.run(
+            text,
+            industry_id=industry_id,
+            lang=lang,
+            artefact_priors=artefact_priors,
+        )
+        # Critical slot unbound → force U. Warmth will explain what is not assembled.
+        if ra.get("unbound_critical"):
+            from backend.core.circle_system.resource_chain import PARAM_TO_FORM
+
+            force_u = set()
+            for slot in ra["unbound_critical"]:
+                force_u.add(slot)
+                for pslot, form in PARAM_TO_FORM.items():
+                    if form == slot:
+                        force_u.add(pslot)
+            for p in cert.get("parameters") or []:
+                if p.get("slot") in force_u or PARAM_TO_FORM.get(p.get("slot")) in ra["unbound_critical"]:
+                    p["status"] = "uncertain"
+                    p["forced_u_reason"] = "unbound_critical_slot"
+            counts = cert.get("counts") or {}
+            params = cert.get("parameters") or []
+            cert["counts"] = {
+                "certain_yes": sum(1 for p in params if p.get("status") == "certain_yes"),
+                "certain_no": sum(1 for p in params if p.get("status") == "certain_no"),
+                "uncertain": sum(1 for p in params if p.get("status") == "uncertain"),
+            }
+            _ = counts
 
         # ── Global step 3A: super-speed on uncertainties ─────────────────
         speed = self.super_speed.run(cert, lang=lang)
         asm = self.assembly.run(cert, test_answers=test_answers)
+        # Assembly cannot honestly pass 0.45 while critical resources are unbound.
+        if ra.get("unbound_critical") and float(asm.get("assembly_score") or 0) >= 0.45:
+            asm = {**asm, "assembly_score": round(min(0.44, float(asm["assembly_score"]) * 0.9), 4)}
+            asm["resource_cap"] = "unbound_critical"
         sp = self.super_program.run(cert, assembly=asm)
 
         counts = cert.get("counts") or {}
@@ -100,8 +147,17 @@ class DeepTechMetrixPipeline:
                 fact = f"Параметр «{p.get('slot')}» исключён." if lang.startswith("ru") else f"Param «{p.get('slot')}» excluded."
                 nxt = "Не тратить ресурс пилота."
             else:
-                fact = f"Параметр «{p.get('slot')}» в неопределённости — нужна сборка." if lang.startswith("ru") else f"Param «{p.get('slot')}» undefined — needs assembly."
-                nxt = "Пройти тест-батарею Super Speed."
+                unbound = ra.get("unbound_critical") or []
+                if unbound:
+                    fact = (
+                        f"Не собрано: {', '.join(unbound)}. Это не консультация — слот пуст."
+                        if lang.startswith("ru")
+                        else f"Not assembled: {', '.join(unbound)}. This is not a consult — the slot is empty."
+                    )
+                    nxt = "Пристегнуть ресурс к критическому слоту." if lang.startswith("ru") else "Bind a resource to the critical slot."
+                else:
+                    fact = f"Параметр «{p.get('slot')}» в неопределённости — нужна сборка." if lang.startswith("ru") else f"Param «{p.get('slot')}» undefined — needs assembly."
+                    nxt = "Пройти тест-батарею Super Speed."
             answers_out.append(
                 self.warmth.render_answer(
                     status=st,
@@ -117,7 +173,12 @@ class DeepTechMetrixPipeline:
         term = self.terminals.run(lay, super_program=sp, certainty_result=cert)
         orch = self.orchestrator.run(lay, assembly=asm, config=orchestration_config)
         res = self.resources.run(text, certainty_result=cert, collab_authors=collab_authors)
-        rules = self.ops_rules.run(term, layers_result=lay)
+        res = {
+            **res,
+            "compatibility_score": ra.get("compatibility_score", res.get("compatibility_score")),
+            "resource_assembly": ra,
+        }
+        rules = self.ops_rules.run(term, layers_result=lay, artefacts=artefact_priors)
         integ = self.integrations.match_for_plan(orch)
         pred = self.pilot_pred.run(
             assembly=asm,
@@ -134,7 +195,7 @@ class DeepTechMetrixPipeline:
             resource_match=res,
             core_metrics=core_metrics,
         )
-        sup = self.support.run(fw)
+        sup = self.support.run(fw, artefacts=artefact_priors)
         arch = self.arch_prompts.run(
             certainty_result=cert,
             super_program=sp,
@@ -247,6 +308,8 @@ class DeepTechMetrixPipeline:
                 },
             },
             "certainty": cert,
+            "chain_id": ra.get("chain_id"),
+            "resource_assembly": ra,
             "super_speed": speed,
             "assembly": asm,
             "super_program": sp,
@@ -339,6 +402,7 @@ def circle_system_overview() -> dict[str, Any]:
             "terminal_specs",
             "orchestration",
             "resource_match",
+            "resource_assembly",
             "ops_rules",
             "integration_lib",
             "pilot_predictor",

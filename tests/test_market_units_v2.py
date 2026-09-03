@@ -285,6 +285,19 @@ def test_pipeline_includes_market_units_v2():
     assert any(
         "PQI" in s or "Primary problem" in s for s in (resp.get("next_steps") or [])
     )
+    assert "chain" in meta
+    assert meta["chain"].get("chain_id") or meta["chain"].get("ok") is False
+
+
+def test_a2a_chain_mode_returns_handoffs():
+    out = run_enriched_market_unit(
+        "ai-agencies",
+        business_text=STRESS_BRIEFS["ai-agencies"],
+        chain_mode="a2a",
+    )
+    assert out.get("chain_mode") == "a2a"
+    assert out.get("a2a_chain", {}).get("topology") == "a2a"
+    assert "artefact_handoffs" in out["a2a_chain"]
 
 
 def test_catalog_units_count_stable():

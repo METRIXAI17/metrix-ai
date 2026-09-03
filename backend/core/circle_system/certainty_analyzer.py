@@ -73,7 +73,14 @@ class CertaintyAnalyzer:
 
     name = "Certainty Analyzer (params + indirect CY/CN/U)"
 
-    def run(self, text: str, *, industry_id: str = "", lang: str = "ru") -> dict[str, Any]:
+    def run(
+        self,
+        text: str,
+        *,
+        industry_id: str = "",
+        lang: str = "ru",
+        artefact_priors: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
         text = text or ""
         sentences = _sentences(text)
         layers = detect_markers(text, LAYER_NEED_MARKERS)
@@ -164,6 +171,20 @@ class CertaintyAnalyzer:
             unc_score = clamp01(
                 0.3 + 0.2 * local_u + (0.25 if has_hedge else 0) - 0.35 * max(yes_score, no_score)
             )
+            # Artefact cy_cn_u_hint is a PRIOR only — never the truth.
+            for ap in artefact_priors or []:
+                hint = str(ap.get("cy_cn_u_hint") or "U").upper()
+                affects = ap.get("affects") or []
+                form_slot = p.get("slot")
+                if form_slot not in affects and p.get("slot") not in affects:
+                    continue
+                if hint == "U" or ap.get("evidence_grade") == "contested":
+                    unc_score = clamp01(unc_score + 0.08)
+                    yes_score = clamp01(yes_score - 0.04)
+                elif hint == "CY":
+                    yes_score = clamp01(yes_score + 0.08)  # cannot alone flip ≥0.55 from 0
+                elif hint == "CN":
+                    no_score = clamp01(no_score + 0.08)
 
             if yes_score >= 0.55 and yes_score > no_score and yes_score > unc_score:
                 status = "certain_yes"

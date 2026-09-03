@@ -82,6 +82,7 @@
     bindModal();
     bindForm();
     bindFreeWork();
+    bindChainStart();
     bindGenerate();
     bindPromo();
     bindFunding();
@@ -954,6 +955,42 @@
     $("#cr-blurb").textContent = idea.summary || data.summary || data.message || "";
     if ($("#cr-niche-answer")) $("#cr-niche-answer").textContent = "";
     if ($("#cr-links")) $("#cr-links").innerHTML = "";
+  }
+
+  function bindChainStart() {
+    $("#chain-start")?.addEventListener("click", async () => {
+      const business =
+        ($("#req-business")?.value || "").trim() ||
+        (lang() === "ru"
+          ? "Бесплатная консультация: операционный контур магазина, выбрать направление и пилот."
+          : "Free consult for my shop ops contour: pick a direction and a 14-day pilot.");
+      try {
+        const res = await fetch(`${apiBase()}${D.api.chainB2cStartPath}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business,
+            industry: $("#req-industry")?.value || "ecommerce",
+            lang: lang(),
+            track: "all",
+          }),
+        });
+        const data = await res.json();
+        state.freeWork = data.free_work || data;
+        const box = $("#consult-result");
+        if (box) {
+          box.hidden = false;
+          if ($("#cr-headline")) $("#cr-headline").textContent = data.public_sigil || data.chain_id || "chain";
+          if ($("#cr-meta")) $("#cr-meta").textContent = data.chain_id || "";
+          if ($("#cr-blurb")) {
+            $("#cr-blurb").textContent = (data.copy && data.copy.text) || t("chain_stepper_lead");
+          }
+        }
+        document.querySelector("[data-mode-jump='request']")?.click();
+      } catch (e) {
+        console.warn("chain start", e);
+      }
+    });
   }
 
   function bindFreeWork() {

@@ -51,7 +51,7 @@ class PilotAccuracyPredictor:
         # Initial embedding quality y0
         y0 = clamp01(0.35 * a + 0.25 * j + 0.2 * c + 0.15 * r + 0.05 * (1 - open_u))
         L = self.predetermined_L
-        k = clamp01(0.15 + 0.35 * a + 0.2 * c)  # growth rate
+        k = clamp01(0.12 + 0.30 * a + 0.18 * c + 0.20 * r)  # growth: assembly + consistency + resource compat → L=0.92
 
         # Simulate discrete logistic over horizon
         trajectory = []

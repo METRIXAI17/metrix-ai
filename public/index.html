@@ -82,8 +82,17 @@
         </h1>
         <p class="hero-lead" id="master-offer-sub" hidden></p>
         <p class="hero-sub2 hero-sub-shimmer" id="master-offer-sub2" data-i18n="hero_sub"></p>
+        <ol class="chain-stepper" id="chain-stepper" aria-label="Consult direction ship">
+          <li data-i18n="chain_step_1">Consult</li>
+          <li data-i18n="chain_step_2">Direction</li>
+          <li data-i18n="chain_step_3">Ship</li>
+        </ol>
+        <p class="hero-sub2" data-i18n="chain_stepper_lead">Creates a sequence id. Not a lead into nowhere.</p>
         <div class="hero-actions">
-          <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
+          <button type="button" class="btn btn-primary" id="chain-start" data-i18n="cta_chain">
+            Start free work
+          </button>
+          <button type="button" class="btn btn-ghost" data-mode-jump="request" data-i18n="cta_consult">
             Consult + Tech-TZ
           </button>
           <button type="button" class="btn btn-ghost mode-fire-btn" data-mode-jump="generate" data-i18n="cta_generate">

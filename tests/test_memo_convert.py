@@ -46,6 +46,9 @@ def test_memo_convert_basic():
     assert len(out["technical_tasks"]) >= 2
     assert out["categorical_data"]["dominant_category"]
     assert out["engine_on_same_arch"]["feasible"] is True
+    assert out.get("convert_v2") is True
+    assert "chain_pack" in out
+    assert out["chain_pack"].get("invented_slots") is False
     assert "tech write" in out["technical_tasks"][0]["language"].lower() or "TASK" in out[
         "technical_tasks"
     ][0]["language"]

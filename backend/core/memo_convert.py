@@ -156,6 +156,7 @@ class MemoConvertResult:
     complexity_gates: list[dict[str, Any]]
     engine_on_same_arch: dict[str, Any]
     summary: str
+    chain_pack: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -170,6 +171,8 @@ class MemoConvertResult:
             "complexity_gates": self.complexity_gates,
             "engine_on_same_arch": self.engine_on_same_arch,
             "summary": self.summary,
+            "chain_pack": self.chain_pack,
+            "convert_v2": True,
         }
 
 
@@ -190,7 +193,7 @@ class MemoConvertEngine:
     """
 
     name = "Memo Convert Engine"
-    version = "1.0.0"
+    version = "1.2.0"
 
     # Function library (selectable abstractions — not execution methods)
     FUNCTIONS: dict[str, dict[str, Any]] = {
@@ -251,6 +254,7 @@ class MemoConvertEngine:
         system_features: dict[str, Any] | None = None,
         success: dict[str, Any] | None = None,
         ideas: list[dict[str, Any]] | None = None,
+        chain_id: str | None = None,
     ) -> MemoConvertResult:
         orientation = orientation or {}
         oae = oae or {}
@@ -319,6 +323,17 @@ class MemoConvertEngine:
             f"same_arch_engine={'yes' if same_arch.get('feasible') else 'partial'}."
         )
 
+        chain_pack = self._chain_pack(
+            chain_id=chain_id,
+            system_state=system_state,
+            analog=analog,
+            tech_tasks=tech_tasks,
+            industry_id=industry_id,
+        )
+        if chain_pack.get("unbound_critical"):
+            system_state = {**system_state, "unbound_critical": chain_pack["unbound_critical"]}
+        summary = f"{summary} convert_v2 chain_pack={'yes' if chain_pack else 'empty'}."
+
         return MemoConvertResult(
             module=self.name,
             version=self.version,
@@ -331,7 +346,83 @@ class MemoConvertEngine:
             complexity_gates=gates,
             engine_on_same_arch=same_arch,
             summary=summary,
+            chain_pack=chain_pack,
         )
+
+    def _chain_pack(
+        self,
+        *,
+        chain_id: str | None,
+        system_state: dict[str, Any],
+        analog: dict[str, Any],
+        tech_tasks: list[Any],
+        industry_id: str,
+    ) -> dict[str, Any]:
+        """Relays what is already assembled. Does not invent missing slots."""
+        from backend.core.circle_system.copy_firmware import CopyFirmware
+        from backend.core.circle_system.chain_store import load_chain
+
+        rec = load_chain(chain_id) if chain_id else None
+        ra = (rec or {}).get("resource_assembly") or {}
+        topology = (rec or {}).get("topology") or "b2c"
+        unbound = list(ra.get("unbound_critical") or [])
+        fw = CopyFirmware()
+        copy_blocks = {
+            "b2c": fw.offer_block(
+                who="client",
+                void="unbound: " + ",".join(unbound) if unbound else "consult void",
+                gate="assembly≥0.45",
+                price="free → pilot → main $2490",
+                not_included="Main before gates",
+                voice="b2c",
+                lang="en",
+            ),
+            "a2a": fw.offer_block(
+                who="slot owner",
+                void="handoff artefact",
+                gate="sync_score",
+                price="coordination",
+                not_included="B2C stepper",
+                voice="a2a",
+                lang="en",
+            ),
+            "tech_write": fw.offer_block(
+                who="spec",
+                void="terminal",
+                gate="ASM",
+                price="n/a",
+                not_included="warmth in facts",
+                voice="tech_write",
+                lang="en",
+            ),
+        }
+        pack = {
+            "b2c_path": topology in ("b2c", "dual"),
+            "a2a_path": topology in ("a2a", "dual"),
+            "bound_resources": ra.get("bound_slots") or {},
+            "artefacts": (rec or {}).get("artefacts_applied") or [],
+            "naming_sigils": {
+                "chain": ra.get("public_sigil") or (rec or {}).get("public_sigil"),
+                "internal_id": chain_id or ra.get("chain_id"),
+            },
+            "gates_snapshot": {
+                "vvi": (system_state.get("metrics") or {}).get("vvi"),
+                "er": (system_state.get("metrics") or {}).get("er"),
+                "rrc": (system_state.get("metrics") or {}).get("rrc"),
+                "assembly": ra.get("compatibility"),
+                "consistency": (rec or {}).get("consistency"),
+            },
+            "copy_blocks": copy_blocks,
+            "miniapp_case_stub": {
+                "ready": not unbound and float(ra.get("compatibility") or 0) >= 0.45,
+                "sigil": (rec or {}).get("public_sigil"),
+            },
+            "unbound_critical": unbound,
+            "invented_slots": False,
+            "function": analog.get("selected_function"),
+            "tech_task_0": (tech_tasks[0].to_dict() if tech_tasks and hasattr(tech_tasks[0], "to_dict") else (tech_tasks[0] if tech_tasks else None)),
+        }
+        return pack
 
     # ── 1. System intake ───────────────────────────────────────────────────
 

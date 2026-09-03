@@ -44,6 +44,7 @@ class FreeWorkFlow:
         numbers: dict[str, Any] | None = None,
         request_id: str | None = None,
         include_founders_lane: bool = False,  # reserved; not exposed to clients yet
+        resources: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         _ = include_founders_lane  # deferred product decision
         work_id = str(uuid.uuid4())
@@ -57,6 +58,7 @@ class FreeWorkFlow:
             product_name="Metrix Free Work",
             client_label=name or "client",
             core_metrics=None,
+            resources=resources,
         )
         direction = natural_direction or (
             (circle.get("layers") or {}).get("confirmed_layers") or ["ops"]
@@ -177,6 +179,7 @@ class FreeWorkFlow:
             "tech_write_preview": tech_md[:4000],
             "circle_summary": {
                 "assembly_score": (circle.get("assembly") or {}).get("assembly_score"),
+                "chain_id": circle.get("chain_id"),
                 "consistency": (circle.get("layers") or {}).get("consistency_score"),
                 "counts": (circle.get("certainty") or {}).get("counts"),
                 "primary_super_program": ((circle.get("super_program") or {}).get("primary") or {}).get(

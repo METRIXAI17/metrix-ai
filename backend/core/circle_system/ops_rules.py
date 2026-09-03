@@ -15,6 +15,7 @@ class OperationalRulesEngine:
         self,
         terminal_specs: dict[str, Any],
         layers_result: dict[str, Any] | None = None,
+        artefacts: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         specs = terminal_specs.get("terminal_functions") or []
         segments: list[dict[str, Any]] = []
@@ -96,6 +97,20 @@ class OperationalRulesEngine:
                 "if": "pilot_predictor.accuracy>=0.7 AND pilot_success",
                 "then": "offer_main_package",
             },
+            {
+                "id": "R7_artefact_informed_ticket",
+                "if": "anomaly AND traditional_artefact.affects_slot",
+                "then": "open_ticket_with_artefact_hook_human_owner_stays",
+            },
+        ]
+        artefact_hooks = [
+            {
+                "artefact_id": a.get("id"),
+                "sigil": a.get("sigil"),
+                "hooks": a.get("chain_hooks") or [],
+                "risk_delta": a.get("risk_delta"),
+            }
+            for a in (artefacts or [])
         ]
 
         return {
@@ -103,6 +118,7 @@ class OperationalRulesEngine:
             "segments": segments,
             "tech_write_phases": phases,
             "rules": rules,
+            "artefact_hooks": artefact_hooks,
             "segment_count": len(segments),
             "rule": "Tech write is inserted phase-by-phase; system is split into analysis segments.",
         }

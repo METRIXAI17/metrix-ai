@@ -33,6 +33,7 @@ class ClientRequest:
     # UI language (en|ru). Empty → auto-detect from business text.
     lang: str = ""
     extra_params: dict[str, float] = field(default_factory=dict)
+    resources: list[dict[str, Any]] = field(default_factory=list)
     # Custom success metrics positioning → becomes unique TZ for the query
     # Example: {"weights": {"iroi": 0.4}, "targets": {"clarity": 0.7}, "priority": ["iroi","impact"]}
     success_metrics: dict[str, Any] = field(default_factory=dict)
@@ -69,6 +70,7 @@ class ClientRequest:
             program_id=data.get("program_id"),
             lang=lang_raw,
             extra_params=dict(data.get("extra_params") or {}),
+            resources=list(data.get("resources") or []),
             success_metrics=dict(data.get("success_metrics") or {}),
             enable_self_improve=bool(data.get("enable_self_improve", True)),
             enable_fin_models=bool(data.get("enable_fin_models", True)),

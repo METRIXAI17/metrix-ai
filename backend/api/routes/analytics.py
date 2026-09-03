@@ -55,6 +55,9 @@ class AnalyticsBody(BaseModel):
     success_metrics: dict = Field(default_factory=dict)
     info_roi_hint: float = 2.0
     force_paid: bool = True
+    chain_mode: str | None = None
+    chain_id: str | None = None
+    resources: list[dict] = Field(default_factory=list)
 
 
 class CircleBody(BaseModel):
@@ -66,6 +69,8 @@ class CircleBody(BaseModel):
     client_label: str = "client"
     days_elapsed: int = 0
     pilot_horizon_days: int = 21
+    resources: list[dict] = Field(default_factory=list)
+    artefact_ids: list[str] = Field(default_factory=list)
 
 
 class FreeWorkStartBody(BaseModel):
@@ -182,6 +187,8 @@ def market_units_run(body: AnalyticsBody) -> dict[str, Any]:
         health=float(um.get("health_score") or um.get("health") or 0.5),
         success_composite=float(scores.get("overall_orientation") or 0.5),
         decision_mode="scoring",
+        chain_mode=body.chain_mode,
+        chain_id=body.chain_id,
     )
 
 
@@ -211,6 +218,7 @@ def memo_convert_preview(body: AnalyticsBody) -> dict[str, Any]:
                 "score": float((orientation.get("scores") or {}).get("overall_orientation", 0.5)),
             }
         ],
+        chain_id=body.chain_id,
     ).to_dict()
 
 
@@ -448,6 +456,15 @@ def circle_system_info() -> dict[str, Any]:
             "GET /analytics/circle-system": "Overview + modules",
             "GET /analytics/support-system": "How support works + refs",
             "GET /analytics/knowledge": "Expert knowledge libraries",
+            "POST /analytics/chain/resources/bind": "Resource assembly — first act of chain",
+            "GET /analytics/chain/{chain_id}": "Load assembled chain",
+        },
+        "resource_assembly": {
+            "role": "first act of chain — bind resources to constructor-form slots",
+            "rule": "no bind → no chain_id",
+            "not": "zip archive / file warehouse",
+            "bind": "POST /api/v1/analytics/chain/resources/bind",
+            "get": "GET /api/v1/analytics/chain/{chain_id}",
         },
     }
 
@@ -460,6 +477,9 @@ def deep_tech_run(body: CircleBody) -> dict[str, Any]:
       B super-speed tests + assembly + super program + warmth answers
       C circle autopilot stack (pilot, support, white-label prompts)
     """
+    from backend.core.circle_system.knowledge_libs import get_traditional_artefact
+
+    priors = [get_traditional_artefact(i) for i in (body.artefact_ids or [])]
     return run_deep_tech_pipeline(
         body.business,
         industry_id=body.industry,
@@ -469,6 +489,8 @@ def deep_tech_run(body: CircleBody) -> dict[str, Any]:
         client_label=body.client_label,
         days_elapsed=body.days_elapsed,
         pilot_horizon_days=body.pilot_horizon_days,
+        resources=body.resources or None,
+        artefact_priors=[p for p in priors if p],
     )
 
 
@@ -493,7 +515,136 @@ def support_system_doc() -> dict[str, Any]:
 @router.get("/knowledge")
 def knowledge_libs(q: str = "pilot metrics assembly") -> dict[str, Any]:
     """Life-app expert knowledge libraries search."""
-    return ExpertKnowledgePlatform().search(q)
+    from backend.core.circle_system.knowledge_libs import search_traditional_artefacts
+
+    base = ExpertKnowledgePlatform().search(q)
+    base["traditional_artefacts"] = search_traditional_artefacts(q, limit=8)
+    return base
+
+
+class ResourceBindBody(BaseModel):
+    resources: list[dict] = Field(default_factory=list)
+    industry: str = "ai-agencies"
+    business: str = ""
+    vvi: float = 0.4
+    topology: str = "b2c"
+
+
+@router.post("/chain/resources/bind")
+def chain_resources_bind(body: ResourceBindBody) -> dict[str, Any]:
+    """Bind resources to constructor-form slots. Creates chain_id."""
+    from backend.core.circle_system.resource_chain import ResourceAssemblyEngine
+
+    return ResourceAssemblyEngine().bind(
+        body.resources,
+        request_payload={
+            "industry_id": body.industry,
+            "business": body.business or "resource bind without long brief — slots only",
+            "topology": body.topology,
+            "vvi": body.vvi,
+        },
+        voids={"vvi": body.vvi},
+    )
+
+
+@router.get("/chain/{chain_id}")
+def chain_get(chain_id: str) -> dict[str, Any]:
+    from backend.core.circle_system.chain_store import load_chain
+
+    rec = load_chain(chain_id)
+    if not rec:
+        return {"ok": False, "error": "unknown_chain"}
+    return {"ok": True, **rec}
+
+
+class B2CStartBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    industry: str = "ai-agencies"
+    lang: str = "ru"
+    name: str = ""
+    contact: str = ""
+    track: str = "all"
+    resources: list[dict] = Field(default_factory=list)
+
+
+@router.post("/chain/b2c/start")
+def chain_b2c_start(body: B2CStartBody) -> dict[str, Any]:
+    from backend.core.circle_system.chain_topologies import B2CChain, detect_topology
+
+    topo = detect_topology(body.business, track=body.track)
+    if topo == "a2a":
+        return {"ok": False, "error": "agency_request_use_a2a", "topology": "a2a"}
+    return B2CChain().start(
+        business=body.business,
+        industry_id=body.industry,
+        lang=body.lang,
+        resources=body.resources,
+        name=body.name,
+        contact=body.contact,
+        track=body.track,
+    )
+
+
+class B2CAdvanceBody(BaseModel):
+    chain_id: str
+    answers: dict = Field(default_factory=dict)
+
+
+@router.post("/chain/b2c/advance")
+def chain_b2c_advance(body: B2CAdvanceBody) -> dict[str, Any]:
+    from backend.core.circle_system.chain_topologies import B2CChain
+
+    return B2CChain().advance(body.chain_id, answers=body.answers)
+
+
+@router.get("/artefacts")
+def artefacts_list(domain: str = "", q: str = "") -> dict[str, Any]:
+    from backend.core.circle_system.knowledge_libs import (
+        list_traditional_artefacts,
+        search_traditional_artefacts,
+    )
+
+    dom = domain if domain in ("safety", "qol", "hybrid") else None
+    items = search_traditional_artefacts(q, domain=dom) if q else list_traditional_artefacts(dom)
+    return {"ok": True, "domain": dom, "count": len(items), "items": items}
+
+
+class DistA2ABody(BaseModel):
+    industry: str = "ai-agencies"
+    business: str = Field(default="agency mesh outreach for a simple market")
+    chain_id: str | None = None
+    lang: str = "en"
+
+
+@router.post("/distribution/a2a-massmarket")
+def distribution_a2a_massmarket(body: DistA2ABody) -> dict[str, Any]:
+    from backend.core.circle_system.chain_store import load_chain
+    from backend.monetization.outreach_massmarket_a2a import A2AMassmarketOutreach
+
+    rec = load_chain(body.chain_id) if body.chain_id else None
+    a2a = (rec or {}).get("a2a_chain") or rec
+    return A2AMassmarketOutreach().run(
+        industry_id=body.industry,
+        business_text=body.business,
+        a2a_chain=a2a,
+        lang=body.lang,
+    )
+
+
+@router.get("/cases/{sigil}")
+def miniapp_case_get(sigil: str) -> dict[str, Any]:
+    from backend.core.circle_system.miniapp_cases import CASES_DIR, pack_miniapp_case
+    from backend.core.circle_system.chain_store import list_chain_ids, load_chain
+
+    for cid in list_chain_ids(80):
+        rec = load_chain(cid) or {}
+        if (rec.get("public_sigil") == sigil) or ((rec.get("miniapp_case") or {}).get("sigil") == sigil):
+            packed = pack_miniapp_case(cid)
+            return packed
+    html = CASES_DIR / f"{sigil}.html"
+    if html.exists():
+        return {"ok": True, "sigil": sigil, "url": f"/app/cases/{sigil}.html"}
+    return {"ok": False, "error": "unknown_sigil"}
 
 
 @router.get("/lexicon")

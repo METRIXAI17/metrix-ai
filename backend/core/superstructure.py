@@ -77,6 +77,7 @@ class SuperstructureOverlay:
         industry_id: str,
         orientation: dict[str, Any],
         info_roi: float = 1.0,
+        extra_artifact_keys: list[str] | None = None,
     ) -> SuperstructureResult:
         tracks = orientation.get("tracks_recommended") or ["product", "models", "promotion"]
         primary = tracks[0]
@@ -92,7 +93,7 @@ class SuperstructureOverlay:
                 "orientation",
                 "infa_sol",
                 "Build specs twin and operator surface",
-                ["specs", "meta_reality", "analog_bridge"],
+                ["specs", "meta_reality", "analog_bridge", *(extra_artifact_keys or [])],
             )
         )
 

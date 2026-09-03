@@ -776,6 +776,10 @@ class OperationalAnalyticsEngine:
                 else "Light shift — seed already aligned"
             ),
             "readiness": float(scores.get("readiness", 0.5)),
+            "copy_firmware": {
+                "rule": "answer_shift is copy, never a CY/CN/U rewrite",
+                "certainty_untouched": True,
+            },
         }
 
     # ── 8. Reduce to request ─────────────────────────────────────────────

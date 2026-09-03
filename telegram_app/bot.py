@@ -515,6 +515,26 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
         dispatch_menu(api, chat_id, action, webapp)
         return
 
+    if raw.lower() in ("pack", "/pack", "конверт", "convert"):
+        from backend.core.memo_convert import MemoConvertEngine
+        from backend.core.orientation_engine import OrientationEngine
+
+        orient = OrientationEngine().orient(raw if len(raw) > 24 else "pack a consult sequence for an operator who needs a named gap closed in ops", "ai-agencies")
+        conv = MemoConvertEngine().convert(
+            business_text=raw if len(raw) > 24 else "operator consult sequence, named gap, free then pilot then main",
+            industry_id="ai-agencies",
+            orientation=orient.to_dict(),
+        ).to_dict()
+        pack = conv.get("chain_pack") or {}
+        sig = (pack.get("naming_sigils") or {}).get("chain") or "—"
+        task = pack.get("tech_task_0") or {}
+        title = task.get("title") if isinstance(task, dict) else ""
+        api.send(
+            chat_id,
+            f"<b>{sig}</b>\n1. Consult\n2. Direction\n3. Ship\nArtefact: sequence pack\nTech-task: {title or 'assemble bound slots'}\nCTA: free consult → pilot. Main only after gates.",
+        )
+        return
+
     if raw.startswith("mx_") or raw.lower().startswith("/access "):
         token = raw.split(maxsplit=1)[-1].strip()
         out = redeem(token, bind_subject=subject_hash(chat_id))

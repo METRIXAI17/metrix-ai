@@ -61,6 +61,7 @@ class ProcessBody(BaseModel):
     enable_self_improve: bool = True
     enable_fin_models: bool = True
     enable_monetization: bool = True
+    resources: list[dict] = Field(default_factory=list)
 
 
 class OrientBody(BaseModel):
@@ -98,6 +99,7 @@ def process_request(body: ProcessBody) -> dict[str, Any]:
         enable_self_improve=body.enable_self_improve,
         enable_fin_models=body.enable_fin_models,
         enable_monetization=body.enable_monetization,
+        resources=list(body.resources or []),
     )
     result = get_pipeline().process(req)
     data = result.to_dict()

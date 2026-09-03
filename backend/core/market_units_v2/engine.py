@@ -53,6 +53,8 @@ class MarketUnitsEngine:
         oae: dict[str, Any] | None = None,
         memo_convert: dict[str, Any] | None = None,
         paid: dict[str, Any] | None = None,
+        chain_mode: str | None = None,
+        chain_id: str | None = None,
     ) -> dict[str, Any]:
         orientation = orientation or {}
         scores = scores or dict(orientation.get("scores") or {})
@@ -268,7 +270,7 @@ class MarketUnitsEngine:
             f"lead={team_d.get('lead_id')} boost={core_boost.get('boost_score')}"
         )
 
-        return {
+        out = {
             "module": self.name,
             "version": VERSION,
             "industry_id": industry_id,
@@ -287,6 +289,18 @@ class MarketUnitsEngine:
             "summary": summary,
             "ok": True,
         }
+        if (chain_mode or "").lower() == "a2a":
+            from backend.core.circle_system.chain_topologies import build_a2a_chain
+
+            try:
+                out["chain_mode"] = "a2a"
+                out["a2a_chain"] = build_a2a_chain(out, chain_id=chain_id)
+                out["b2c_stepper"] = False
+            except Exception as exc:  # noqa: BLE001
+                out["chain_mode"] = "a2a"
+                out["a2a_chain"] = {"topology": "a2a", "error": str(exc)[:200], "artefact_handoffs": []}
+                out["b2c_stepper"] = False
+        return out
 
     def _recursive_core_boost(
         self,

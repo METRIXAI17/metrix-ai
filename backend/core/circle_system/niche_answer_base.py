@@ -954,7 +954,16 @@ class NicheAnswerBase:
                 if key.replace("_", " ") not in (business or "").lower() and key not in (business or "").lower():
                     still_need.append(key)
 
+        from backend.core.circle_system.copy_firmware import CopyFirmware
+
+        fw = CopyFirmware()
+        pack = {
+            **pack,
+            "answer": fw.strip_forbidden(str(pack.get("answer") or "")),
+            "answer_en": fw.strip_forbidden(str(pack.get("answer_en") or pack.get("answer") or "")),
+        }
         answer = pack["answer"] if ru else pack.get("answer_en") or pack["answer"]
+        answer = fw.publicize(answer, lang=lang)
         free_work = list(pack.get("free_work") or [])
 
         # Quality boost when numbers present

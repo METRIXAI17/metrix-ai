@@ -27,6 +27,8 @@ backend/data/assist_sessions/
 backend/data/robotics_sessions/
 backend/data/resonance/
 backend/data/bot_sessions/
+backend/data/chains/
+public/cases/*.html
 backend/data/entitlements/
 backend/data/quota/
 backend/data/miniapp/hits.json

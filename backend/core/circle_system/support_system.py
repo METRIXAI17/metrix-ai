@@ -20,7 +20,11 @@ class SupportSystem:
 
     name = "Support System"
 
-    def run(self, metric_firmware: dict[str, Any] | None = None) -> dict[str, Any]:
+    def run(
+        self,
+        metric_firmware: dict[str, Any] | None = None,
+        artefacts: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
         fw = metric_firmware or {}
         feed = fw.get("support_feed") or {}
         anomalies = list(fw.get("anomalies") or feed.get("anomalies") or [])
@@ -33,6 +37,11 @@ class SupportSystem:
                 owner = "hum_client_signer"
             if "brand" in str(a.get("msg", "")).lower():
                 owner = "hum_branding_va"
+            hook = None
+            for art in artefacts or []:
+                if art.get("chain_hooks"):
+                    hook = {"artefact_id": art.get("id"), "sigil": art.get("sigil"), "hooks": art.get("chain_hooks")}
+                    break
             tickets.append(
                 {
                     "ticket_id": f"SUP-{i:03d}-{a.get('metric', 'GEN')}",
@@ -40,9 +49,11 @@ class SupportSystem:
                     "severity": severity,
                     "message": a.get("msg"),
                     "owner": owner,
+                    "human_authorized_owner": True,
                     "status": "open",
                     "sla_hours": 4 if severity == "critical" else 24 if severity == "warn" else 72,
-                    "refs": ["metric_firmware", "ref_4:point_7", "ops_rules.R5"],
+                    "refs": ["metric_firmware", "ref_4:point_7", "ops_rules.R5", "ops_rules.R7"],
+                    "artefact": hook,
                 }
             )
 

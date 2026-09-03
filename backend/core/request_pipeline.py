@@ -129,12 +129,66 @@ class RequestPipeline:
         )
         orientation = orient.to_dict()
 
+        # ── 2b. Resource Assembly — first act of chain (no bind → no chain_id)
+        chain_meta: dict[str, Any] = {}
+        artefacts_applied: list[dict[str, Any]] = []
+        try:
+            from backend.core.circle_system.chain_topologies import detect_topology
+            from backend.core.circle_system.knowledge_libs import get_traditional_artefact
+            from backend.core.circle_system.resource_chain import ResourceAssemblyEngine
+
+            um0 = orient.metrics
+            topology = detect_topology(req.business, track=track, contact_type="")
+            ra = ResourceAssemblyEngine().bind(
+                list(getattr(req, "resources", None) or []),
+                request_payload={
+                    "industry_id": industry_id,
+                    "business": req.business,
+                    "topology": topology,
+                    "vvi": um0.vvi,
+                },
+                voids={"vvi": um0.vvi},
+            )
+            for raw in list(getattr(req, "resources", None) or []):
+                aid = raw.get("artefact_id") if isinstance(raw, dict) else None
+                art = get_traditional_artefact(str(aid)) if aid else None
+                if not art:
+                    continue
+                contra = art.get("contra_indications") or []
+                hit = industry_id in contra or any(c in industry_id for c in contra)
+                artefacts_applied.append(
+                    {
+                        "id": art["id"],
+                        "sigil": art.get("sigil"),
+                        "domain": art.get("domain"),
+                        "risk_delta": (0.08 if hit else art.get("risk_delta")),
+                        "qol_delta": 0.0 if hit else art.get("qol_delta"),
+                        "contra_hit": bool(hit),
+                        "evidence_grade": art.get("evidence_grade"),
+                    }
+                )
+            chain_meta = {
+                "chain_id": ra.get("chain_id"),
+                "chain_seed": ra.get("chain_seed"),
+                "public_sigil": ra.get("public_sigil"),
+                "topology": topology,
+                "resource_assembly": ra,
+            }
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("resource_assembly failed: %s", exc)
+            ra = {}
+            chain_meta = {"ok": False, "error": str(exc)[:240]}
+
+        extra_keys = [b.get("resource_id") for b in (ra.get("bound_slots") or {}).values() if isinstance(b, dict)]
+        extra_keys.extend(a.get("sigil") or a.get("id") for a in artefacts_applied)
+
         # ── 3. Superstructure ─────────────────────────────────────────────
         composed = self.overlay.compose(
             business_text=req.business,
             industry_id=industry_id,
             orientation=orientation,
             info_roi=1.0,
+            extra_artifact_keys=[k for k in extra_keys if k],
         )
         product = composed.product_result
         idea_title = product.get("title") or "Metrix oriented idea"
@@ -232,7 +286,8 @@ class RequestPipeline:
             decision_mode=decision_pre.active_mode,
             missing_params=list(
                 (orientation.get("parameter_map") or {}).get("missing") or []
-            ),
+            )
+            + list((chain_meta.get("resource_assembly") or {}).get("unbound_critical") or []),
             portfolio_ideas=portfolio_ideas,
         )
         oae_dict = oae_result.to_dict()
@@ -482,6 +537,7 @@ class RequestPipeline:
             system_features=sys_dict,
             success=success_for_commercial,
             ideas=demo_ideas,
+            chain_id=(chain_meta or {}).get("chain_id"),
         ).to_dict()
         # Market Units v2: reader → problems → metrics → coordination → ontology → teammates
         market_units_v2: dict[str, Any] = run_enriched_market_unit(
@@ -932,6 +988,7 @@ class RequestPipeline:
             _lang = "ru" if any(ord(c) > 127 for c in (req.business or "")[:80]) else "en"
         try:
             from backend.core.circle_system import run_deep_tech_pipeline
+            from backend.core.circle_system.knowledge_libs import get_traditional_artefact
             from backend.core.circle_system.niche_answer_base import NicheAnswerBase
 
             circle_out = run_deep_tech_pipeline(
@@ -941,6 +998,14 @@ class RequestPipeline:
                 core_metrics={"vvi": vvi, "er": er, "rrc": rrc},
                 product_name="Metrix Circle Runtime",
                 client_label=req.name or "client",
+                resources=list(getattr(req, "resources", None) or []),
+                artefact_priors=[
+                    p
+                    for a in artefacts_applied
+                    if a.get("id")
+                    for p in [get_traditional_artefact(a["id"])]
+                    if p
+                ],
             )
             zones_touched.extend(["circle_system", "deep_tech_metrix", "support_system"])
             cat_for_niche = route_categories(
@@ -1031,9 +1096,14 @@ class RequestPipeline:
                 "block_19_slot": "backend/generative",
                 "paid_product_core": paid_out,
                 "memo_convert": memo_out,
+                "memo_convert_v2": memo_out.get("chain_pack") or {},
                 "market_unit": market_unit,
                 "market_units_v2": market_units_v2,
                 "package_costs": package_costs,
+                "chain": chain_meta,
+                "process": {"artefacts_applied": artefacts_applied},
+                "convert_v2": True,
+                "version": "1.3.1-chain-pack",
                 "circle_system": circle_out,
                 "deep_tech_product_surfaces": (circle_out or {}).get("product_surfaces") or {},
                 "circle_assertions": (circle_out or {}).get("assertions") or [],
