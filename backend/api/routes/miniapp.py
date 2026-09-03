@@ -134,6 +134,7 @@ class DemoBody(BaseModel):
     strategy: str = ""
     niche: str = ""
     lang: str = "ru"
+    watch: bool = False
 
 
 class ResonateBody(BaseModel):
@@ -384,7 +385,10 @@ def strategy_run(
     from backend.core.strategies import run_strategy
     from backend.core.resonance import remember
 
-    gate = _gate(_subject(_try_auth(x_telegram_init_data)), "strategy")
+    gate = _gate(
+        _subject(_try_auth(x_telegram_init_data)),
+        "watch" if body.watch else "strategy",
+    )
     if not gate.get("allowed"):
         return _wall(gate)
     brief = sanitize_text(body.brief or body.strategy or "карта мест", max_len=8_000)

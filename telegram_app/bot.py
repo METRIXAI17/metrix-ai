@@ -142,6 +142,7 @@ def strategies_kb() -> dict:
             [{"text": "Demand · крипта", "callback_data": "st:demand"}],
             [{"text": "Ampli · Америка", "callback_data": "st:ampli"}],
             [{"text": "Two-Leg Tape · Tape Land", "callback_data": "st:two_leg_tape"}],
+            [{"text": "Как сейчас · живой снимок (не списывает)", "callback_data": "lv:now"}],
             [{"text": "Risk Engine · отдельно", "callback_data": "rk:engine"}],
         ]
     }
@@ -296,7 +297,14 @@ def _gate(api: BotAPI, chat_id: int, feature: str, webapp: str) -> bool:
 
 
 def _run_demo(api: BotAPI, chat_id: int, brief: str, **kw) -> None:
-    feature = "strategy" if kw.get("strategy") or kw.get("hint") == "strategy" else "teammate" if kw.get("niche") or kw.get("hint") in ("agent", "teammates") else "artefact_panel"
+    if kw.pop("watch", False):
+        feature = "watch"
+    elif kw.get("strategy") or kw.get("hint") == "strategy":
+        feature = "strategy"
+    elif kw.get("niche") or kw.get("hint") in ("agent", "teammates"):
+        feature = "teammate"
+    else:
+        feature = "artefact_panel"
     if not _gate(api, chat_id, feature, _webapp()):
         return
     api.send(chat_id, "Собираю…")
@@ -459,6 +467,20 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
         sid = data.split(":", 1)[1]
         sessions.set_mode(chat_id, "idle", strategy=sid)
         _run_demo(api, chat_id, f"стратегия {sid}", hint="strategy", strategy=sid)
+        return
+    if data.startswith("lv:"):
+        sid = data.split(":", 1)[1]
+        if sid in ("now", "live", ""):
+            sid = sessions.load(chat_id).get("strategy") or "two_leg_tape"
+        sessions.set_mode(chat_id, "idle", strategy=sid)
+        _run_demo(
+            api,
+            chat_id,
+            f"живой снимок модели {sid} как есть, без новой посадки",
+            hint="strategy",
+            strategy=sid,
+            watch=True,
+        )
         return
     if data.startswith("rk:"):
         from backend.core.risk_engine import demo_card

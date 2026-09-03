@@ -65,6 +65,7 @@ PRICING = {
         "name": "Metrix Access",
         "covers": "бот: 40 результатов в месяц, три вкладки, 4 модели, риск-движок",
         "monthly_results": 40,
+        "live_snapshots_debit": False,
         "free_results": 2,
         "why_not_5usd": (
             "После комиссии Tribute 10% с $5 остаётся $4.50. "

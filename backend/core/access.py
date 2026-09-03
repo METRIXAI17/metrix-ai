@@ -33,6 +33,8 @@ PAID_FEATURES = frozenset(
         "two_leg_tape",
     }
 )
+# Live market snapshot: Access includes it, does not debit the 40.
+WATCH_FEATURES = frozenset({"watch", "scan", "live"})
 
 
 def _secret() -> bytes:
@@ -175,8 +177,15 @@ def quota_status(subject: str | None) -> dict[str, Any]:
 
 
 def consume(subject: str | None, feature: str) -> dict[str, Any]:
-    """Free: 2 results then Access wall. Access: ACCESS_RUNS_MONTH results / calendar month."""
+    """Free: 2 results then Access wall. Access: ACCESS_RUNS_MONTH maps / month.
+
+    Live snapshots (watch/scan/live) do not debit Access. Market ticks are not maps.
+    """
     st = quota_status(subject)
+    if feature in WATCH_FEATURES:
+        if st.get("ok") and st.get("tier") == "access":
+            return {**st, "allowed": True, "feature": feature, "debited": False, "note": "live_no_debit"}
+        feature = "strategy"
     if feature not in PAID_FEATURES:
         return {**st, "allowed": True, "feature": feature, "note": "catalog_free"}
     if not subject:

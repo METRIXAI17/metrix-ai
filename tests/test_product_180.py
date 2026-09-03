@@ -97,6 +97,12 @@ def test_access_token_is_hashed():
     third = consume(sid, "strategy")
     assert third["allowed"] is False
     assert third.get("reason") == "free_done"
+    paid = subject_hash(f"paid-{uuid.uuid4()}")
+    mint = mint_token(days=31, sku="access_month", bind_subject=paid)
+    redeem(mint["token"], bind_subject=paid)
+    live = consume(paid, "watch")
+    assert live["allowed"] is True
+    assert live.get("debited") is False
 
 
 def test_artefacts_panel_readable():
