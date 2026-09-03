@@ -303,9 +303,11 @@
     var human = (state.catalog && state.catalog.human) || out.human || "https://x.com/karimmetrix";
     return (
       '<article class="wall">' +
-      "<h3>Два бесплатных прогона кончились</h3>" +
-      "<p>Metrix Access — 3 290 ₽ / месяц. Одна подписка на Chain, Teammates и Artefacts. " +
-      "Код модели, обновления как есть. Не входит: Main без пилота, Custom $500, Tape Land.</p>" +
+      "<h3>" +
+      (out.reason === "month_cap" ? "Лимит месяца (40 результатов)" : "Два бесплатных результата использованы") +
+      "</h3>" +
+      "<p>Бот — ленд-артефакт. Access — 3 290 ₽ / месяц, 40 результатов. " +
+      "Metrix AI $2490 — отдельный движок (процессы, проект, промо), не эта подписка.</p>" +
       '<div class="row"><a class="btn btn-primary" href="' +
       esc(url) +
       '" target="_blank" rel="noopener">Оплатить в Tribute</a>' +
@@ -346,7 +348,7 @@
     var accNote =
       acc == null
         ? "Access открыт"
-        : "Бесплатно осталось " + acc + " прогона";
+        : "Бесплатно осталось " + acc + " результат(а)";
     return (
       '<section class="room">' +
       '<div class="room-head"><span class="room-pulse" aria-hidden="true"></span>' +

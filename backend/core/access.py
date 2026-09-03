@@ -19,7 +19,9 @@ from backend.config import DATA_DIR
 
 ENT_DIR = DATA_DIR / "entitlements"
 QUOTA_DIR = DATA_DIR / "quota"
+# Free: two results, then Access. Access: monthly cap (not unlimited scrape).
 FREE_RUNS = int(os.getenv("METRIX_FREE_RUNS", "2"))
+ACCESS_RUNS_MONTH = int(os.getenv("METRIX_ACCESS_RUNS", "40"))
 PAID_FEATURES = frozenset(
     {
         "strategy",
@@ -134,19 +136,32 @@ def is_entitled(subject: str | None) -> dict[str, Any]:
     return {"ok": True, "tier": rec.get("tier") or "access", "expires": exp, "sku": rec.get("sku")}
 
 
-def _quota_path(subject: str) -> Path:
+def _free_path(subject: str) -> Path:
     QUOTA_DIR.mkdir(parents=True, exist_ok=True)
-    day = _now().strftime("%Y-%m-%d")
-    return QUOTA_DIR / f"{subject[:40]}_{day}.json"
+    return QUOTA_DIR / f"free_{subject[:40]}.json"
+
+
+def _month_path(subject: str) -> Path:
+    QUOTA_DIR.mkdir(parents=True, exist_ok=True)
+    return QUOTA_DIR / f"mo_{subject[:40]}_{_now().strftime('%Y-%m')}.json"
 
 
 def quota_status(subject: str | None) -> dict[str, Any]:
     entitled = is_entitled(subject)
-    if entitled.get("ok"):
-        return {**entitled, "remaining": None, "limit": None, "gated": False}
+    if entitled.get("ok") and subject:
+        used = int(_load(_month_path(subject)).get("used") or 0)
+        remaining = max(0, ACCESS_RUNS_MONTH - used)
+        return {
+            **entitled,
+            "used": used,
+            "limit": ACCESS_RUNS_MONTH,
+            "remaining": remaining,
+            "gated": remaining <= 0,
+            "unit": "result",
+        }
     used = 0
     if subject:
-        used = int(_load(_quota_path(subject)).get("used") or 0)
+        used = int(_load(_free_path(subject)).get("used") or 0)
     remaining = max(0, FREE_RUNS - used)
     return {
         "ok": False,
@@ -155,14 +170,13 @@ def quota_status(subject: str | None) -> dict[str, Any]:
         "limit": FREE_RUNS,
         "remaining": remaining,
         "gated": remaining <= 0,
+        "unit": "result",
     }
 
 
 def consume(subject: str | None, feature: str) -> dict[str, Any]:
-    """Gate a paid feature. Free users get FREE_RUNS then a hard subscribe wall."""
+    """Free: 2 results then Access wall. Access: ACCESS_RUNS_MONTH results / calendar month."""
     st = quota_status(subject)
-    if st.get("tier") in ("access",) and st.get("ok"):
-        return {**st, "allowed": True, "feature": feature}
     if feature not in PAID_FEATURES:
         return {**st, "allowed": True, "feature": feature, "note": "catalog_free"}
     if not subject:
@@ -175,21 +189,23 @@ def consume(subject: str | None, feature: str) -> dict[str, Any]:
             "sku": "access_month",
             "reason": "need_telegram_or_token",
         }
-    if not st.get("gated"):
-        p = _quota_path(subject)
-        cur = _load(p)
-        cur["used"] = int(cur.get("used") or 0) + 1
-        _save(p, cur)
-        st = quota_status(subject)
-        return {**st, "allowed": True, "feature": feature}
-    return {
-        **st,
-        "allowed": False,
-        "feature": feature,
-        "wall": True,
-        "cta": "Metrix Access",
-        "sku": "access_month",
-    }
+    if st.get("gated"):
+        kind = "month_cap" if st.get("tier") == "access" else "free_done"
+        return {
+            **st,
+            "allowed": False,
+            "feature": feature,
+            "wall": True,
+            "cta": "Metrix Access",
+            "sku": "access_month",
+            "reason": kind,
+        }
+    p = _month_path(subject) if st.get("tier") == "access" and st.get("ok") else _free_path(subject)
+    cur = _load(p)
+    cur["used"] = int(cur.get("used") or 0) + 1
+    _save(p, cur)
+    st = quota_status(subject)
+    return {**st, "allowed": True, "feature": feature}
 
 
 def verify_tribute_signature(body: bytes, signature: str, api_key: str) -> bool:

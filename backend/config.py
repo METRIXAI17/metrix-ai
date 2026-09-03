@@ -77,6 +77,7 @@ TRIBUTE_CUSTOM_URL = os.getenv("TRIBUTE_CUSTOM_URL", "").rstrip("/")
 METRIX_TOKEN_SECRET = os.getenv("METRIX_TOKEN_SECRET", "").strip()
 HUMAN_CONTACT_URL = os.getenv("METRIX_HUMAN_URL", "https://x.com/karimmetrix").rstrip("/")
 FREE_RUNS = int(os.getenv("METRIX_FREE_RUNS", "2"))
+ACCESS_RUNS_MONTH = int(os.getenv("METRIX_ACCESS_RUNS", "40"))
 
 # ── Client niches (public site + process API) ────────────────────────────────
 INDUSTRIES: dict[str, dict[str, Any]] = {

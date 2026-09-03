@@ -20,6 +20,10 @@ SKUS: dict[str, dict[str, Any]] = {
         "rub": 32900, "usd": 350, "stars": 0, "tier": "access",
         "name": "Metrix Access · год",
     },
+    "bot_artefact": {
+        "rub": 45900, "usd": 490, "stars": 0, "tier": "land",
+        "name": "Karim Metrix Bot · ленд-артефакт (≤ $1990)",
+    },
     "ai_tools_base": {
         "rub": 18900, "usd": 200, "stars": 0, "tier": "install",
         "name": "AI-tools · базовый бот",

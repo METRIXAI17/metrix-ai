@@ -9,7 +9,7 @@ sys.path.insert(0, str(ROOT))
 from backend.core.access import consume, mint_token, redeem, subject_hash, token_hash
 from backend.core.artefacts import analytical_panel, offer_generator
 from backend.core.product_180 import FLAGSHIP, PRICING, VERSION
-from backend.core.sales_offer import ACCESS_RUB, access_offer, sales_readiness
+from backend.core.sales_offer import ACCESS_RUB, BOT_LAND_MAX_USD, METRIX_AI_USD, access_offer, sales_readiness
 from backend.core.risk_engine import r_after_close, size
 from backend.core.strategies import list_strategies, run_strategy
 from backend.core.teammates import build_teammate, list_teammates
@@ -23,6 +23,10 @@ def test_version_and_flagship():
     assert FLAGSHIP["name"] == "In-Out Chain"
     assert PRICING["access"]["rub"] == 3290
     assert ACCESS_RUB == 3290
+    assert BOT_LAND_MAX_USD <= 1990
+    assert PRICING["bot_land"]["usd"] <= BOT_LAND_MAX_USD
+    assert METRIX_AI_USD == 2490
+    assert PRICING["metrix_ai"]["usd"] == 2490
     assert PRICING["access"]["usd"] != 5
     offer = access_offer(lang="ru")
     assert "3290" in offer["cta_ru"]
@@ -85,6 +89,14 @@ def test_access_token_is_hashed():
     assert gate["allowed"] is True
     anon = consume(None, "strategy")
     assert anon["allowed"] is False
+    import uuid
+
+    sid = subject_hash(f"free-{uuid.uuid4()}")
+    assert consume(sid, "strategy")["allowed"] is True
+    assert consume(sid, "strategy")["allowed"] is True
+    third = consume(sid, "strategy")
+    assert third["allowed"] is False
+    assert third.get("reason") == "free_done"
 
 
 def test_artefacts_panel_readable():

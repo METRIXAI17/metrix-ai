@@ -290,7 +290,8 @@ def _gate(api: BotAPI, chat_id: int, feature: str, webapp: str) -> bool:
     if gate.get("allowed"):
         return True
     extra = [subscribe_row()]
-    api.send(chat_id, texts.ASK_ACCESS, markup=nav_inline(webapp, extra=extra), html=False)
+    msg = texts.ASK_MONTH_CAP if gate.get("reason") == "month_cap" else texts.ASK_ACCESS
+    api.send(chat_id, msg, markup=nav_inline(webapp, extra=extra), html=False)
     return False
 
 

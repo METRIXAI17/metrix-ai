@@ -63,7 +63,9 @@ PRICING = {
         "usd": 35,
         "period": "month",
         "name": "Metrix Access",
-        "covers": "все три вкладки, 4 модели, риск-движок, артефакты, обновления кода как есть",
+        "covers": "бот: 40 результатов в месяц, три вкладки, 4 модели, риск-движок",
+        "monthly_results": 40,
+        "free_results": 2,
         "why_not_5usd": (
             "После комиссии Tribute 10% с $5 остаётся $4.50. "
             "Railway Hobby — это пол $5, не потолок. Access 3290 ₽ закрывает хостинг, "
@@ -82,12 +84,35 @@ PRICING = {
         "period": "year",
         "name": "Metrix Access · год",
     },
+    "bot_land": {
+        "sku": "bot_artefact",
+        "usd": 490,
+        "usd_max": 1990,
+        "rub": 45900,
+        "name": "Karim Metrix Bot · артефакт (ленд)",
+        "note": (
+            "Ленд-продукт: Telegram-бот как артефакт. Не Metrix AI. "
+            "Потолок $1990. Не $2490."
+        ),
+        "covers": "вход: Access 3290 ₽/мес или разовая посадка бота",
+    },
     "ai_tools": {
         "sku": "ai_tools_base",
         "usd": 200,
         "rub": 18900,
         "name": "AI-tools · базовый бот",
         "note": "те же четыре модели, без кастомной посадки под автора",
+    },
+    "metrix_ai": {
+        "sku": "full_package",
+        "usd": 2490,
+        "rub": 209000,
+        "name": "Metrix AI · движок",
+        "note": (
+            "Главный движок: операционные процессы + оригинальный проект + решения по продвижению. "
+            "Это не бот и не Access."
+        ),
+        "tracks": ("ops", "product", "promotion"),
     },
     "custom_teammate": {
         "sku": "custom_teammate",

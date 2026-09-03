@@ -13,7 +13,7 @@
 
 Не входит в Access: сигналы, Main без пилота, Custom, Tape Land.
 
-Net Tribute 10% ≈ **2 961 ₽**. Два бесплатных прогона, потом стена.
+Net Tribute 10% ≈ **2 961 ₽**. Два бесплатных результата, потом стена. 40 результатов / месяц на Access.
 
 ## Готовность
 
@@ -33,7 +33,7 @@ Net Tribute 10% ≈ **2 961 ₽**. Два бесплатных прогона, �
 2. Railway Variables: `TRIBUTE_ACCESS_URL`, `TRIBUTE_API_KEY`, `METRIX_TOKEN_SECRET` (длинный random).
 3. Webhook: `https://metrix-ai-production.up.railway.app/api/v1/miniapp/tribute/webhook`
 4. Проверка: `/api/v1/analytics/sales-readiness` — `tribute_url` и `token_secret` должны стать true.
-5. Два своих прогона в боте → на третьем стена 3 290 ₽.
+5. Два своих результата в боте → на третьем стена 3 290 ₽.
 6. Пост @karimmetrix: цена 3 290 ₽, не сигналы, ссылка `/chain/`.
 7. Не продавать Main как Access. Custom — кнопка «человек».
 

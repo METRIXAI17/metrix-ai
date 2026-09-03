@@ -15,6 +15,11 @@ from backend.core.product_180 import FLAGSHIP, LEGAL, PRICING, VERSION
 ACCESS_RUB = 3290
 ACCESS_YEAR_RUB = 32900  # 10 months
 ACCESS_USD = 35
+BOT_LAND_USD = 490
+BOT_LAND_MAX_USD = 1990
+METRIX_AI_USD = 2490
+ACCESS_RESULTS_MONTH = 40
+FREE_RESULTS = 2
 
 
 def access_offer(*, lang: str = "ru") -> dict[str, Any]:
@@ -25,7 +30,7 @@ def access_offer(*, lang: str = "ru") -> dict[str, Any]:
         void="несобранный оффер и две лестницы цен" if ru else "unassembled offer and colliding prices",
         gate="сходимость ≥ 0.45 · Tribute живой · без ПДн" if ru else "assembly ≥ 0.45 · Tribute live · no PII",
         price=price,
-        not_included="сигналы, Main без пилота, Custom $500, Tape Land" if ru else "signals, Main without pilot, Custom $500, Tape Land",
+        not_included="сигналы, Metrix AI $2490, Custom $500" if ru else "signals, Metrix AI $2490, Custom $500",
         voice="b2c",
         lang=lang,
     )
@@ -37,15 +42,26 @@ def access_offer(*, lang: str = "ru") -> dict[str, Any]:
         "year_rub": ACCESS_YEAR_RUB,
         "period": "month",
         "covers": PRICING["access"]["covers"],
+        "free_results": FREE_RESULTS,
+        "monthly_results": ACCESS_RESULTS_MONTH,
+        "bot_land_usd": BOT_LAND_USD,
+        "bot_land_max_usd": BOT_LAND_MAX_USD,
+        "metrix_ai_usd": METRIX_AI_USD,
         "flagship": FLAGSHIP["name"],
         "legal": LEGAL["what_this_is"] if ru else LEGAL["what_this_is_en"],
         "copy": block,
         "cta_ru": f"Metrix Access · {ACCESS_RUB} ₽ / месяц",
         "cta_en": f"Metrix Access · {ACCESS_RUB} RUB / month",
         "not_this": {
-            "main_usd": 2490,
-            "note_ru": "Full Package $2490 — отдельный B2B после пилота. Не эта подписка.",
-            "note_en": "Full Package $2490 is a separate B2B after pilot. Not this subscription.",
+            "metrix_ai_usd": METRIX_AI_USD,
+            "bot_land_usd": BOT_LAND_USD,
+            "note_ru": "Бот — ленд ≤ $1990. Metrix AI — движок $2490 (ops + проект + промо). Access — подписка на бот.",
+            "note_en": "Bot is the land product ≤ $1990. Metrix AI is the $2490 engine. Access is the bot subscription.",
+        },
+        "layers": {
+            "land": "Karim Metrix Bot · artefact",
+            "engine": "Metrix AI · ops + original project + promotion",
+            "access": "3290 ₽ / month · 40 results",
         },
     }
 
@@ -80,7 +96,7 @@ def sales_readiness() -> dict[str, Any]:
         "next": [
             "Tribute product Metrix Access 3290 ₽ / month",
             "TRIBUTE_ACCESS_URL + TRIBUTE_API_KEY + webhook + METRIX_TOKEN_SECRET",
-            "Two free runs, then wall",
-            "Do not sell Main as Access",
+            "Two free results in the bot, then Access 3290",
+            "Do not sell Metrix AI $2490 as the bot",
         ],
     }
