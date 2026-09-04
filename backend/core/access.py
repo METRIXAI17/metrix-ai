@@ -30,6 +30,11 @@ PAID_FEATURES = frozenset(
         "artefact_panel",
         "offer_gen",
         "thesis",
+        "life",
+        "craft",
+        "target",
+        "shop",
+        "trading_prompt",
         "code_live",
         "two_leg_tape",
     }

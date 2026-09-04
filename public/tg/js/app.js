@@ -35,19 +35,22 @@
     return r.json();
   }
 
-  const VIEWS = ["chain", "teammates", "artefacts", "landing", "engine", "making", "home", "demo", "strategies", "agents", "posts"];
+  const VIEWS = ["life", "bots", "craft", "target", "shop", "chain", "teammates", "artefacts", "home"];
   const ALIAS = {
-    home: "chain",
-    demo: "chain",
-    landing: "chain",
-    strategies: "chain",
-    engine: "teammates",
-    agents: "teammates",
-    posts: "artefacts",
-    making: "artefacts",
+    home: "life",
+    chain: "life",
+    demo: "life",
+    landing: "life",
+    strategies: "bots",
+    engine: "craft",
+    teammates: "craft",
+    agents: "target",
+    posts: "shop",
+    making: "shop",
+    artefacts: "shop",
   };
   const state = {
-    view: (location.hash || "").replace("#", "") || "chain",
+    view: (location.hash || "").replace("#", "") || "life",
     catalog: null,
     last: null,
     closer: null,
@@ -56,7 +59,7 @@
     comfort: [],
   };
   if (ALIAS[state.view]) state.view = ALIAS[state.view];
-  if (VIEWS.indexOf(state.view) < 0) state.view = "landing";
+  if (VIEWS.indexOf(state.view) < 0) state.view = "life";
 
   const viewEl = document.getElementById("view");
 
@@ -99,9 +102,9 @@
       runAgent(ag.getAttribute("data-ag"));
       return;
     }
-    if (t.closest("#q-run")) {
+    if (t.closest("#q-run") || t.closest("#sec-run")) {
       ev.preventDefault();
-      runLanding();
+      runSection();
     }
     if (t.closest("#c-run")) {
       ev.preventDefault();
@@ -141,17 +144,20 @@
   }
 
   var GEO = {
-    chain: "/tg/assets/geo-chain.jpg",
+    life: "/tg/assets/sec-life.jpg",
+    bots: "/tg/assets/sec-bots.jpg",
+    craft: "/tg/assets/sec-craft.jpg",
+    target: "/tg/assets/sec-target.jpg",
+    shop: "/tg/assets/sec-shop.jpg",
+    chain: "/tg/assets/sec-life.jpg",
     target_place: "/tg/assets/geo-gold.jpg",
     demand: "/tg/assets/geo-demand.jpg",
     ampli: "/tg/assets/geo-ampli.jpg",
     two_leg_tape: "/tg/assets/geo-tape.jpg",
     risk: "/tg/assets/geo-risk.jpg",
-    saas: "/tg/assets/geo-saas.jpg",
-    agency: "/tg/assets/geo-agency.jpg",
-    edu: "/tg/assets/geo-edu.jpg",
-    ecom: "/tg/assets/geo-ecom.jpg",
-    artefacts: "/tg/assets/geo-artefacts.jpg",
+    saas: "/tg/assets/sec-craft.jpg",
+    agency: "/tg/assets/sec-craft.jpg",
+    artefacts: "/tg/assets/sec-shop.jpg",
   };
 
   function photoSrc(id, remote) {
@@ -367,7 +373,7 @@
       (out.reason === "month_cap" ? "Лимит месяца (40 результатов)" : "Два бесплатных результата использованы") +
       "</h3>" +
       "<p>Бот — ленд-артефакт. Access — 3 290 ₽ / месяц, 40 результатов. " +
-      "Metrix AI в боте уже работает (тезисы, конфиги, in-out). $2490 — посадка того же движка в физ. ecom.</p>" +
+      "Access — 3 290 ₽ / месяц, 40 результатов на пять разделов.</p>" +
       '<div class="row"><a class="btn btn-primary" href="' +
       esc(url) +
       '" target="_blank" rel="noopener">Оплатить в Tribute</a>' +
@@ -378,7 +384,106 @@
   }
 
   function landingView() {
-    return chainView(state.catalog || {});
+    return sectionView(state.catalog || {}, "life");
+  }
+
+  function sectionView(c, viewId) {
+    var secs = (c && c.sections) || [];
+    var sid = ALIAS[viewId] || viewId || "life";
+    var sec = null;
+    for (var i = 0; i < secs.length; i++) if (secs[i].id === sid) sec = secs[i];
+    if (!sec) {
+      sec = {
+        id: sid,
+        title: sid,
+        one_liner: "",
+        image: GEO[sid] || GEO.life,
+        accent: "#5eead4",
+        placeholder: "Напишите своими словами…",
+        cta: "Собрать",
+        vitrine_label: "Витрина",
+      };
+    }
+    var hero = photoHtml(sec.image || GEO[sid] || GEO.life, sec.title, "geo-hero-img");
+    var vitrine = "";
+    if (sid === "bots") {
+      vitrine =
+        '<div class="eyebrow section-label">Витрина ботов</div><div class="grid grid-cards">' +
+        ((c.strategies || [])
+          .map(function (s) {
+            return (
+              '<article class="card card-flag" style="--flag-accent:' +
+              esc(s.accent) +
+              '" data-st="' +
+              esc(s.id) +
+              '">' +
+              photoHtml(photoSrc(s.id, s.image), s.name) +
+              '<span class="tag">' +
+              esc(s.market) +
+              "</span><h3>" +
+              esc(s.name) +
+              "</h3><p>" +
+              esc(s.one_liner) +
+              "</p></article>"
+            );
+          })
+          .join("") || "") +
+        '<article class="card card-flag" style="--flag-accent:#fb7185" data-ss="now">' +
+        '<span class="tag">без списания</span><h3>Стоп на перемене</h3>' +
+        "<p>Если рынок уже другой — не сливать бюджет.</p></article></div>" +
+        '<div class="eyebrow section-label">Эксперимент без кода</div>' +
+        '<p class="lead">Промпт своими словами. Потом оценка: зашло / почти / мимо.</p>';
+    } else if (sid === "life") {
+      vitrine =
+        '<div class="eyebrow section-label">Витрина</div><div class="grid grid-cards">' +
+        '<article class="card card-flag"><span class="tag">сон</span><h3>Сон и нагрузка</h3><p>Один шаг на сегодня, не план на месяц.</p></article>' +
+        '<article class="card card-flag"><span class="tag">деньги</span><h3>Касса дня</h3><p>Где деньги ломаются первым.</p></article>' +
+        '<article class="card card-flag"><span class="tag">дом</span><h3>Дом и ритм</h3><p>Что убрать, чтобы стало легче.</p></article></div>';
+    } else if (sid === "craft") {
+      vitrine =
+        '<div class="eyebrow section-label">Витрина конфигов</div><div class="grid grid-cards">' +
+        '<article class="card card-flag"><span class="tag">заказ</span><h3>Изделие</h3><p>Имя, материал, срок.</p></article>' +
+        '<article class="card card-flag"><span class="tag">цена</span><h3>Себестоимость</h3><p>Маржа после материала и часов.</p></article>' +
+        '<article class="card card-flag"><span class="tag">kill</span><h3>Молчание</h3><p>Когда не писать клиенту.</p></article></div>';
+    } else if (sid === "target") {
+      vitrine =
+        '<div class="eyebrow section-label">Витрина таргета</div><div class="grid grid-cards">' +
+        '<article class="card card-flag"><span class="tag">кто</span><h3>Роль</h3><p>Кто платит агенту.</p></article>' +
+        '<article class="card card-flag"><span class="tag">где</span><h3>Канал</h3><p>Где эти люди уже есть.</p></article>' +
+        '<article class="card card-flag"><span class="tag">текст</span><h3>Что можно сказать</h3><p>И когда молчать.</p></article></div>';
+    } else {
+      vitrine =
+        '<div class="eyebrow section-label">Витрина каталога</div><div class="grid grid-cards">' +
+        '<article class="card card-flag"><span class="tag">имя</span><h3>Своё название</h3><p>Одно, не чужое.</p></article>' +
+        '<article class="card card-flag"><span class="tag">описание</span><h3>Что в руках</h3><p>Не «премиум».</p></article>' +
+        '<article class="card card-flag"><span class="tag">когда</span><h3>Момент нужды</h3><p>Когда человеку это нужно.</p></article></div>';
+    }
+    return (
+      '<section class="room">' +
+      '<div class="geo-hero">' +
+      hero +
+      '<svg class="geo-draw" viewBox="0 0 120 40" aria-hidden="true"><polygon points="2,38 20,8 38,38" fill="none" stroke="rgba(94,234,212,.45)" stroke-width="1.2"/><polygon points="44,38 70,4 96,38" fill="none" stroke="rgba(251,191,36,.4)" stroke-width="1.2"/><circle cx="108" cy="20" r="10" fill="none" stroke="rgba(196,181,253,.45)" stroke-width="1.2"/></svg></div>' +
+      '<div class="eyebrow">' +
+      esc(sec.title_short || sec.title) +
+      "</div>" +
+      "<h1>" +
+      esc(sec.title) +
+      "</h1>" +
+      "<p class='lead'>" +
+      esc(sec.one_liner) +
+      "</p>" +
+      vitrine +
+      "<label>" +
+      esc(sec.cta || "Напишите") +
+      "</label>" +
+      '<textarea id="sec-brief" placeholder="' +
+      esc(sec.placeholder || "") +
+      '"></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="sec-run">' +
+      esc(sec.cta || "Собрать") +
+      "</button></div>" +
+      '<div id="sec-out"></div></section>'
+    );
   }
 
   function chainView(c) {
@@ -531,10 +636,7 @@
       }
     }
     var c = state.catalog;
-    var html = "";
-    if (state.view === "teammates" || state.view === "engine") html = teammatesView(c);
-    else if (state.view === "artefacts" || state.view === "making") html = artefactsView();
-    else html = chainView(c);
+    var html = sectionView(c, state.view);
     viewEl.innerHTML = html;
     bind();
   }
@@ -591,6 +693,26 @@
         ? '<p class="muted">Аудит гипотез: ' + audit.held + "/" + audit.total + "</p>"
         : "") +
       artHtml(art);
+    bindResonate(box);
+  }
+
+  async function runSection() {
+    var briefEl = document.getElementById("sec-brief") || document.getElementById("q-brief");
+    var box = document.getElementById("sec-out") || document.getElementById("q-out");
+    if (!box) return;
+    var brief = briefEl ? briefEl.value : "";
+    box.innerHTML = "<p class='status'>Собираю…</p>";
+    var out = await post("/api/v1/miniapp/mode", {
+      brief: brief,
+      hint: state.view,
+      strategy: "",
+      lang: "ru",
+    });
+    if (out.wall) {
+      box.innerHTML = wallHtml(out);
+      return;
+    }
+    box.innerHTML = artHtml(out.artifact);
     bindResonate(box);
   }
 
@@ -690,8 +812,8 @@
   }
 
   async function runStrategy(id) {
-    var extra = (document.getElementById("q-brief") || document.getElementById("c-brief") || {}).value || id;
-    var box = document.getElementById("st-out") || document.getElementById("m-out") || document.getElementById("c-out");
+    var extra = (document.getElementById("sec-brief") || document.getElementById("q-brief") || {}).value || id;
+    var box = document.getElementById("sec-out") || document.getElementById("st-out") || document.getElementById("m-out");
     if (!box) return;
     box.innerHTML = "<p class='status'>Собираю код модели…</p>";
     var out = await post("/api/v1/miniapp/strategy", { brief: extra, strategy: id });

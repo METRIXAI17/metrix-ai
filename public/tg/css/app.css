@@ -13,7 +13,8 @@
   --accent-3: #c4b5fd;
   --gold: #fbbf24;
   --radius: 14px;
-  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font: "Segoe UI", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 
@@ -23,8 +24,9 @@ html, body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font);
-  line-height: 1.55;
+  font-family: var(--font-ui);
+  font-size: 18px;
+  line-height: 1.6;
 }
 
 body::before {
@@ -125,11 +127,12 @@ body::after {
   margin-bottom: 0.35rem;
 }
 h1 {
-  font-size: 1.55rem;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-  font-weight: 750;
-  margin-bottom: 0.45rem;
+  font-family: var(--font);
+  font-size: 1.85rem;
+  letter-spacing: -0.03em;
+  line-height: 1.18;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 h1 em {
   font-style: normal;
@@ -394,12 +397,22 @@ textarea:focus, input:focus {
 .foot-note { margin-top: 1.4rem; font-size: 0.82rem; max-width: 46ch; }
 .rs-out { margin-top: 0.75rem; }
 
+.geo-hero { position: relative; }
+.geo-draw {
+  position: absolute;
+  right: 8px;
+  bottom: 10px;
+  width: 42%;
+  height: 44px;
+  pointer-events: none;
+  opacity: 0.95;
+}
 .tabbar {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 2px;
   padding: 0.4rem 0.35rem calc(0.45rem + var(--safe-b));
   background: rgba(7, 10, 15, 0.94);
@@ -414,7 +427,7 @@ textarea:focus, input:focus {
   background: transparent;
   color: var(--text-dim);
   font: inherit;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   padding: 0.45rem 0.15rem 0.25rem;

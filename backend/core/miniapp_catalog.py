@@ -10,6 +10,7 @@ from backend.config import DATA_DIR
 from backend.core.agent_studio import list_niches
 from backend.core.product_180 import catalog_overlay
 from backend.core.sales_offer import access_offer
+from backend.core.sales_modes import list_sections
 from backend.core.teammates import list_teammates, workflow_payload
 from backend.core.functions import FUNCTIONS
 from backend.core.strategies import list_strategies
@@ -202,10 +203,17 @@ def catalog_payload(lang: str = "ru") -> dict[str, Any]:
         "x": X_URL,
         "app": "Karim Metrix",
         "nav": [
-            {"id": "chain", "title": "In-Out Chain"},
-            {"id": "teammates", "title": "AI Teammates"},
-            {"id": "artefacts", "title": "Artefacts"},
+            {
+                "id": s["id"],
+                "title": s["title"],
+                "short": s["title_short"],
+                "image": s["image"],
+                "one_liner": s["one_liner"],
+                "accent": s["accent"],
+            }
+            for s in list_sections(lang=lang)
         ],
+        "sections": list_sections(lang=lang),
         "functions": fns,
         "flagships": flagships,
         "strategies": list_strategies(),
@@ -222,9 +230,8 @@ def catalog_payload(lang: str = "ru") -> dict[str, Any]:
         },
         "scheme": scheme_payload(),
         "promise": (
-            "In-Out Chain → AI Teammates → Artefacts. "
-            "Тезисы на заказ. Metrix AI $2490 — ecom физ. товаров. "
-            "Одна подписка 3 290 ₽. Код согласованной модели, не сигналы."
+            "Идеи для жизни · Торговые боты · Конфиги для ремесла · Таргет ИИ-агентов · Каталог магазина. "
+            "Access 3 290 ₽. Код модели, не сигналы."
         ),
         "sales": access_offer(lang=lang),
     }

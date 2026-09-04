@@ -1,25 +1,23 @@
-"""Karim Metrix 1.8.0 — product source of truth.
-
-Three formal tabs. One subscription. Code of an agreed model, not signals.
+"""Karim Metrix — five sellable sections. One subscription. Code of an agreed model, not signals.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-VERSION = "1.8.2"
-CODENAME = "IN-OUT CHAIN"
-RELEASE = "2026-09-04-theses-ecom"
+VERSION = "1.9.0"
+CODENAME = "FIVE SHOPS"
+RELEASE = "2026-09-04-five-sections"
 
 # ── Flagship ────────────────────────────────────────────────────────────────
 FLAGSHIP = {
-    "id": "in_out_chain",
-    "name": "In-Out Chain",
-    "name_ru": "In-Out Chain",
-    "sticker": "Chain",
+    "id": "life",
+    "name": "Идеи для жизни",
+    "name_ru": "Идеи для жизни",
+    "sticker": "Life",
     "accent": "#5eead4",
-    "tagline_ru": "Снимает рутину. Закрывает решённое и нерешённое. Режет стоимость проекта на входе и на выходе.",
-    "tagline_en": "Kills routine. Closes solved and unsolved work. Cuts project cost on the way in and the way out.",
+    "tagline_ru": "Пять разделов. Короткий чат, торговые боты, конфиги ремесла, таргет агентов, каталог магазина.",
+    "tagline_en": "Five shops: life ideas, trading bots, craft configs, agent targeting, shop catalog.",
     "essence_ru": (
         "Цепочка in→out: рутина снимается кодом согласованной модели, "
         "решённые задачи закрываются триггером, нерешённые ставятся в параметр, "
@@ -31,25 +29,39 @@ FLAGSHIP = {
 
 TABS = [
     {
-        "id": "chain",
-        "title": "In-Out Chain",
-        "title_short": "Chain",
-        "legacy": ("landing", "demo", "лендинг", "демо"),
-        "role_ru": "Каталог доступных моделей и одна подписка, которая финансирует развитие.",
+        "id": "life",
+        "title": "Идеи для жизни",
+        "title_short": "Жизнь",
+        "legacy": ("chain", "landing", "demo", "лендинг", "демо"),
+        "role_ru": "Чат с идеями, что улучшить в дне.",
     },
     {
-        "id": "teammates",
-        "title": "AI Teammates",
-        "title_short": "Teammates",
-        "legacy": ("engine", "движок", "агенты", "agents"),
-        "role_ru": "Два тимейта: IT-внедрение и продакшн-агентства. Конфиг на заказ. Edu/ecom выключены.",
+        "id": "bots",
+        "title": "Торговые боты",
+        "title_short": "Боты",
+        "legacy": ("strategies", "strategy", "стратегии"),
+        "role_ru": "Витрина ботов. Эксперимент с промптом без кода и оценкой.",
     },
     {
-        "id": "artefacts",
-        "title": "Artefacts",
-        "title_short": "Artefacts",
-        "legacy": ("making", "мейкинг", "посты", "posts"),
-        "role_ru": "Конвейер: тезисы на заказ. Продаём только тезисы. Не панель, не проект в подарок.",
+        "id": "craft",
+        "title": "Конфиги для ремесла",
+        "title_short": "Ремесло",
+        "legacy": ("teammates", "engine", "движок"),
+        "role_ru": "Билдер конфига для ремесленника.",
+    },
+    {
+        "id": "target",
+        "title": "Таргет ИИ-агентов",
+        "title_short": "Агенты",
+        "legacy": ("agents", "agent", "агенты"),
+        "role_ru": "Куда целиться агенту: роль, канал, текст, молчание.",
+    },
+    {
+        "id": "shop",
+        "title": "Каталог магазина",
+        "title_short": "Магазин",
+        "legacy": ("artefacts", "making", "мейкинг", "посты"),
+        "role_ru": "Уникальный каталог: имя, описание, когда нужно.",
     },
 ]
 
@@ -114,9 +126,9 @@ PRICING = {
             "Платный SKU $2490 — тот же движок под ecom физических товаров "
             "(ops + каталог + промо). Не второй мозг. Цифра/курсы — не этот SKU."
         ),
-        "tracks": ("theses", "configs", "in_out_experiments"),
+        "tracks": ("life", "trading", "craft", "agents", "ecom"),
         "vertical": "physical_goods_ecom",
-        "bot_surfaces": ("artefacts.theses", "teammates.config", "chain.in_out"),
+        "bot_surfaces": ("life", "bots", "craft", "target", "shop"),
     },
     "custom_teammate": {
         "sku": "custom_teammate",

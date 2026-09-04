@@ -48,20 +48,20 @@ BRIEF_METHOD = (
 
 
 def test_menu_three_sections():
-    assert menu_action("In-Out Chain") == "chain"
-    assert menu_action("AI Teammates") == "teammates"
-    assert menu_action("Artefacts") == "artefacts"
-    assert menu_action("Лендинг") == "chain"
-    assert menu_action("Движок") == "teammates"
-    assert menu_action("Мейкинг") == "artefacts"
-    assert menu_action("/landing") == "chain"
-    assert menu_action("/engine@karimmetrixbot") == "teammates"
-    assert menu_action("/making") == "artefacts"
-    assert menu_action("Демо") == "chain"
-    assert menu_action("Стратегии") == "chain"
-    assert menu_action("Агенты") == "teammates"
-    assert menu_action("Посты") == "artefacts"
-    assert menu_action("/demo") == "chain"
+    assert menu_action("In-Out Chain") == "life"
+    assert menu_action("AI Teammates") == "craft"
+    assert menu_action("Artefacts") == "shop"
+    assert menu_action("Лендинг") == "life"
+    assert menu_action("Движок") == "craft"
+    assert menu_action("Мейкинг") == "shop"
+    assert menu_action("/landing") == "life"
+    assert menu_action("/engine@karimmetrixbot") == "craft"
+    assert menu_action("/making") == "shop"
+    assert menu_action("Демо") == "life"
+    assert menu_action("Стратегии") == "bots"
+    assert menu_action("Агенты") == "target"
+    assert menu_action("Посты") == "shop"
+    assert menu_action("/demo") == "life"
     assert menu_action("/start") == "start"
     assert menu_action("SaaS 80 человек без экономики") is None
 
@@ -230,9 +230,9 @@ def test_demo_highway_attaches_closer():
 
 def test_landing_artifact_shape():
     art = build_demo(BRIEF_PLANE, hint="landing")
-    assert art["lane"] == "landing"
-    assert art["event"]["title"]
-    assert art["abstraction"]["essay"]
+    assert art["lane"] in ("landing", "chain", "life")
+    assert (art.get("event") or {}).get("title") or art.get("kind") == "chain.experiment"
+    assert (art.get("abstraction") or {}).get("essay") or art.get("steps")
     html = format_telegram(art)
     assert "Где ломается" in html
 

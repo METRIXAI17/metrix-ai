@@ -416,6 +416,34 @@ def risk_run(
     return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
 
 
+@router.post("/mode")
+def mode_run(
+    body: DemoBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    from backend.core.demo_highway import format_telegram
+    from backend.core.mode_surfaces import run_mode
+    from backend.core.sales_modes import section_by_id
+
+    sec = section_by_id(body.hint or body.strategy or "life")
+    sid = (sec or {}).get("id") or "life"
+    feat = {
+        "life": "life",
+        "bots": "trading_prompt",
+        "craft": "craft",
+        "target": "target",
+        "shop": "shop",
+    }.get(sid, "life")
+    if body.watch:
+        feat = "watch"
+    gate = _gate(_subject(_try_auth(x_telegram_init_data)), feat)
+    if not gate.get("allowed"):
+        return _wall(gate)
+    art = run_mode(sid, sanitize_text(body.brief, max_len=8_000), strategy=body.strategy or None)
+    bump_hit(sid)
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
 @router.post("/thesis")
 def thesis_run(
     body: DemoBody,

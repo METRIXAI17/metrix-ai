@@ -1,4 +1,4 @@
-"""User-facing Telegram copy. Short names, human meaning."""
+"""User-facing Telegram copy. Short, concrete names."""
 
 from __future__ import annotations
 
@@ -9,78 +9,76 @@ START = START_TEXT
 BORED = BORED_TEXT
 FREELANCE = FREELANCE_TEXT
 
-ASK_DEMO = (
-    "In-Out Chain. Что стоит дорого на in или на out. Можно криво.\n\n"
-    "Пример: «золото, вхожу когда уже ушло».\n"
-    "Карточка «Стоп на перемене» — не сигнал: жив ли тезис стратегии, не сливать бюджет.\n\n"
-    "Соберу карту. Два бесплатных результата, дальше Access."
+ASK_LIFE = (
+    "Идеи для жизни. Напишите, что сейчас тяжело — сон, деньги, дом, нагрузка.\n"
+    "Отвечу короткими шагами, не лекцией."
+)
+ASK_CHAIN = ASK_LIFE
+ASK_LANDING = ASK_LIFE
+ASK_DEMO = ASK_LIFE
+
+ASK_BOTS = (
+    "Торговые боты. Четыре готовых модели. Код модели, не сигналы.\n"
+    "Эксперимент: напишите правило своими словами — без кода. Потом оценка: зашло / почти / мимо."
+)
+ASK_STRAT = ASK_BOTS
+
+ASK_CRAFT = (
+    "Конфиги для ремесла. Опишите изделие, материал, срок.\n"
+    "Соберу файл заказа: что делать, когда молчать, какая цена."
+)
+ASK_TEAMMATES = ASK_CRAFT
+ASK_ENGINE = ASK_CRAFT
+ASK_AGENT = ASK_CRAFT
+
+ASK_TARGET = (
+    "Таргет ИИ-агентов. Кто платит, какой канал, какой текст, когда молчать."
 )
 
-ASK_LANDING = ASK_DEMO
-ASK_CHAIN = ASK_DEMO
-
-ASK_AGENT = "Кто вы — и что бесит. Одним сообщением. Тимейт держит финмодель, не болтает."
-
-ASK_ENGINE = (
-    "AI Teammates. Два живых: IT-внедрение и продакшн-агентства. "
-    "На выходе конфиг, который можно отдать подрядчику. Edu и ecom — не этот контур.\n\n"
-    "Напишите, что бесит — или выберите тимейта. Кастом $500 — посадка конфига."
+ASK_SHOP = (
+    "Каталог магазина. Товар своими словами.\n"
+    "Соберу карточку: имя, описание, когда человеку это нужно."
 )
-
-ASK_TEAMMATES = ASK_ENGINE
-
-ASK_STRAT = "Фраза про стиль входа — или просто модель. Это код, не сигнал."
-
-ASK_MAKING = (
-    "Artefacts. Продаём только тезисы.\n\n"
-    "Напишите контур своими словами. На руки — короткие утверждения про процесс, "
-    "каждое можно убить фактом. Не отчёт и не проект в подарок."
-)
-
-ASK_ARTEFACTS = ASK_MAKING
+ASK_ARTEFACTS = ASK_SHOP
+ASK_MAKING = ASK_SHOP
 
 ASK_ACCESS = (
     "Два бесплатных результата использованы.\n\n"
-    "Это бот-артефакт (ленд), не весь Metrix AI.\n"
-    "Metrix Access — 3 290 ₽ / месяц: 40 карт под вашу ситуацию. "
-    "Живой снимок рынка в Access не списывается — рынок может обновиться в любой момент.\n"
-    "Chain, Teammates, Artefacts. Код модели, не сигналы.\n"
-    "Не входит: Metrix AI $2490 как отдельный SKU (тот же движок, посадка физ. ecom), Custom $500.\n"
+    "Metrix Access — 3 290 ₽ / месяц, 40 результатов.\n"
+    "Пять разделов: жизнь, торговые боты, ремесло, агенты, магазин.\n"
     "Оплата в Tribute. Имя и телефон не храним."
 )
 
 ASK_MONTH_CAP = (
-    "Лимит месяца: 40 карт под вашу ситуацию.\n"
-    "Живой снимок модели (кнопка «Как сейчас») не списывается — тики рынка в лимит не входят.\n"
-    "Новый месяц — снова 40 карт. Движок в боте уже работает: тезисы, конфиги, in-out. $2490 — посадка того же движка в физ. ecom."
+    "Лимит месяца: 40 результатов. Новый месяц — снова 40."
 )
 
-POSTS_INTRO = (
-    f"Прогрев для {HANDLE}. Инверсия, не воронка. Можно копировать как есть.\n"
-    f"{X_URL}"
-)
+POSTS_INTRO = f"Короткие тексты для {HANDLE}.\n{X_URL}"
 
 HELP = (
-    "In-Out Chain — модели и карточка «Стоп на перемене».\n"
-    "AI Teammates — IT и продакшн, конфиг на заказ.\n"
-    "Artefacts — тезисы на заказ. Только тезисы.\n\n"
-    "Код согласованной модели, не сигналы. Движок в боте: тезисы, конфиги, in-out."
+    "Идеи для жизни — короткий чат, что улучшить сегодня.\n"
+    "Торговые боты — витрина и эксперимент с промптом без кода.\n"
+    "Конфиги для ремесла — файл заказа.\n"
+    "Таргет ИИ-агентов — роль, канал, текст.\n"
+    "Каталог магазина — имя, описание, когда нужно."
 )
 
-MENU_CHAIN = "In-Out Chain"
-MENU_TEAMMATES = "AI Teammates"
-MENU_ARTEFACTS = "Artefacts"
-MENU_LANDING = MENU_CHAIN
-MENU_ENGINE = MENU_TEAMMATES
-MENU_MAKING = MENU_ARTEFACTS
-MENU_DEMO = MENU_CHAIN
-MENU_STRAT = MENU_CHAIN
-MENU_AGENTS = MENU_TEAMMATES
-MENU_POSTS = MENU_ARTEFACTS
+MENU_LIFE = "Идеи для жизни"
+MENU_BOTS = "Торговые боты"
+MENU_CRAFT = "Конфиги для ремесла"
+MENU_TARGET = "Таргет ИИ-агентов"
+MENU_SHOP = "Каталог магазина"
+MENU_CHAIN = MENU_LIFE
+MENU_TEAMMATES = MENU_CRAFT
+MENU_ARTEFACTS = MENU_SHOP
+MENU_LANDING = MENU_LIFE
+MENU_ENGINE = MENU_CRAFT
+MENU_MAKING = MENU_SHOP
+MENU_DEMO = MENU_LIFE
+MENU_STRAT = MENU_BOTS
+MENU_AGENTS = MENU_TARGET
+MENU_POSTS = MENU_SHOP
 
-DESC = (
-    "Karim Metrix · In-Out Chain. Снимает рутину, закрывает решённое и нерешённое, "
-    "режет стоимость in и out. Код модели, не сигналы."
-)
-SHORT = "In-Out Chain · Teammates · Artefacts. Одна подписка."
-NAME = "Karim Metrix"
+DESC = HELP[:120]
+SHORT = "Пять разделов: жизнь, боты, ремесло, агенты, магазин."
+NAME = "Metrix"

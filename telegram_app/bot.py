@@ -44,9 +44,14 @@ MARK = ROOT / "public" / "tg" / "assets" / "mark.jpg"
 PHOTO_ROOT = ROOT / "public" / "assets" / "x-posts"
 SECTION_PHOTO = {
     "start": PHOTO_ROOT / "geo-start.jpg",
-    "chain": PHOTO_ROOT / "geo-chain.jpg",
-    "teammates": PHOTO_ROOT / "geo-saas.jpg",
-    "artefacts": PHOTO_ROOT / "geo-artefacts.jpg",
+    "life": ROOT / "public" / "tg" / "assets" / "sec-life.jpg",
+    "bots": ROOT / "public" / "tg" / "assets" / "sec-bots.jpg",
+    "craft": ROOT / "public" / "tg" / "assets" / "sec-craft.jpg",
+    "target": ROOT / "public" / "tg" / "assets" / "sec-target.jpg",
+    "shop": ROOT / "public" / "tg" / "assets" / "sec-shop.jpg",
+    "chain": ROOT / "public" / "tg" / "assets" / "sec-life.jpg",
+    "teammates": ROOT / "public" / "tg" / "assets" / "sec-craft.jpg",
+    "artefacts": ROOT / "public" / "tg" / "assets" / "sec-shop.jpg",
     "target_place": PHOTO_ROOT / "geo-gold.jpg",
     "demand": PHOTO_ROOT / "geo-demand.jpg",
     "ampli": PHOTO_ROOT / "geo-ampli.jpg",
@@ -85,8 +90,9 @@ def _webapp() -> str:
 def main_keyboard() -> dict:
     return {
         "keyboard": [
-            [{"text": texts.MENU_CHAIN}, {"text": texts.MENU_TEAMMATES}],
-            [{"text": texts.MENU_ARTEFACTS}],
+            [{"text": texts.MENU_LIFE}, {"text": texts.MENU_BOTS}],
+            [{"text": texts.MENU_CRAFT}, {"text": texts.MENU_TARGET}],
+            [{"text": texts.MENU_SHOP}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -94,7 +100,7 @@ def main_keyboard() -> dict:
 
 
 def webapp_row(webapp: str) -> list[dict]:
-    return [{"text": "In-Out Chain", "web_app": {"url": webapp}}]
+    return [{"text": "Открыть разделы", "web_app": {"url": webapp}}]
 
 
 def _tribute_url() -> str:
@@ -117,11 +123,15 @@ def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
     """Primary nav — three sections. Reply keyboard is a fallback; Telegram often hides it."""
     rows = [
         [
-            {"text": "In-Out Chain", "callback_data": "m:chain"},
-            {"text": "AI Teammates", "callback_data": "m:teammates"},
+            {"text": "Идеи для жизни", "callback_data": "m:life"},
+            {"text": "Торговые боты", "callback_data": "m:bots"},
         ],
         [
-            {"text": "Artefacts", "callback_data": "m:artefacts"},
+            {"text": "Конфиги для ремесла", "callback_data": "m:craft"},
+            {"text": "Таргет ИИ-агентов", "callback_data": "m:target"},
+        ],
+        [
+            {"text": "Каталог магазина", "callback_data": "m:shop"},
         ],
         webapp_row(webapp),
         subscribe_row(),
@@ -278,7 +288,7 @@ class BotAPI:
             )
             self.send(
                 chat_id,
-                "In-Out Chain · AI Teammates · Artefacts — кнопки под этим сообщением.",
+                "Пять разделов — кнопки под этим сообщением.",
                 markup=kb,
                 html=False,
             )
@@ -300,11 +310,13 @@ def bootstrap(api: BotAPI, webapp: str) -> None:
     api.call(
         "setMyCommands",
         commands=[
-            {"command": "start", "description": "Кто я и как это работает"},
-            {"command": "chain", "description": "In-Out Chain — модели и подписка"},
-            {"command": "teammates", "description": "AI Teammates — агенты и воркфлоу"},
-            {"command": "artefacts", "description": "Artefacts — панель и предложения"},
-            {"command": "access", "description": "Metrix Access · 3 290 ₽"},
+            {"command": "start", "description": "Пять разделов"},
+            {"command": "life", "description": "Идеи для жизни"},
+            {"command": "bots", "description": "Торговые боты"},
+            {"command": "craft", "description": "Конфиги для ремесла"},
+            {"command": "target", "description": "Таргет ИИ-агентов"},
+            {"command": "shop", "description": "Каталог магазина"},
+            {"command": "access", "description": "Access · 3 290 ₽"},
         ],
     )
     api.call("setMyDescription", description=texts.DESC)
@@ -342,7 +354,46 @@ def _gate(api: BotAPI, chat_id: int, feature: str, webapp: str) -> bool:
     return False
 
 
+def _run_section(api: BotAPI, chat_id: int, section: str, brief: str, **kw) -> None:
+    from backend.core.mode_surfaces import run_mode
+
+    feat = {
+        "life": "life",
+        "bots": "trading_prompt",
+        "craft": "craft",
+        "target": "target",
+        "shop": "shop",
+    }.get(section, "life")
+    if kw.pop("watch", False):
+        feat = "watch"
+    if not _gate(api, chat_id, feat, _webapp()):
+        return
+    api.send(chat_id, "Собираю…")
+    try:
+        art = run_mode(section, brief, strategy=kw.get("strategy"))
+    except Exception as exc:  # noqa: BLE001
+        api.send(chat_id, f"Сломалось. Напишите короче.\n<code>{exc}</code>"[:400])
+        return
+    _send_artifact(api, chat_id, art)
+
+
 def _run_demo(api: BotAPI, chat_id: int, brief: str, **kw) -> None:
+    hint = (kw.get("hint") or "").lower()
+    if hint in ("life", "landing", "chain"):
+        _run_section(api, chat_id, "life", brief)
+        return
+    if hint in ("bots", "strategy") or kw.get("strategy"):
+        _run_section(api, chat_id, "bots", brief, strategy=kw.get("strategy"), watch=kw.get("watch", False))
+        return
+    if hint in ("craft", "engine", "teammates", "agent"):
+        _run_section(api, chat_id, "craft" if hint != "target" else "target", brief)
+        return
+    if hint == "target":
+        _run_section(api, chat_id, "target", brief)
+        return
+    if hint in ("shop", "making", "artefacts"):
+        _run_section(api, chat_id, "shop", brief)
+        return
     if kw.pop("watch", False):
         feature = "watch"
     elif kw.get("strategy") or kw.get("hint") == "strategy":
@@ -350,7 +401,7 @@ def _run_demo(api: BotAPI, chat_id: int, brief: str, **kw) -> None:
     elif kw.get("niche") or kw.get("hint") in ("agent", "teammates"):
         feature = "teammate"
     else:
-        feature = "artefact_panel"
+        feature = "life"
     if not _gate(api, chat_id, feature, _webapp()):
         return
     api.send(chat_id, "Собираю…")
@@ -403,50 +454,80 @@ def show_posts(api: BotAPI, chat_id: int, webapp: str) -> None:
     api.send(chat_id, texts.POSTS_INTRO, markup=nav_inline(webapp, extra=extra))
 
 
-def show_chain(api: BotAPI, chat_id: int, webapp: str) -> None:
-    sessions.set_mode(chat_id, "await_landing")
+def show_life(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_life")
+    api.send_photo(
+        chat_id,
+        SECTION_PHOTO["life"],
+        texts.ASK_LIFE,
+        markup=nav_inline(webapp),
+        html=False,
+    )
+
+
+def show_bots(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_bots")
     extra = strategies_kb()["inline_keyboard"]
     api.send_photo(
         chat_id,
-        SECTION_PHOTO["chain"],
-        texts.ASK_CHAIN,
+        SECTION_PHOTO["bots"],
+        texts.ASK_BOTS,
         markup=nav_inline(webapp, extra=extra),
         html=False,
     )
+
+
+def show_chain(api: BotAPI, chat_id: int, webapp: str) -> None:
+    show_life(api, chat_id, webapp)
 
 
 def show_landing(api: BotAPI, chat_id: int, webapp: str) -> None:
     show_chain(api, chat_id, webapp)
 
 
-def show_teammates(api: BotAPI, chat_id: int, webapp: str) -> None:
-    sessions.set_mode(chat_id, "await_engine")
-    extra = niches_kb()["inline_keyboard"]
+def show_craft(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_craft")
     api.send_photo(
         chat_id,
-        SECTION_PHOTO["teammates"],
-        texts.ASK_TEAMMATES,
-        markup=nav_inline(webapp, extra=extra),
+        SECTION_PHOTO["craft"],
+        texts.ASK_CRAFT,
+        markup=nav_inline(webapp),
         html=False,
     )
+
+
+def show_target(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_target")
+    api.send_photo(
+        chat_id,
+        SECTION_PHOTO["target"],
+        texts.ASK_TARGET,
+        markup=nav_inline(webapp),
+        html=False,
+    )
+
+
+def show_teammates(api: BotAPI, chat_id: int, webapp: str) -> None:
+    show_craft(api, chat_id, webapp)
 
 
 def show_engine(api: BotAPI, chat_id: int, webapp: str) -> None:
     show_teammates(api, chat_id, webapp)
 
 
-def show_artefacts(api: BotAPI, chat_id: int, webapp: str) -> None:
-    sessions.set_mode(chat_id, "await_making")
-    extra = [
-        [{"text": "Заказать тезисы", "callback_data": "af:thesis"}],
-    ]
+def show_shop(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_shop")
     api.send_photo(
         chat_id,
-        SECTION_PHOTO["artefacts"],
-        texts.ASK_ARTEFACTS,
-        markup=nav_inline(webapp, extra=extra),
+        SECTION_PHOTO["shop"],
+        texts.ASK_SHOP,
+        markup=nav_inline(webapp),
         html=False,
     )
+
+
+def show_artefacts(api: BotAPI, chat_id: int, webapp: str) -> None:
+    show_shop(api, chat_id, webapp)
 
 
 def show_making(api: BotAPI, chat_id: int, webapp: str) -> None:
@@ -473,13 +554,19 @@ def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
     if action == "access":
         show_access(api, chat_id, webapp)
         return
-    if action in ("chain", "landing", "demo", "strategies"):
-        show_chain(api, chat_id, webapp)
+    if action in ("life", "chain", "landing", "demo"):
+        show_life(api, chat_id, webapp)
         return
-    if action in ("teammates", "engine", "agents"):
-        show_teammates(api, chat_id, webapp)
+    if action in ("bots", "strategies"):
+        show_bots(api, chat_id, webapp)
         return
-    if action in ("artefacts", "making", "posts"):
+    if action in ("craft", "teammates", "engine"):
+        show_craft(api, chat_id, webapp)
+        return
+    if action in ("target", "agents"):
+        show_target(api, chat_id, webapp)
+        return
+    if action in ("shop", "artefacts", "making", "posts"):
         show_artefacts(api, chat_id, webapp)
         return
 
@@ -495,17 +582,22 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
         return
     if data.startswith("m:"):
         action = {
-            "chain": "chain",
-            "landing": "chain",
-            "demo": "chain",
-            "teammates": "teammates",
-            "engine": "teammates",
-            "strat": "chain",
-            "strategies": "chain",
-            "agents": "teammates",
-            "artefacts": "artefacts",
-            "making": "artefacts",
-            "posts": "artefacts",
+            "life": "life",
+            "chain": "life",
+            "landing": "life",
+            "demo": "life",
+            "bots": "bots",
+            "teammates": "craft",
+            "engine": "craft",
+            "craft": "craft",
+            "strat": "bots",
+            "strategies": "bots",
+            "target": "target",
+            "agents": "target",
+            "shop": "shop",
+            "artefacts": "shop",
+            "making": "shop",
+            "posts": "shop",
             "access": "access",
         }.get(data.split(":", 1)[1])
         if action:
@@ -651,7 +743,7 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
         token = raw.split(maxsplit=1)[-1].strip()
         out = redeem(token, bind_subject=subject_hash(chat_id))
         if out.get("ok"):
-            api.send(chat_id, "Access открыт. Одна подписка на все три вкладки.", markup=nav_inline(webapp))
+            api.send(chat_id, "Access открыт. Одна подписка на все пять разделов.", markup=nav_inline(webapp))
         else:
             api.send(chat_id, "Токен не принят. Если только что оплатили Tribute — подождите минуту или напишите «связаться с человеком».")
         return
@@ -678,11 +770,23 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
         sessions.set_mode(chat_id, "idle")
         return
 
-    if mode in ("await_demo", "await_landing"):
-        _run_demo(api, chat_id, raw, hint="landing")
+    if mode in ("await_demo", "await_landing", "await_life"):
+        _run_section(api, chat_id, "life", raw)
+        return
+    if mode == "await_bots":
+        _run_section(api, chat_id, "bots", raw, strategy=st.get("strategy"))
+        return
+    if mode in ("await_craft", "await_engine"):
+        _run_section(api, chat_id, "craft", raw)
+        return
+    if mode == "await_target":
+        _run_section(api, chat_id, "target", raw)
+        return
+    if mode in ("await_shop", "await_making"):
+        _run_section(api, chat_id, "shop", raw)
         return
 
-    if mode == "await_engine":
+    if mode == "await_engine_legacy":
         from backend.core.content_closer import comfort_turn
 
         hist = st.get("comfort_history") or []
