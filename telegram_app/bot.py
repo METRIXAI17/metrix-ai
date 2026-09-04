@@ -167,7 +167,7 @@ def strategies_kb() -> dict:
             [{"text": "Two-Leg Tape · Tape Land", "callback_data": "st:two_leg_tape"}],
             [{"text": "Как сейчас · живой снимок (не списывает)", "callback_data": "lv:now"}],
             [{"text": "Стоп на перемене · не сливать бюджет", "callback_data": "ss:now"}],
-            [{"text": "Risk Engine · отдельно", "callback_data": "rk:engine"}],
+            [{"text": "Контроль рисков · отдельно", "callback_data": "rk:engine"}],
         ]
     }
 

@@ -430,9 +430,13 @@
           .join("") || "") +
         '<article class="card card-flag" style="--flag-accent:#fb7185" data-ss="now">' +
         '<span class="tag">без списания</span><h3>Стоп на перемене</h3>' +
-        "<p>Если рынок уже другой — не сливать бюджет.</p></article></div>" +
+        "<p>Если рынок уже другой — не сливать бюджет.</p></article>" +
+        '<article class="card card-flag" style="--flag-accent:#fb7185" data-rk="engine">' +
+        photoHtml(GEO.risk, "Контроль рисков") +
+        '<span class="tag">отдельно</span><h3>Контроль рисков</h3>' +
+        "<p>R — мера исхода. Плечо — размер. Движок их не путает. Без стопа нет размера.</p></article></div>" +
         '<div class="eyebrow section-label">Эксперимент без кода</div>' +
-        '<p class="lead">Промпт своими словами. Потом оценка: зашло / почти / мимо.</p>';
+        '<p class="lead">Промпт своими словами. Потом оценка: зашло / почти / мимо. Контроль рисков — отдельная карточка, не внутри бота.</p>';
     } else if (sid === "life") {
       vitrine =
         '<div class="eyebrow section-label">Витрина</div><div class="grid grid-cards">' +
@@ -841,8 +845,13 @@
   }
 
   async function runRisk() {
-    var extra = (document.getElementById("q-brief") || {}).value || "риск без путаницы R и плеча";
-    var box = document.getElementById("st-out") || document.getElementById("q-out");
+    var extra =
+      (document.getElementById("sec-brief") || document.getElementById("q-brief") || {}).value ||
+      "контроль рисков: не путать R и плечо";
+    var box =
+      document.getElementById("sec-out") ||
+      document.getElementById("st-out") ||
+      document.getElementById("q-out");
     if (!box) return;
     box.innerHTML = "<p class='status'>Риск-движок…</p>";
     var out = await post("/api/v1/miniapp/risk", { brief: extra });
