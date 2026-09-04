@@ -26,10 +26,10 @@ window.METRIX_DATA = {
       nav_pricing: "Pricing",
       nav_system: "System",
       hero_badge: "Consult → direction → ship",
-      hero_h1a: "Start a sequence, not a chat.",
-      hero_h1b: "Free consult. Then a direction. Then a delivery.",
+      hero_h1a: "Theses on order. Physical goods engine.",
+      hero_h1b: "Bot is the land. Metrix AI $2490 is the shop.",
       hero_sub:
-        "Who it's for, which gap we close, which gate must pass, the price of this step, and what is not included. Main $2490 only after a successful pilot.",
+        "Artefacts sell theses only. Metrix AI 1.8 is ecom of physical SKUs — ops, catalog project, promo. Main $2490 after a successful pilot. Not signals.",
       cta_consult: "Consult + Tech-TZ",
       cta_chain: "Start free work",
       chain_step_1: "Consult",
@@ -49,7 +49,7 @@ window.METRIX_DATA = {
       out_text: "Identity · asset map · implementation path",
       not_pig: "Not a pig in a poke",
       not_pig_p:
-        "Instant expert ideas. Implementation of three directions is ops-only (price hidden). Live assist after go-ahead. Experiment without fear.",
+        "Metrix AI 1.8 kept, pulled out: physical-goods ecom. Instant expert ideas. Implementation after you approve. Not the Telegram bot.",
       eyebrow_system: "System map",
       system_title: "Metrix layers",
       system_lead:
@@ -204,10 +204,10 @@ window.METRIX_DATA = {
       nav_pricing: "Цены",
       nav_system: "Система",
       hero_badge: "Консультация → направление → поставка",
-      hero_h1a: "Запускаете последовательность, не чат.",
-      hero_h1b: "Бесплатная консультация. Потом направление. Потом поставка.",
+      hero_h1a: "Тезисы на заказ. Движок физ. товара.",
+      hero_h1b: "Бот — ленд. Metrix AI $2490 — магазин.",
       hero_sub:
-        "Для кого, какую дыру закрываем, какой gate, цена шага, что не входит. Main $2490 только после успешного пилота.",
+        "Artefacts продают только тезисы. Metrix AI 1.8 — ecom физических SKU: процессы, каталог, промо. Main $2490 после пилота. Не сигналы.",
       cta_consult: "Консультация + Тех-ТЗ",
       cta_chain: "Начать работу бесплатно",
       chain_step_1: "Консультация",
@@ -227,7 +227,7 @@ window.METRIX_DATA = {
       out_text: "Идентичность · карта активов · путь внедрения",
       not_pig: "Не кот в мешке",
       not_pig_p:
-        "Моментальные экспертные идеи. Внедрение трёх направлений — только в ops (цена скрыта). Живой ассист после go-ahead. Экспериментировать можно не боясь.",
+        "Metrix AI 1.8 сохранён и вытащен: ecom физических товаров. Моментальные экспертные идеи. Внедрение после вашего «да». Это не Telegram-бот.",
       eyebrow_system: "Карта системы",
       system_title: "Слои Metrix",
       system_lead:
@@ -676,7 +676,7 @@ window.METRIX_DATA = {
       { id: "consult", title: "Free consult + tech write", essence: "For operators who need a named gap closed. Gate: fit of conditions ≥ 0.45. Price: free. Not included: Main $2490.", detail: "Consult → direction → ship. Creates a sequence id.", track: "product", accent: "#5eead4", sticker: "Consult", cta: "request" },
       { id: "direction", title: "Pick a direction", essence: "Ops, product or promotion — one lane. Gate: a direction named. Price: free. Not included: all-lanes rewrite.", detail: "One direction, not a catalog dump.", track: "product", accent: "#67e8f9", sticker: "Direction", cta: "request" },
       { id: "pilot", title: "14-day pilot", essence: "For a signed scope. Gate: predicted end ≥ 0.7 and risk ≠ high. Price: $490–790. Not included: Main.", detail: "Pilot only after assembly.", track: "models", accent: "#fbbf24", sticker: "Pilot", cta: "later" },
-      { id: "main", title: "Full package after pilot", essence: "For a passed pilot. Gate: predicted end ≥ 0.7 and risk ≠ high. Price: $2490. Not included: a skip of the pilot.", detail: "Main does not open on high risk.", track: "product", accent: "#fb7185", sticker: "Main", cta: "later" },
+      { id: "main", title: "Metrix AI after pilot", essence: "Physical-goods ecom engine. Gate: predicted end ≥ 0.7 and risk ≠ high. Price: $2490. Not included: a skip of the pilot, digital courses.", detail: "Ops + catalog project + promo for physical SKUs. Main does not open on high risk.", track: "product", accent: "#fb7185", sticker: "Main", cta: "later" },
       { id: "prompts", title: "Offline architecture prompts", essence: "White-label prompts, no external LLM. Gate: tech write ready. Price: inside Main. Not included: a hosted model call.", detail: "Prompts you run yourself.", track: "ops", accent: "#86efac", sticker: "Prompts", cta: "generate" },
       { id: "auto", title: "Auto-consult answers", essence: "Certain yes / no / not assembled — in plain language. Gate: sequence started. Price: free. Not included: pretending unbound slots are advice.", detail: "If a slot is empty, we say so.", track: "ops", accent: "#38bdf8", sticker: "Answers", cta: "request" },
     ],
@@ -684,7 +684,7 @@ window.METRIX_DATA = {
       { id: "consult", title: "Бесплатная консультация + тех-ТЗ", essence: "Для операторов, кому надо закрыть названную дыру. Gate: сходимость ≥ 0.45. Цена: 0. Не входит: Main $2490.", detail: "Консультация → направление → поставка. Создаёт id последовательности.", track: "product", accent: "#5eead4", sticker: "Консульт", cta: "request" },
       { id: "direction", title: "Выбор направления", essence: "Ops, продукт или промо — одна лента. Gate: направление названо. Цена: 0. Не входит: перепись всех лент.", detail: "Одно направление, не свалка каталога.", track: "product", accent: "#67e8f9", sticker: "Направление", cta: "request" },
       { id: "pilot", title: "Пилот 14 дней", essence: "Для подписанного скоупа. Gate: predicted end ≥ 0.7 и risk ≠ high. Цена: $490–790. Не входит: Main.", detail: "Пилот только после сборки.", track: "models", accent: "#fbbf24", sticker: "Пилот", cta: "later" },
-      { id: "main", title: "Полный пакет после пилота", essence: "Для прошедшего пилота. Gate: predicted end ≥ 0.7 и risk ≠ high. Цена: $2490. Не входит: пропуск пилота.", detail: "Main не открывается при high risk.", track: "product", accent: "#fb7185", sticker: "Main", cta: "later" },
+      { id: "main", title: "Metrix AI после пилота", essence: "Движок ecom физ. товаров. Gate: predicted end ≥ 0.7 и risk ≠ high. Цена: $2490. Не входит: пропуск пилота, курсы.", detail: "Процессы + проект каталога + промо физических SKU. Main не открывается при high risk.", track: "product", accent: "#fb7185", sticker: "Main", cta: "later" },
       { id: "prompts", title: "Офлайн-промпты архитектуры", essence: "White-label промпты, без внешней LLM. Gate: тех-write готов. Цена: внутри Main. Не входит: вызов чужой модели.", detail: "Промпты вы запускаете сами.", track: "ops", accent: "#86efac", sticker: "Промпты", cta: "generate" },
       { id: "auto", title: "Авто-ответы консультации", essence: "Точно да / нет / не собрано — человеческим языком. Gate: последовательность начата. Цена: 0. Не входит: притворяться, что пустой слот — совет.", detail: "Если слот пуст — так и говорим.", track: "ops", accent: "#38bdf8", sticker: "Ответы", cta: "request" },
     ],

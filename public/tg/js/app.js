@@ -111,13 +111,17 @@
       ev.preventDefault();
       runMaking();
     }
-    if (t.closest("#p-run")) {
+    if (t.closest("#p-run") || t.closest("#th-run")) {
       ev.preventDefault();
-      runPanel();
+      runThesis();
     }
     if (t.closest("#o-run")) {
       ev.preventDefault();
-      runOffer();
+      runThesis();
+    }
+    if (t.closest("[data-ss]")) {
+      ev.preventDefault();
+      runStop();
     }
     if (t.closest("[data-rk]")) {
       ev.preventDefault();
@@ -236,6 +240,30 @@
     );
   }
 
+  function thesesHtml(rows) {
+    if (!rows || !rows.length) return "";
+    return (
+      '<ol class="theses">' +
+      rows
+        .map(function (row) {
+          var dead = row.status === "dead";
+          return (
+            '<li class="thesis ' +
+            (dead ? "dead" : "alive") +
+            '"><b>' +
+            (dead ? "мёртв" : "жив") +
+            "</b> · " +
+            esc(row.relation || "") +
+            "<p>" +
+            esc(row.text) +
+            "</p></li>"
+          );
+        })
+        .join("") +
+      "</ol>"
+    );
+  }
+
   function artHtml(a) {
     if (!a) return "";
     var steps = (a.steps || [])
@@ -300,6 +328,7 @@
       '<p class="lead">' +
       esc(a.one_liner) +
       "</p>" +
+      thesesHtml(a.theses) +
       "<h3>Где ломается</h3><p>" +
       esc(a.break) +
       "</p>" +
@@ -338,7 +367,7 @@
       (out.reason === "month_cap" ? "Лимит месяца (40 результатов)" : "Два бесплатных результата использованы") +
       "</h3>" +
       "<p>Бот — ленд-артефакт. Access — 3 290 ₽ / месяц, 40 результатов. " +
-      "Metrix AI $2490 — отдельный движок (процессы, проект, промо), не эта подписка.</p>" +
+      "Metrix AI $2490 — ecom физ. товаров, не эта подписка.</p>" +
       '<div class="row"><a class="btn btn-primary" href="' +
       esc(url) +
       '" target="_blank" rel="noopener">Оплатить в Tribute</a>' +
@@ -399,8 +428,11 @@
       '<div class="grid grid-cards">' +
       cards +
       "</div>" +
+      '<article class="card card-flag" style="--flag-accent:#fb7185" data-ss="now">' +
+      photoHtml(GEO.risk, "Стоп на перемене") +
+      '<span class="tag">не списывает</span><h3>Стоп на перемене</h3>' +
+      "<p>Факт против тезиса стратегии. Бюджет не сливать. Если тезис мёртв — идеи под новый режим, не новый вход.</p></article>" +
       '<article class="card card-flag" style="--flag-accent:#fb7185" data-rk="engine">' +
-      photoHtml(GEO.risk, "Risk Engine") +
       '<span class="tag">отдельно</span><h3>Risk Engine</h3>' +
       "<p>R — мера исхода. Плечо — размер. Движок их не путает.</p></article>" +
       '<div id="st-out"></div></section>'
@@ -444,18 +476,18 @@
       photoHtml(GEO.saas, "AI Teammates", "geo-hero-img") +
       "</div>" +
       '<div class="eyebrow">AI Teammates</div>' +
-      "<h1>Четыре тимейта. <em>Пятый</em> собирается.</h1>" +
-      "<p class='lead'>Тимейт держит финмодель: единицу денег, молчание, артефакт, kill. Не чат.</p>" +
+      "<h1>Два тимейта. <em>Конфиг</em> на заказ.</h1>" +
+      "<p class='lead'>IT-внедрение и продакшн-агентства. На выходе файл подрядчику. Edu и ecom — не этот контур.</p>" +
       '<div class="grid">' +
       teammates +
       "</div>" +
-      '<div class="eyebrow section-label">Воркфлоу нового решения</div>' +
+      '<div class="eyebrow section-label">Воркфлоу конфига</div>' +
       "<ol class='tickets'>" +
       steps +
       "</ol>" +
-      '<label>Контур для нового тимейта</label>' +
+      '<label>Контур для конфига</label>' +
       '<textarea id="c-brief" placeholder="агентство, онбординг сжигает маржу, метод в головах…"></textarea>' +
-      '<div class="row"><button type="button" class="btn btn-primary" id="wf-run">Собрать спеку</button>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="wf-run">Собрать конфиг</button>' +
       '<a class="btn" href="' +
       esc(human) +
       '" target="_blank" rel="noopener">Связаться с человеком</a>' +
@@ -476,15 +508,13 @@
       '<div class="chamber-hero">' +
       photoHtml(GEO.artefacts, "Artefacts", "chamber-photo") +
       '<div class="eyebrow">Artefacts</div>' +
-      "<h1>Панель и <em>предложение</em>.</h1>" +
-      "<p class='lead'>Метрики как артефакт — читать вслух. Генератор предложений собрал мейкинг и промо в одну папку. " +
-      "Tape Land лежит здесь же, не отдельным сервисом.</p></div>" +
+      "<h1>Тезисы <em>на заказ</em>.</h1>" +
+      "<p class='lead'>Продаём только тезисы. Короткое утверждение про процесс, которое можно убить фактом. " +
+      "Не отчёт и не проект в подарок.</p></div>" +
       '<label>Контур своими словами</label>' +
-      '<textarea id="m-brief" placeholder="касса как туман, онбординг жрёт маржу, хайп без денег…"></textarea>' +
+      '<textarea id="m-brief" placeholder="касса как туман, поставщик снял отсрочку, онбординг жрёт маржу…"></textarea>' +
       '<div class="row">' +
-      '<button type="button" class="btn btn-primary" id="p-run">Панель</button>' +
-      '<button type="button" class="btn" id="o-run">Предложение</button>' +
-      '<button type="button" class="btn btn-ghost" data-st="two_leg_tape">Tape Land</button>' +
+      '<button type="button" class="btn btn-primary" id="th-run">Заказать тезисы</button>' +
       "</div>" +
       '<div id="m-out"></div></section>'
     );
@@ -702,12 +732,12 @@
     bindResonate(box);
   }
 
-  async function runPanel() {
-    var extra = (document.getElementById("m-brief") || {}).value || "панель контура";
+  async function runThesis() {
+    var extra = (document.getElementById("m-brief") || {}).value || "контур без описания";
     var box = document.getElementById("m-out");
     if (!box) return;
-    box.innerHTML = "<p class='status'>Панель…</p>";
-    var out = await post("/api/v1/miniapp/panel", { brief: extra });
+    box.innerHTML = "<p class='status'>Собираю тезисы…</p>";
+    var out = await post("/api/v1/miniapp/thesis", { brief: extra });
     if (out.wall) {
       box.innerHTML = wallHtml(out);
       return;
@@ -716,12 +746,12 @@
     bindResonate(box);
   }
 
-  async function runOffer() {
-    var extra = (document.getElementById("m-brief") || {}).value || "собери предложение";
-    var box = document.getElementById("m-out");
+  async function runStop() {
+    var extra = (document.getElementById("q-brief") || {}).value || "рынок как есть";
+    var box = document.getElementById("st-out") || document.getElementById("q-out");
     if (!box) return;
-    box.innerHTML = "<p class='status'>Предложение…</p>";
-    var out = await post("/api/v1/miniapp/offer", { brief: extra });
+    box.innerHTML = "<p class='status'>Проверяю противоречие…</p>";
+    var out = await post("/api/v1/miniapp/stop-on-shift", { brief: extra, watch: true });
     if (out.wall) {
       box.innerHTML = wallHtml(out);
       return;

@@ -222,22 +222,9 @@ def build_demo(
             else _model_artifact(text, {})
         )
     elif lane in ("making", "artefacts"):
-        from backend.core.content_closer.making import MakingRefused, run_making_chamber
+        from backend.core.theses import order_theses
 
-        if closer and closer.get("making"):
-            art = closer["making"]
-        elif closer:
-            try:
-                art = run_making_chamber(closer, lang="ru")
-            except MakingRefused:
-                art = (
-                    closer_as_artifact(closer)
-                    if closer and closer_as_artifact
-                    else _model_artifact(text, {})
-                )
-        else:
-            harvested = _harvest_pipeline(text, _industry_for(text, "model"))
-            art = _model_artifact(text, harvested)
+        art = order_theses(text, lang="ru")
     elif lane == "strategy":
         art = run_strategy(strategy or hint, text)
     elif lane in ("agent", "teammates"):
@@ -271,7 +258,14 @@ def format_telegram(art: dict[str, Any]) -> str:
             .replace(">", "&gt;")
         )
 
-    steps = "\n".join(f"{i}. {esc(s)}" for i, s in enumerate(art.get("steps") or [], 1))
+    theses = art.get("theses") or []
+    if theses:
+        steps = "\n".join(
+            f"{i}. {'мёртв' if (row or {}).get('status') == 'dead' else 'жив'}. {esc((row or {}).get('text'))}"
+            for i, row in enumerate(theses, 1)
+        )
+    else:
+        steps = "\n".join(f"{i}. {esc(s)}" for i, s in enumerate(art.get("steps") or [], 1))
     anti = "\n".join(f"— {esc(s)}" for s in (art.get("anti") or [])[:3])
     meta_bits = []
     m = art.get("meta") or {}

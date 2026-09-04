@@ -1,7 +1,7 @@
-"""Four user-facing AI teammates + a workflow to make a fifth.
+"""Two live AI teammates: IT implementation + production agencies.
 
-These are the live agents that already sat in the old bot (SaaS / agency / edu / ecom),
-rewritten as teammates: they hold a financial model, not a chat.
+Edu and ecom are not in this contour. The artefact is a CONFIG
+a human can send to a robot shop or a company. Not a chat.
 """
 
 from __future__ import annotations
@@ -11,36 +11,39 @@ from typing import Any
 from backend.core.resonance import new_id
 from backend.core.voice import DISCLAIMER, clip
 
+LIVE_IDS = ("saas", "agency")
+RETIRED_TO = {"edu": "saas", "ecom": "agency"}
+
 WORKFLOW = [
     {
         "id": "name_the_job",
         "title": "Имя работы",
-        "do": "Одной фразой: какую работу тимейт забирает у человека. Не «отвечает на вопросы».",
+        "do": "Какую работу конфиг забирает у человека. Не «отвечает на вопросы».",
     },
     {
         "id": "money_unit",
         "title": "Единица денег",
-        "do": "Что считается деньгами в этом контуре. Если единица не названа — тимейт не собирается.",
+        "do": "Что считается деньгами. Без единицы конфиг не собирается.",
     },
     {
         "id": "silence",
         "title": "Правило молчания",
-        "do": "Когда он обязан молчать. Без этого он становится чатом.",
+        "do": "Когда подрядчик и тимейт обязаны молчать. Без этого это чат.",
     },
     {
-        "id": "artifact",
-        "title": "Артефакт человеку",
-        "do": "Что сплёвывает: карта, пакет, стоп, цифра. Не «инсайт».",
+        "id": "config_slots",
+        "title": "Слоты конфига",
+        "do": "Что уходит роботу или компании: вход, выход, границы, kill. Файл заказа, не слайд.",
     },
     {
         "id": "kill",
-        "title": "Стоп тимейта",
-        "do": "Условие, после которого его выключают. 14 дней без hit — вырезать.",
+        "title": "Стоп конфига",
+        "do": "14 дней без hit — вырезать. Конфиг, который не заказали повторно, мёртв.",
     },
     {
         "id": "land",
         "title": "Посадка 14 дней",
-        "do": "Один живой поток, не компания целиком. Share с изменённой структуры, не ретейнер «на всякий».",
+        "do": "Один живой поток. Custom $500 — посадка конфига, не ретейнер «на всякий».",
     },
 ]
 
@@ -48,11 +51,11 @@ WORKFLOW = [
 TEAMMATES: dict[str, dict[str, Any]] = {
     "saas": {
         "id": "saas",
-        "codename": "Unit Desk",
-        "title": "Unit Desk · SaaS / IT 50–500",
+        "codename": "IT Desk",
+        "title": "IT Desk · внедрение",
         "accent": "#a5b4fc",
         "image": "/assets/x-posts/geo-saas.jpg",
-        "size": "50–500 человек",
+        "size": "IT-внедрение, небольшие контуры",
         "industry": "saas-founders",
         "job": (
             "Забирает сырой запрос на фичу и возвращает unit-экономику решения: "
@@ -68,8 +71,8 @@ TEAMMATES: dict[str, dict[str, Any]] = {
             "Молчит в HR-чате."
         ),
         "artifact": (
-            "Одна страница: фича → кто платит → стоимость удержания → условие остановки → "
-            "артефакт раскатки (не тикет)."
+            "Конфиг внедрения: слоты входа/выхода, кто платит за 90 дней, молчание, kill. "
+            "Файл, который можно отдать IT-подрядчику или роботу."
         ),
         "kill": "5 живых запросов без hit за 14 дней — вырезать функции, которые никто не взял.",
         "sits_on": "входящие фичи и пилоты, не общий чат компании",
@@ -78,10 +81,9 @@ TEAMMATES: dict[str, dict[str, Any]] = {
             "Unit Desk сажает уникальную финмодель продуктовой линии, а не общего копайлота."
         ),
         "user_facing": (
-            "Вы пишете, какая фича сейчас «вроде нужна». "
-            "Тимейт не пишет user story. Он считает, оплатит ли её контур за 90 дней, "
-            "и ставит стоп, если не оплатит. На выходе — страница, которую можно положить "
-            "на стол, а не ещё одно сообщение в Slack."
+            "Пишете, что внедряете. Тимейт не пишет user story. "
+            "Он собирает конфиг: кто платит за 90 дней, когда молчать, когда вырезать. "
+            "На выходе — файл заказа в IT, не сообщение в Slack."
         ),
         "steps": [
             "Снять, где сейчас умирает решение (Slack / созвон / «в голове»).",
@@ -92,11 +94,11 @@ TEAMMATES: dict[str, dict[str, Any]] = {
     },
     "agency": {
         "id": "agency",
-        "codename": "Onboard Geometry",
-        "title": "Onboard Geometry · digital / performance",
+        "codename": "Production Geometry",
+        "title": "Production Geometry · продакшн-агентства",
         "accent": "#5eead4",
         "image": "/assets/x-posts/geo-agency.jpg",
-        "size": "агентства",
+        "size": "продакшн-агентства",
         "industry": "ai-agencies",
         "job": (
             "Забирает бриф нового клиента и возвращает геометрию оффера: "
@@ -111,7 +113,9 @@ TEAMMATES: dict[str, dict[str, Any]] = {
             "Молчит в генерации креатива и в «ещё одном питче». "
             "Говорит только на входе клиента и на пересборке оффера."
         ),
-        "artifact": "Геометрия оффера: что входит, что нет, маржа, условие остановки аккаунта.",
+        "artifact": (
+            "Конфиг продакшна: границы пакета, маржа, слоты заказа роботу/цеху/студии, kill аккаунта."
+        ),
         "kill": "Если онбординг снова съел маржу на нулевой неделе — пакет кривой, не «клиент сложный».",
         "sits_on": "онбординг, не креатив",
         "why": (
@@ -119,10 +123,9 @@ TEAMMATES: dict[str, dict[str, Any]] = {
             "Не GPT для копирайта — посадка вашей экономики в каждый новый аккаунт."
         ),
         "user_facing": (
-            "Кидаете бриф, как он приходит от клиента — криво. "
-            "Тимейт собирает пакет на 14 дней: что делаем, чего не делаем, какая маржа, "
-            "когда аккаунт считается мёртвым. Если метод нельзя посадить в тимейта — "
-            "метода нет. Есть геройство."
+            "Кидаете бриф как есть. Тимейт собирает конфиг продакшна на 14 дней: "
+            "что входит, чего нет, какая маржа, какой файл уходит подрядчику. "
+            "Если метод нельзя посадить в конфиг — метода нет."
         ),
         "steps": [
             "Снять реальный онбординг последнего клиента: часы, где сгорела маржа.",
@@ -218,7 +221,7 @@ TEAMMATES: dict[str, dict[str, Any]] = {
 
 def list_teammates() -> list[dict[str, Any]]:
     out = []
-    for k in ("saas", "agency", "edu", "ecom"):
+    for k in LIVE_IDS:
         t = TEAMMATES[k]
         out.append(
             {
@@ -239,7 +242,7 @@ def list_teammates() -> list[dict[str, Any]]:
 def workflow_payload() -> dict[str, Any]:
     return {
         "id": "teammate_workflow",
-        "title": "Собрать новое решение",
+        "title": "Собрать конфиг",
         "steps": WORKFLOW,
         "contact_human": {
             "label": "Связаться с человеком",
@@ -257,6 +260,8 @@ def build_teammate(niche: str | None, brief: str = "") -> dict[str, Any]:
     from backend.core.agent_studio import resolve_niche
 
     nid = resolve_niche(niche, brief)
+    if nid not in LIVE_IDS:
+        nid = RETIRED_TO.get(nid, "saas")
     t = TEAMMATES[nid]
     stem = clip(brief, 140) if (brief or "").strip() else t["title"]
     return {

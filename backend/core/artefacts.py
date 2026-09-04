@@ -1,8 +1,7 @@
-"""Artefacts tab: analytical panel + offer generator.
+"""Artefacts tab: theses on order.
 
-Panel comes from operational analytics (constructor slots, tensions, metrics).
-Offers come from making chamber + promo-lite — one generator, not two menus.
-Tape Land folder is the two-leg-tape model, not a separate app.
+Sell theses only. Analyzer of relation-shifts is internal.
+Panel / offer stay as internal helpers, not the SKU.
 """
 
 from __future__ import annotations
@@ -11,6 +10,12 @@ from typing import Any
 
 from backend.core.resonance import new_id
 from backend.core.voice import DISCLAIMER, clip
+
+
+def order_theses(brief: str = "", lang: str = "ru") -> dict[str, Any]:
+    from backend.core.theses import order_theses as _order
+
+    return _order(brief, lang=lang)
 
 
 def analytical_panel(brief: str = "", lang: str = "ru") -> dict[str, Any]:

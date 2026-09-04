@@ -49,8 +49,8 @@ def test_three_strategies_listed():
 
 
 def test_agent_niches_and_why_builder():
-    assert {n["id"] for n in list_niches()} == {"saas", "agency", "edu", "ecom"}
-    assert resolve_niche(None, "онлайн-школа, уроки не продают") == "edu"
+    assert {n["id"] for n in list_niches()} == {"saas", "agency"}
+    assert resolve_niche(None, "онлайн-школа, уроки не продают") == "saas"
     art = build_agent("saas", "IT компания 180 человек, фичи пилим из Slack")
     assert art["niche_id"] == "saas"
     assert art["meta"]["why_builder"]

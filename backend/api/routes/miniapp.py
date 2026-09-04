@@ -416,6 +416,45 @@ def risk_run(
     return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
 
 
+@router.post("/thesis")
+def thesis_run(
+    body: DemoBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    from backend.core.artefacts import order_theses
+    from backend.core.demo_highway import format_telegram
+    from backend.core.resonance import remember
+
+    gate = _gate(_subject(_try_auth(x_telegram_init_data)), "thesis")
+    if not gate.get("allowed"):
+        return _wall(gate)
+    art = order_theses(sanitize_text(body.brief, max_len=8_000), lang=body.lang or "ru")
+    remember(art)
+    bump_hit("thesis_order")
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
+@router.post("/stop-on-shift")
+def stop_on_shift_run(
+    body: DemoBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    from backend.core.demo_highway import format_telegram
+    from backend.core.resonance import remember
+    from backend.core.stop_on_shift import check_stop
+
+    gate = _gate(_subject(_try_auth(x_telegram_init_data)), "stop_on_shift")
+    if not gate.get("allowed"):
+        return _wall(gate)
+    art = check_stop(
+        sanitize_text(body.brief, max_len=8_000),
+        strategy=body.strategy or body.hint or None,
+    )
+    remember(art)
+    bump_hit("stop_on_shift")
+    return {"ok": True, "artifact": art, "telegram_html": format_telegram(art)}
+
+
 @router.post("/panel")
 def panel_run(
     body: DemoBody,

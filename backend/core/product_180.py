@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from typing import Any
 
-VERSION = "1.8.1"
+VERSION = "1.8.2"
 CODENAME = "IN-OUT CHAIN"
-RELEASE = "2026-09-03-access-3290"
+RELEASE = "2026-09-04-theses-ecom"
 
 # ── Flagship ────────────────────────────────────────────────────────────────
 FLAGSHIP = {
@@ -42,14 +42,14 @@ TABS = [
         "title": "AI Teammates",
         "title_short": "Teammates",
         "legacy": ("engine", "движок", "агенты", "agents"),
-        "role_ru": "Воркфлоу новых решений, четыре живых агента, кастом, связь с человеком.",
+        "role_ru": "Два тимейта: IT-внедрение и продакшн-агентства. Конфиг на заказ. Edu/ecom выключены.",
     },
     {
         "id": "artefacts",
         "title": "Artefacts",
         "title_short": "Artefacts",
         "legacy": ("making", "мейкинг", "посты", "posts"),
-        "role_ru": "Аналитическая панель и генератор предложений. Папка Tape Land / two-leg-tape.",
+        "role_ru": "Конвейер: тезисы на заказ. Продаём только тезисы. Не панель, не проект в подарок.",
     },
 ]
 
@@ -110,10 +110,12 @@ PRICING = {
         "rub": 209000,
         "name": "Metrix AI · движок",
         "note": (
-            "Главный движок: операционные процессы + оригинальный проект + решения по продвижению. "
-            "Это не бот и не Access."
+            "Главный движок 1.8: ecom физических товаров — операционные процессы, "
+            "оригинальный проект каталога, промо физ. SKU. Это не бот и не Access. "
+            "Цифра/курсы/инфо — не этот SKU."
         ),
-        "tracks": ("ops", "product", "promotion"),
+        "tracks": ("physical_ops", "physical_catalog", "physical_promo"),
+        "vertical": "physical_goods_ecom",
     },
     "custom_teammate": {
         "sku": "custom_teammate",

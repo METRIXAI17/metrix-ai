@@ -594,6 +594,34 @@ textarea:focus, input:focus {
   border-bottom: 1px solid rgba(251, 191, 36, 0.22);
 }
 .chamber-hero .eyebrow { padding-top: 0.15rem; }
+
+.theses {
+  list-style: none;
+  padding: 0;
+  margin: 0.7rem 0 1rem;
+  display: grid;
+  gap: 0.55rem;
+}
+.thesis {
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+.thesis b {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.thesis.alive {
+  border-color: rgba(94, 234, 212, 0.35);
+}
+.thesis.alive b { color: var(--accent); }
+.thesis.dead {
+  border-color: rgba(251, 113, 133, 0.35);
+}
+.thesis.dead b { color: #fb7185; }
+.thesis p { margin-top: 0.3rem; color: var(--text-muted); font-size: 0.88rem; }
 .day {
   display: grid;
   grid-template-columns: 2.2rem 1fr;

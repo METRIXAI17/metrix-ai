@@ -156,6 +156,7 @@ def strategies_kb() -> dict:
             [{"text": "Ampli · Америка", "callback_data": "st:ampli"}],
             [{"text": "Two-Leg Tape · Tape Land", "callback_data": "st:two_leg_tape"}],
             [{"text": "Как сейчас · живой снимок (не списывает)", "callback_data": "lv:now"}],
+            [{"text": "Стоп на перемене · не сливать бюджет", "callback_data": "ss:now"}],
             [{"text": "Risk Engine · отдельно", "callback_data": "rk:engine"}],
         ]
     }
@@ -164,10 +165,8 @@ def strategies_kb() -> dict:
 def niches_kb() -> dict:
     return {
         "inline_keyboard": [
-            [{"text": "Unit Desk · SaaS 50–500", "callback_data": "ag:saas"}],
-            [{"text": "Onboard Geometry · агентства", "callback_data": "ag:agency"}],
-            [{"text": "Cohort Step · школы", "callback_data": "ag:edu"}],
-            [{"text": "Order Cycle · e-com чек", "callback_data": "ag:ecom"}],
+            [{"text": "IT Desk · внедрение", "callback_data": "ag:saas"}],
+            [{"text": "Production Geometry · продакшн", "callback_data": "ag:agency"}],
             human_row(),
         ]
     }
@@ -439,9 +438,7 @@ def show_engine(api: BotAPI, chat_id: int, webapp: str) -> None:
 def show_artefacts(api: BotAPI, chat_id: int, webapp: str) -> None:
     sessions.set_mode(chat_id, "await_making")
     extra = [
-        [{"text": "Аналитическая панель", "callback_data": "af:panel"}],
-        [{"text": "Генератор предложений", "callback_data": "af:offer"}],
-        [{"text": "Tape Land · two-leg-tape", "callback_data": "st:two_leg_tape"}],
+        [{"text": "Заказать тезисы", "callback_data": "af:thesis"}],
     ]
     api.send_photo(
         chat_id,
@@ -547,6 +544,22 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
             watch=True,
         )
         return
+    if data.startswith("ss:"):
+        from backend.core.stop_on_shift import check_stop
+        from backend.core.resonance import remember
+
+        if not _gate(api, chat_id, "stop_on_shift", webapp):
+            return
+        sid = data.split(":", 1)[1]
+        if sid in ("now", "live", ""):
+            sid = sessions.load(chat_id).get("strategy") or "target_place"
+        art = check_stop(
+            f"проверка противоречия модели {sid} по живому контуру",
+            strategy=sid,
+        )
+        remember(art)
+        api.send(chat_id, format_telegram(art), markup=resonance_kb(art["id"]))
+        return
     if data.startswith("rk:"):
         from backend.core.risk_engine import demo_card
         from backend.core.resonance import remember
@@ -560,12 +573,23 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
         return
     if data.startswith("af:"):
         kind = data.split(":", 1)[1]
-        if not _gate(api, chat_id, "artefact_panel" if kind == "panel" else "offer_gen", webapp):
+        if kind == "thesis":
+            feat = "thesis"
+        elif kind == "panel":
+            feat = "artefact_panel"
+        else:
+            feat = "offer_gen"
+        if not _gate(api, chat_id, feat, webapp):
             return
-        from backend.core.artefacts import analytical_panel, offer_generator
+        from backend.core.artefacts import analytical_panel, offer_generator, order_theses
         from backend.core.resonance import remember
 
-        art = analytical_panel("контур из бота") if kind == "panel" else offer_generator("предложение из бота")
+        if kind == "thesis":
+            art = order_theses("контур из бота: назови отношение, которое сдвинулось")
+        elif kind == "panel":
+            art = analytical_panel("контур из бота")
+        else:
+            art = offer_generator("предложение из бота")
         remember(art)
         api.send(chat_id, format_telegram(art), markup=resonance_kb(art["id"]))
         return

@@ -16,8 +16,8 @@ from backend.core.voice import DISCLAIMER, clip
 NICHES: dict[str, dict[str, Any]] = {
     "saas": {
         "id": "saas",
-        "title": "B2B SaaS и IT",
-        "size": "50–500 человек",
+        "title": "IT-внедрение",
+        "size": "небольшие IT-контуры",
         "industry": "saas-founders",
         "accent": "#a5b4fc",
         "pain": (
@@ -33,8 +33,8 @@ NICHES: dict[str, dict[str, Any]] = {
     },
     "agency": {
         "id": "agency",
-        "title": "Digital и performance",
-        "size": "агентства",
+        "title": "Продакшн-агентства",
+        "size": "продакшн",
         "industry": "ai-agencies",
         "accent": "#5eead4",
         "pain": (
@@ -84,7 +84,7 @@ NICHES: dict[str, dict[str, Any]] = {
 
 def list_niches() -> list[dict[str, Any]]:
     out = []
-    for k in ("saas", "agency", "edu", "ecom"):
+    for k in ("saas", "agency"):
         n = NICHES[k]
         out.append(
             {
@@ -120,10 +120,16 @@ def resolve_niche(name: str | None, brief: str = "") -> str:
         "чеком": "ecom",
         "ecommerce": "ecom",
     }
+    if key in ("edu", "ecom"):
+        return "saas" if key == "edu" else "agency"
     if key in NICHES:
         return key
     for a, nid in aliases.items():
         if a in key:
+            if nid == "edu":
+                return "saas"
+            if nid == "ecom":
+                return "agency"
             return nid
     low = (brief or "").lower()
     checks = [
@@ -134,6 +140,10 @@ def resolve_niche(name: str | None, brief: str = "") -> str:
     ]
     for pat, nid in checks:
         if re.search(pat, low):
+            if nid == "edu":
+                return "saas"
+            if nid == "ecom":
+                return "agency"
             return nid
     return "saas"
 

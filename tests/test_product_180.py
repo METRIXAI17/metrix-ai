@@ -7,7 +7,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from backend.core.access import consume, mint_token, redeem, subject_hash, token_hash
-from backend.core.artefacts import analytical_panel, offer_generator
+from backend.core.artefacts import analytical_panel, offer_generator, order_theses
+from backend.core.stop_on_shift import check_stop
+from backend.core.theses import propeller_pack
 from backend.core.product_180 import FLAGSHIP, PRICING, VERSION
 from backend.core.sales_offer import ACCESS_RUB, BOT_LAND_MAX_USD, METRIX_AI_USD, access_offer, sales_readiness
 from backend.core.risk_engine import r_after_close, size
@@ -91,12 +93,33 @@ def test_geo_card_images_shipped():
 
 def test_teammates_user_facing():
     ids = {t["id"] for t in list_teammates()}
-    assert ids == {"saas", "agency", "edu", "ecom"}
-    art = build_teammate("edu", "онлайн-школа, уроки не продают следующий шаг")
-    assert art["niche_id"] == "edu"
-    assert "Cohort" in art["title"] or "когорт" in art["user_facing"].lower()
+    assert ids == {"saas", "agency"}
+    art = build_teammate("saas", "IT контур, фичи без экономики")
+    assert art["niche_id"] == "saas"
+    assert "конфиг" in (art["artifact_week"] + art["user_facing"]).lower() or "IT" in art["title"]
     assert art["meta"]["money_unit"]
     assert art["meta"]["silence"]
+    retired = build_teammate("edu", "онлайн-школа, уроки не продают следующий шаг")
+    assert retired["niche_id"] in {"saas", "agency"}
+
+
+def test_stop_on_shift_and_theses():
+    dead = check_stop("золото, догоняю ход, уже ушло", "target_place")
+    assert dead["kind"] == "chain.stop_on_shift"
+    assert dead["status"] == "dead"
+    assert dead["ideas"]
+    assert dead["meta"]["debited"] is False
+    alive = check_stop("золото, жду место, скука разрешена", "target_place")
+    assert alive["status"] == "alive"
+    pack = order_theses("поставщик снял отсрочку, касса как туман")
+    assert pack["kind"] == "artefact.thesis"
+    assert pack["theses"]
+    assert pack["meta"]["sold"] == "theses_only"
+    ads = propeller_pack()
+    assert len(ads) >= 5
+    blob = " ".join(a["thesis"] for a in ads).lower()
+    assert "сигнал" not in blob
+    assert "гарантир" not in blob
 
 
 def test_access_token_is_hashed():

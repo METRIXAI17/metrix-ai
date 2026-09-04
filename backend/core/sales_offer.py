@@ -55,13 +55,14 @@ def access_offer(*, lang: str = "ru") -> dict[str, Any]:
         "not_this": {
             "metrix_ai_usd": METRIX_AI_USD,
             "bot_land_usd": BOT_LAND_USD,
-            "note_ru": "Бот — ленд ≤ $1990. Metrix AI — движок $2490 (ops + проект + промо). Access — подписка на бот.",
-            "note_en": "Bot is the land product ≤ $1990. Metrix AI is the $2490 engine. Access is the bot subscription.",
+            "note_ru": "Бот — ленд ≤ $1990. Metrix AI $2490 — движок ecom физ. товаров. Access — подписка на бот.",
+            "note_en": "Bot is the land product ≤ $1990. Metrix AI $2490 is the physical-goods ecom engine. Access is the bot subscription.",
         },
         "layers": {
             "land": "Karim Metrix Bot · artefact",
-            "engine": "Metrix AI · ops + original project + promotion",
+            "engine": "Metrix AI · physical goods ecom (ops + catalog project + promo)",
             "access": "3290 ₽ / month · 40 results",
+            "theses": "Artefacts · theses on order",
         },
     }
 
