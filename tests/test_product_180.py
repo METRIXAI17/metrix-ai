@@ -115,6 +115,15 @@ def test_stop_on_shift_and_theses():
     assert pack["kind"] == "artefact.thesis"
     assert pack["theses"]
     assert pack["meta"]["sold"] == "theses_only"
+    assert pack["meta"]["engine"] == "metrix_ai"
+    cfg = build_teammate("agency", "продакшн агентство, онбординг сжигает маржу на каждом клиенте")
+    assert cfg["meta"]["engine"] == "metrix_ai"
+    assert "config" in cfg["meta"]
+    from backend.core.demo_highway import build_demo
+
+    exp = build_demo("на входе онбординг жрёт кассу, на выходе сдача без kill", hint="chain")
+    assert exp["kind"] in ("chain.experiment", "model.implement") or exp.get("lane") in ("chain", "model")
+    assert (exp.get("meta") or {}).get("engine") == "metrix_ai" or exp.get("kind") == "chain.experiment"
     ads = propeller_pack()
     assert len(ads) >= 5
     blob = " ".join(a["thesis"] for a in ads).lower()

@@ -264,6 +264,15 @@ def build_teammate(niche: str | None, brief: str = "") -> dict[str, Any]:
         nid = RETIRED_TO.get(nid, "saas")
     t = TEAMMATES[nid]
     stem = clip(brief, 140) if (brief or "").strip() else t["title"]
+    cfg: dict[str, Any] = {"ok": False}
+    try:
+        from backend.core.engine_run import config_from_engine, run_engine
+
+        pack = run_engine(brief or t["job"], industry=t.get("industry"), lang="ru")
+        cfg = config_from_engine(pack, niche=nid)
+    except Exception:  # noqa: BLE001
+        cfg = {"ok": False}
+    steps = list(cfg.get("steps") or []) or list(t["steps"])
     return {
         "id": new_id(),
         "kind": f"teammate.{nid}",
@@ -273,8 +282,12 @@ def build_teammate(niche: str | None, brief: str = "") -> dict[str, Any]:
         "one_liner": t["job"],
         "break": t["pain"],
         "move": f"{t['why']} На вашей задаче («{stem}») тимейт держит модель и отдаёт артефакт.",
-        "steps": t["steps"],
-        "artifact_week": t["artifact"],
+        "steps": steps,
+        "artifact_week": (
+            cfg.get("handoff") + ": " + (cfg.get("job") or t["artifact"])
+            if cfg.get("ok")
+            else t["artifact"]
+        ),
         "anti": [
             "Не делать тимейта, который отвечает на всё.",
             "Не внедрять без единицы денег.",
@@ -290,6 +303,10 @@ def build_teammate(niche: str | None, brief: str = "") -> dict[str, Any]:
             "accent": t["accent"],
             "size": t["size"],
             "workflow": WORKFLOW,
+            "config": cfg,
+            "engine": "metrix_ai",
+            "engine_ok": bool(cfg.get("ok")),
+            "request_id": cfg.get("request_id") or "",
         },
         "highway": {
             "free": "спека тимейта как демо",

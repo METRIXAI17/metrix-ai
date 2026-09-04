@@ -216,11 +216,17 @@ def build_demo(
         lane = "agent"
 
     if lane in ("landing", "chain"):
-        art = (
-            closer_as_artifact(closer)
-            if closer and closer_as_artifact
-            else _model_artifact(text, {})
-        )
+        try:
+            from backend.core.engine_run import in_out_from_engine, run_engine
+
+            pack = run_engine(text, lang="ru")
+            art = in_out_from_engine(pack, text)
+        except Exception:  # noqa: BLE001
+            art = (
+                closer_as_artifact(closer)
+                if closer and closer_as_artifact
+                else _model_artifact(text, {})
+            )
     elif lane in ("making", "artefacts"):
         from backend.core.theses import order_theses
 

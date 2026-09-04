@@ -128,7 +128,25 @@ def _relation_theses(brief: str) -> list[dict[str, str]]:
 
 def order_theses(brief: str = "", lang: str = "ru") -> dict[str, Any]:
     text = (brief or "").strip() or "контур без описания"
-    theses = _relation_theses(text)
+    engine_pack: dict[str, Any] = {}
+    engine_theses: list[dict[str, str]] = []
+    try:
+        from backend.core.engine_run import run_engine, theses_from_engine
+
+        engine_pack = run_engine(text, lang=lang)
+        engine_theses = theses_from_engine(engine_pack, text)
+    except Exception:  # noqa: BLE001
+        engine_pack = {"ok": False}
+    local = _relation_theses(text)
+    theses: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for row in engine_theses + local:
+        key = (row or {}).get("text") or ""
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        theses.append(row)
+    theses = theses[:7]
     alive = sum(1 for x in theses if x["status"] == "alive")
     dead = sum(1 for x in theses if x["status"] == "dead")
     ru = (lang or "ru").startswith("ru")
@@ -159,7 +177,10 @@ def order_theses(brief: str = "", lang: str = "ru") -> dict[str, Any]:
         "theses": theses,
         "meta": {
             "sold": "theses_only",
-            "analyzer": "internal_relation_shift",
+            "analyzer": "metrix_ai_engine",
+            "engine": "metrix_ai",
+            "engine_ok": bool(engine_pack.get("ok")),
+            "request_id": engine_pack.get("request_id") or "",
             "project_generator": "not_sold",
             "count": len(theses),
             "alive": alive,

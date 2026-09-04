@@ -110,12 +110,13 @@ PRICING = {
         "rub": 209000,
         "name": "Metrix AI · движок",
         "note": (
-            "Главный движок 1.8: ecom физических товаров — операционные процессы, "
-            "оригинальный проект каталога, промо физ. SKU. Это не бот и не Access. "
-            "Цифра/курсы/инфо — не этот SKU."
+            "Главный движок 1.8. В боте он собирает: тезисы, конфиги, in-out эксперименты. "
+            "Платный SKU $2490 — тот же движок под ecom физических товаров "
+            "(ops + каталог + промо). Не второй мозг. Цифра/курсы — не этот SKU."
         ),
-        "tracks": ("physical_ops", "physical_catalog", "physical_promo"),
+        "tracks": ("theses", "configs", "in_out_experiments"),
         "vertical": "physical_goods_ecom",
+        "bot_surfaces": ("artefacts.theses", "teammates.config", "chain.in_out"),
     },
     "custom_teammate": {
         "sku": "custom_teammate",

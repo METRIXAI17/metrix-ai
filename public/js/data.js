@@ -26,8 +26,8 @@ window.METRIX_DATA = {
       nav_pricing: "Pricing",
       nav_system: "System",
       hero_badge: "Consult → direction → ship",
-      hero_h1a: "Theses on order. Physical goods engine.",
-      hero_h1b: "Bot is the land. Metrix AI $2490 is the shop.",
+      hero_h1a: "Theses, configs, in-out experiments.",
+      hero_h1b: "The bot runs Metrix AI. $2490 is the same engine.",
       hero_sub:
         "Artefacts sell theses only. Metrix AI 1.8 is ecom of physical SKUs — ops, catalog project, promo. Main $2490 after a successful pilot. Not signals.",
       cta_consult: "Consult + Tech-TZ",
@@ -204,8 +204,8 @@ window.METRIX_DATA = {
       nav_pricing: "Цены",
       nav_system: "Система",
       hero_badge: "Консультация → направление → поставка",
-      hero_h1a: "Тезисы на заказ. Движок физ. товара.",
-      hero_h1b: "Бот — ленд. Metrix AI $2490 — магазин.",
+      hero_h1a: "Тезисы, конфиги, in-out эксперименты.",
+      hero_h1b: "Бот гоняет Metrix AI. $2490 — тот же движок.",
       hero_sub:
         "Artefacts продают только тезисы. Metrix AI 1.8 — ecom физических SKU: процессы, каталог, промо. Main $2490 после пилота. Не сигналы.",
       cta_consult: "Консультация + Тех-ТЗ",
