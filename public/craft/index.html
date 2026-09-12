@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CraftShift — пост и кадр. Производная Metrix AI</title>
+  <meta name="description" content="Одна ситуация — пост для X и промпт ролика. Создано производным проектом от ИИ Metrix AI." />
+  <meta property="og:image" content="/assets/store/craft.jpg" />
+  <link rel="icon" href="/assets/metrix-brand-m.jpg" />
+  <link rel="stylesheet" href="/css/styles.css?v=craft19" />
+  <style>
+    .stage{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin:1.2rem 0 3rem}
+    .stage article{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.1rem}
+    .stage pre{white-space:pre-wrap;font-size:.92rem;line-height:1.45;color:var(--text)}
+    .hero-img{width:100%;border-radius:18px;border:1px solid var(--border);margin:1rem 0}
+    .door-key{font-family:var(--mono);letter-spacing:.28em;color:var(--gold)}
+    @media(max-width:800px){.stage{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="logo" href="/craft/"><span class="logo-text">Craft<span>Shift</span></span></a>
+      <div class="nav-links">
+        <a href="/">Metrix AI</a>
+        <a href="/store/">Store</a>
+        <a href="https://t.me/karimmetrixbot">Бот</a>
+        <a href="https://x.com/karimmetrix">@karimmetrix</a>
+      </div>
+    </div>
+  </nav>
+  <main class="wrap">
+    <header class="hero" style="padding-top:2rem">
+      <div class="eyebrow">Производная Metrix AI</div>
+      <h1>Пост. Кадр.<br /><em>Один объект.</em></h1>
+      <p class="hero-sub2">Не чат. Ситуация → пост для X и промпт ролика. Тот же код двери, что и у стора.</p>
+      <img class="hero-img" src="/assets/store/craft.jpg" alt="CraftShift studio" width="960" height="540" />
+      <textarea id="brief" rows="4" placeholder="ситуация своими словами — что должно остаться в ленте"></textarea>
+      <div class="hero-actions" style="margin-top:.8rem">
+        <button class="btn btn-primary" type="button" id="go">Собрать</button>
+        <a class="btn btn-ghost" href="/store/">Стор</a>
+      </div>
+      <p class="muted" style="margin-top:.8rem">Дверь <span class="door-key" id="door-show">————</span></p>
+    </header>
+    <section class="stage" id="out" hidden>
+      <article>
+        <div class="eyebrow">X</div>
+        <h2 id="name">—</h2>
+        <pre id="post"></pre>
+        <button class="btn btn-ghost" type="button" id="copy-post">Копировать пост</button>
+      </article>
+      <article>
+        <div class="eyebrow">YouTube / Super Grok</div>
+        <h2>Промпт ролика</h2>
+        <pre id="video"></pre>
+        <p class="muted" id="promo"></p>
+        <button class="btn btn-ghost" type="button" id="copy-video">Копировать промпт</button>
+      </article>
+    </section>
+  </main>
+  <script>
+    const API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+      ? "http://127.0.0.1:8787" : "https://metrix-ai-production.up.railway.app";
+    let door = (new URLSearchParams(location.search).get("door") || localStorage.getItem("metrix_door") || "").toUpperCase();
+    if(door) document.getElementById("door-show").textContent = door;
+    document.getElementById("go").onclick = async () => {
+      const brief = document.getElementById("brief").value || "нужен пост и кадр про Metrix Store";
+      const r = await fetch(API + "/api/v1/craftshift", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ brief, door })
+      });
+      const d = await r.json();
+      const a = d.artifact || {};
+      if((d.door||{}).code){ door = d.door.code; localStorage.setItem("metrix_door", door); document.getElementById("door-show").textContent = door; }
+      document.getElementById("out").hidden = false;
+      document.getElementById("name").textContent = a.title || "объект";
+      document.getElementById("post").textContent = a.post || "";
+      document.getElementById("video").textContent = a.video_prompt || "";
+      document.getElementById("promo").textContent = a.promo_line || "";
+    };
+    document.getElementById("copy-post").onclick = () => navigator.clipboard.writeText(document.getElementById("post").textContent);
+    document.getElementById("copy-video").onclick = () => navigator.clipboard.writeText(document.getElementById("video").textContent);
+  </script>
+</body>
+</html>

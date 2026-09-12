@@ -410,6 +410,7 @@ textarea {
 }
 
 /* —— Buttons —— */
+a.btn { text-decoration: none; display: inline-flex; align-items: center; }
 .btn {
   display: inline-flex;
   align-items: center;

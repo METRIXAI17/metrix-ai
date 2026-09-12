@@ -49,6 +49,9 @@ SECTION_PHOTO = {
     "craft": ROOT / "public" / "tg" / "assets" / "sec-craft.jpg",
     "target": ROOT / "public" / "tg" / "assets" / "sec-target.jpg",
     "shop": ROOT / "public" / "tg" / "assets" / "sec-shop.jpg",
+    "store": ROOT / "public" / "assets" / "store" / "hero.jpg",
+    "shift": ROOT / "public" / "assets" / "store" / "craft.jpg",
+    "door": ROOT / "public" / "assets" / "studio-square.jpg",
     "chain": ROOT / "public" / "tg" / "assets" / "sec-life.jpg",
     "teammates": ROOT / "public" / "tg" / "assets" / "sec-craft.jpg",
     "artefacts": ROOT / "public" / "tg" / "assets" / "sec-shop.jpg",
@@ -90,9 +93,8 @@ def _webapp() -> str:
 def main_keyboard() -> dict:
     return {
         "keyboard": [
-            [{"text": texts.MENU_LIFE}, {"text": texts.MENU_BOTS}],
-            [{"text": texts.MENU_CRAFT}, {"text": texts.MENU_TARGET}],
-            [{"text": texts.MENU_SHOP}],
+            [{"text": texts.MENU_LIFE}, {"text": texts.MENU_STORE}],
+            [{"text": texts.MENU_SHIFT}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -100,7 +102,8 @@ def main_keyboard() -> dict:
 
 
 def webapp_row(webapp: str) -> list[dict]:
-    return [{"text": "Открыть разделы", "web_app": {"url": webapp}}]
+    url = webapp if "#" in webapp else webapp.rstrip("/") + "/#store"
+    return [{"text": "Открыть стор", "web_app": {"url": url}}]
 
 
 def _tribute_url() -> str:
@@ -123,16 +126,14 @@ def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
     """Primary nav — three sections. Reply keyboard is a fallback; Telegram often hides it."""
     rows = [
         [
-            {"text": "Идеи для жизни", "callback_data": "m:life"},
-            {"text": "Торговые боты", "callback_data": "m:bots"},
+            {"text": "Разговор", "callback_data": "m:life"},
+            {"text": "Стор", "callback_data": "m:store"},
         ],
         [
-            {"text": "Конфиги для ремесла", "callback_data": "m:craft"},
-            {"text": "Таргет ИИ-агентов", "callback_data": "m:target"},
+            {"text": "CraftShift", "callback_data": "m:shift"},
+            {"text": "Дверь", "callback_data": "m:door"},
         ],
-        [
-            {"text": "Каталог магазина", "callback_data": "m:shop"},
-        ],
+        [{"text": "Ещё 5 комнат", "callback_data": "m:more"}],
         webapp_row(webapp),
         subscribe_row(),
         [{"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"}],
@@ -153,7 +154,8 @@ def resonance_kb(artifact_id: str) -> dict:
                 {"text": "Зашло", "callback_data": f"rs:hit:{artifact_id}"},
                 {"text": "Почти", "callback_data": f"rs:almost:{artifact_id}"},
                 {"text": "Мимо", "callback_data": f"rs:miss:{artifact_id}"},
-            ]
+            ],
+            [{"text": "Подумать ещё", "callback_data": f"tm:{artifact_id}"}],
         ]
     }
 
@@ -274,11 +276,18 @@ class BotAPI:
         return out
 
     def send_start(self, chat_id: int, webapp: str) -> None:
-        photo = SECTION_PHOTO["start"]
+        from backend.core.door import mint, public_view
+
+        rec = mint("разговор", room="talk")
+        sessions.set_mode(chat_id, "idle", door=rec["code"])
+        photo = SECTION_PHOTO.get("store") or SECTION_PHOTO["start"]
+        if not photo.exists():
+            photo = SECTION_PHOTO["start"]
         if not photo.exists():
             photo = AVATAR if AVATAR.exists() else MARK
         kb = start_inline(webapp)
-        sent = self.send_photo(chat_id, photo, texts.START)
+        cap = texts.START + f"\n\nДверь <code>{rec['code']}</code> — стор, CraftShift, сайт."
+        sent = self.send_photo(chat_id, photo, cap)
         if sent.get("ok"):
             self.send(
                 chat_id,
@@ -288,7 +297,7 @@ class BotAPI:
             )
             self.send(
                 chat_id,
-                "Пять разделов — кнопки под этим сообщением.",
+                "Один код. Стор. CraftShift. Кнопки под этим сообщением.",
                 markup=kb,
                 html=False,
             )
@@ -305,17 +314,16 @@ class BotAPI:
 def bootstrap(api: BotAPI, webapp: str) -> None:
     api.call(
         "setChatMenuButton",
-        menu_button={"type": "web_app", "text": "Chain", "web_app": {"url": webapp}},
+        menu_button={"type": "web_app", "text": "Стор", "web_app": {"url": webapp + "#store"}},
     )
     api.call(
         "setMyCommands",
         commands=[
-            {"command": "start", "description": "Пять разделов"},
-            {"command": "life", "description": "Идеи для жизни"},
-            {"command": "bots", "description": "Торговые боты"},
-            {"command": "craft", "description": "Конфиги для ремесла"},
-            {"command": "target", "description": "Таргет ИИ-агентов"},
-            {"command": "shop", "description": "Каталог магазина"},
+            {"command": "start", "description": "Дверь"},
+            {"command": "life", "description": "Разговор"},
+            {"command": "store", "description": "Metrix Store"},
+            {"command": "shift", "description": "CraftShift"},
+            {"command": "door", "description": "Код двери"},
             {"command": "access", "description": "Access · 3 290 ₽"},
         ],
     )
@@ -530,6 +538,84 @@ def show_artefacts(api: BotAPI, chat_id: int, webapp: str) -> None:
     show_shop(api, chat_id, webapp)
 
 
+def _door_of(chat_id: int, brief: str = "", room: str = "talk") -> str:
+    from backend.core.door import bind, mint
+
+    st = sessions.load(chat_id)
+    code = st.get("door") or ""
+    if code:
+        rec = bind(code, brief=brief, room=room)
+        sessions.set_mode(chat_id, st.get("mode") or "idle", door=rec["code"])
+        return rec["code"]
+    rec = mint(brief, room=room)
+    sessions.set_mode(chat_id, st.get("mode") or "idle", door=rec["code"])
+    return rec["code"]
+
+
+def store_kb() -> dict:
+    from backend.core.store_catalog import CATEGORIES
+
+    rows = []
+    row: list[dict] = []
+    for c in CATEGORIES:
+        row.append({"text": f"{c['n']}. {c['title']}", "callback_data": f"stc:{c['n']}"})
+        if len(row) == 2:
+            rows.append(row)
+            row = []
+    if row:
+        rows.append(row)
+    return {"inline_keyboard": rows}
+
+
+def show_store(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_store", door=_door_of(chat_id, room="store"))
+    extra = store_kb()["inline_keyboard"]
+    photo = SECTION_PHOTO.get("store") or SECTION_PHOTO["shop"]
+    api.send_photo(
+        chat_id,
+        photo,
+        texts.ASK_STORE,
+        markup=nav_inline(webapp, extra=extra),
+        html=False,
+    )
+
+
+def show_shift(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_shift", door=_door_of(chat_id, room="craftshift"))
+    photo = SECTION_PHOTO.get("shift") or SECTION_PHOTO["craft"]
+    api.send_photo(
+        chat_id,
+        photo,
+        texts.ASK_SHIFT,
+        markup=nav_inline(webapp),
+        html=False,
+    )
+
+
+def show_door(api: BotAPI, chat_id: int, webapp: str) -> None:
+    code = _door_of(chat_id, room="talk")
+    sessions.set_mode(chat_id, "await_door", door=code)
+    api.send(
+        chat_id,
+        f"{texts.ASK_DOOR}\n\nВаш код: <code>{code}</code>\nСайт: https://metrix-ai.vercel.app/store/?door={code}",
+        markup=nav_inline(webapp),
+    )
+
+
+def show_more(api: BotAPI, chat_id: int, webapp: str) -> None:
+    extra = [
+        [
+            {"text": "Торговые боты", "callback_data": "m:bots"},
+            {"text": "Ремесло", "callback_data": "m:craft"},
+        ],
+        [
+            {"text": "Агенты", "callback_data": "m:target"},
+            {"text": "Каталог товара", "callback_data": "m:shop"},
+        ],
+    ]
+    api.send(chat_id, "Старые пять комнат — если нужны.", markup=nav_inline(webapp, extra=extra), html=False)
+
+
 def show_making(api: BotAPI, chat_id: int, webapp: str) -> None:
     show_artefacts(api, chat_id, webapp)
 
@@ -569,6 +655,18 @@ def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
     if action in ("shop", "artefacts", "making", "posts"):
         show_artefacts(api, chat_id, webapp)
         return
+    if action == "store":
+        show_store(api, chat_id, webapp)
+        return
+    if action == "shift":
+        show_shift(api, chat_id, webapp)
+        return
+    if action == "door":
+        show_door(api, chat_id, webapp)
+        return
+    if action == "more":
+        show_more(api, chat_id, webapp)
+        return
 
 
 def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
@@ -598,6 +696,10 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
             "artefacts": "shop",
             "making": "shop",
             "posts": "shop",
+            "store": "store",
+            "shift": "shift",
+            "door": "door",
+            "more": "more",
             "access": "access",
         }.get(data.split(":", 1)[1])
         if action:
@@ -616,6 +718,26 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
         else:
             api.send(chat_id, format_miss(), markup=main_keyboard())
             sessions.set_mode(chat_id, "idle")
+        return
+    if data.startswith("stc:"):
+        n = data.split(":", 1)[1]
+        sessions.set_mode(chat_id, "await_store", store_cat=n, door=_door_of(chat_id, room=f"store:{n}"))
+        from backend.core.store_catalog import category_by_id
+
+        cat = category_by_id(n) or {}
+        api.send(chat_id, f"{cat.get('n')}. {cat.get('title')}\n{cat.get('one')}\n\n{cat.get('placeholder')}", html=False)
+        return
+    if data.startswith("tm:"):
+        if not _gate(api, chat_id, "think_more", webapp):
+            return
+        from backend.core.complexity_boundary import table_telegram, think_more
+        from backend.core.resonance import load as load_art2
+
+        aid = data.split(":", 1)[1]
+        prev = load_art2(aid) or {}
+        brief = prev.get("brief") or sessions.load(chat_id).get("last_engine_brief") or "контур"
+        nxt = think_more(brief, prev.get("lattice"))
+        api.send(chat_id, table_telegram(nxt), markup=resonance_kb(aid))
         return
     if data.startswith("st:"):
         sid = data.split(":", 1)[1]
@@ -785,6 +907,47 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
     if mode in ("await_shop", "await_making"):
         _run_section(api, chat_id, "shop", raw)
         return
+    if mode == "await_store":
+        if not _gate(api, chat_id, "store", webapp):
+            return
+        from backend.core.seven_lines import run_line
+
+        n = int(st.get("store_cat") or 1)
+        api.send(chat_id, "Собираю комнату…")
+        art = run_line(n, raw, with_engine=False)
+        art["id"] = art.get("id") or ""
+        from backend.core.resonance import remember
+        from backend.core.demo_highway import format_telegram
+
+        if not art.get("id"):
+            remember(art)
+        _door_of(chat_id, raw, f"store:{n}")
+        api.send(chat_id, format_telegram(art) if art.get("break") else (art.get("wow") or art.get("title") or "объект"), markup=resonance_kb(art.get("id") or "x"))
+        return
+    if mode == "await_shift":
+        if not _gate(api, chat_id, "craftshift", webapp):
+            return
+        from backend.core.craftshift_x import run as run_cs
+        from backend.core.demo_highway import format_telegram
+
+        api.send(chat_id, "Собираю пост и кадр…")
+        art = run_cs(raw)
+        _door_of(chat_id, raw, "craftshift")
+        post = art.get("post") or ""
+        api.send(chat_id, format_telegram(art), markup=resonance_kb(art["id"]))
+        if post:
+            api.send(chat_id, f"<b>Пост</b>\n<pre>{_esc(post)[:3500]}</pre>")
+        return
+    if mode == "await_door":
+        from backend.core.door import load as door_load
+
+        rec = door_load(raw)
+        if rec:
+            sessions.set_mode(chat_id, "idle", door=rec["code"])
+            api.send(chat_id, f"Дверь <code>{rec['code']}</code> открыта. Пишите, что ломается.")
+            return
+        api.send(chat_id, "Код не найден. 6 символов, или напишите ситуацию — выдадим новый.")
+        return
 
     if mode == "await_engine_legacy":
         from backend.core.content_closer import comfort_turn
@@ -815,8 +978,17 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
         sessions.set_mode(chat_id, "await_demo")
         return
 
-    # Idle free text → demo highway. That's the product.
+    from backend.core.door import load as door_load
+
+    rec = door_load(raw)
+    if rec:
+        sessions.set_mode(chat_id, "idle", door=rec["code"])
+        api.send(chat_id, f"Дверь <code>{rec['code']}</code>. Продолжаем с того же контура.")
+        return
+
+    # Idle free text → conversation first.
     if len(raw) >= 8:
+        _door_of(chat_id, raw, "talk")
         _run_demo(api, chat_id, raw)
         return
     api.send(chat_id, IDLE_HINT, markup=main_keyboard())

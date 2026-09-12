@@ -35,7 +35,7 @@
     return r.json();
   }
 
-  const VIEWS = ["life", "bots", "craft", "target", "shop", "chain", "teammates", "artefacts", "home"];
+  const VIEWS = ["life", "bots", "craft", "target", "shop", "store", "shift", "chain", "teammates", "artefacts", "home"];
   const ALIAS = {
     home: "life",
     chain: "life",
@@ -48,6 +48,7 @@
     posts: "shop",
     making: "shop",
     artefacts: "shop",
+    craftshift: "shift",
   };
   const state = {
     view: (location.hash || "").replace("#", "") || "life",
@@ -106,6 +107,18 @@
       ev.preventDefault();
       runSection();
     }
+    if (t.closest("#store-run")) {
+      ev.preventDefault();
+      runStore(false);
+    }
+    if (t.closest("#store-think")) {
+      ev.preventDefault();
+      runStore(true);
+    }
+    if (t.closest("#shift-run")) {
+      ev.preventDefault();
+      runShift();
+    }
     if (t.closest("#c-run")) {
       ev.preventDefault();
       runComfort();
@@ -149,6 +162,8 @@
     craft: "/tg/assets/sec-craft.jpg",
     target: "/tg/assets/sec-target.jpg",
     shop: "/tg/assets/sec-shop.jpg",
+    store: "/assets/store/hero.jpg",
+    shift: "/assets/store/craft.jpg",
     chain: "/tg/assets/sec-life.jpg",
     target_place: "/tg/assets/geo-gold.jpg",
     demand: "/tg/assets/geo-demand.jpg",
@@ -629,6 +644,33 @@
     );
   }
 
+  function storeView() {
+    return (
+      '<section class="room">' +
+      photoHtml(GEO.store, "Metrix Store", "geo-hero-img") +
+      '<div class="eyebrow">Metrix Store</div>' +
+      "<h1>Семь комнат. <em>Один код.</em></h1>" +
+      "<p class='lead'>Друг не спрашивает паспорт дважды. Нажми комнату.</p>" +
+      '<div id="store-rooms" class="grid grid-cards"></div>' +
+      '<label>Что ломается</label>' +
+      '<textarea id="sec-brief" placeholder="саморазвитие, тыл, касса, фрагментация чипов…"></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="store-run">Собрать</button>' +
+      '<button type="button" class="btn btn-ghost" id="store-think">Подумать ещё</button></div>' +
+      '<div id="sec-out"></div></section>'
+    );
+  }
+  function shiftView() {
+    return (
+      '<section class="room">' +
+      photoHtml(GEO.shift, "CraftShift", "geo-hero-img") +
+      '<div class="eyebrow">CraftShift</div>' +
+      "<h1>Пост и кадр.</h1>" +
+      "<p class='lead'>Производная Metrix AI. Одна ситуация — объект для X и ролик.</p>" +
+      '<textarea id="sec-brief" placeholder="ситуация, которая должна остаться в ленте"></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="shift-run">Собрать</button></div>' +
+      '<div id="sec-out"></div></section>'
+    );
+  }
   async function render() {
     if (!state.catalog) {
       viewEl.innerHTML = "<p class='muted'>Загрузка…</p>";
@@ -640,9 +682,43 @@
       }
     }
     var c = state.catalog;
-    var html = sectionView(c, state.view);
+    var html;
+    if (state.view === "store") html = storeView();
+    else if (state.view === "shift") html = shiftView();
+    else html = sectionView(c, state.view);
     viewEl.innerHTML = html;
     bind();
+    if (state.view === "store") loadStoreRooms();
+  }
+  async function loadStoreRooms() {
+    var box = document.getElementById("store-rooms");
+    if (!box) return;
+    try {
+      var d = await get("/api/v1/store");
+      box.innerHTML = (d.categories || [])
+        .map(function (c) {
+          return (
+            '<article class="card card-flag" data-cat="' +
+            esc(String(c.n)) +
+            '"><span class="tag">' +
+            c.n +
+            "</span><h3>" +
+            esc(c.title) +
+            "</h3><p>" +
+            esc(c.one) +
+            "</p></article>"
+          );
+        })
+        .join("");
+      box.querySelectorAll("[data-cat]").forEach(function (el) {
+        el.onclick = function () {
+          state.storeCat = el.getAttribute("data-cat");
+          box.querySelectorAll("[data-cat]").forEach(function (x) {
+            x.style.outline = x === el ? "1px solid var(--accent)" : "";
+          });
+        };
+      });
+    } catch (e) {}
   }
 
   function bindResonate(root) {
@@ -700,6 +776,38 @@
     bindResonate(box);
   }
 
+  async function runStore(think) {
+    var briefEl = document.getElementById("sec-brief");
+    var box = document.getElementById("sec-out");
+    if (!box) return;
+    var brief = briefEl ? briefEl.value : "";
+    box.innerHTML = "<p class='status'>Считаю решётку…</p>";
+    var path = think ? "/api/v1/store/think-more" : "/api/v1/store/run";
+    var out = await post(path, {
+      brief: brief,
+      category: state.storeCat || "1",
+      door: localStorage.getItem("metrix_door") || "",
+      state: think ? state.lastLattice : null,
+    });
+    if ((out.door || {}).code) localStorage.setItem("metrix_door", out.door.code);
+    state.lastLattice = (out.artifact && out.artifact.lattice) || out.lattice;
+    box.innerHTML = artHtml(out.artifact || { title: "Решётка", wow: (out.lattice || {}).wow, steps: [(out.lattice || {}).verdict], break: (out.lattice || {}).leak, move: ((out.lattice || {}).boundary || {}).poke });
+    bindResonate(box);
+  }
+  async function runShift() {
+    var briefEl = document.getElementById("sec-brief");
+    var box = document.getElementById("sec-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Собираю пост и кадр…</p>";
+    var out = await post("/api/v1/craftshift", {
+      brief: briefEl ? briefEl.value : "",
+      door: localStorage.getItem("metrix_door") || "",
+    });
+    if ((out.door || {}).code) localStorage.setItem("metrix_door", out.door.code);
+    var a = out.artifact || {};
+    box.innerHTML = artHtml(a) + (a.post ? "<pre class='pre'>" + esc(a.post) + "</pre>" : "");
+    bindResonate(box);
+  }
   async function runSection() {
     var briefEl = document.getElementById("sec-brief") || document.getElementById("q-brief");
     var box = document.getElementById("sec-out") || document.getElementById("q-out");

@@ -12,6 +12,20 @@ from backend.core.voice import HANDLE, X_URL
 
 POSTS: list[dict[str, Any]] = [
     {
+        "id": "p00_door_store",
+        "theme": "Metrix Store",
+        "body": (
+            "One code. Seven rooms.\n\n"
+            "A friend does not ask for a passport twice.\n"
+            "Same door opens the bot, the store, and CraftShift — "
+            "a Metrix AI derivative for X posts and video.\n\n"
+            "First object is a table. Think-more adds one constraint.\n"
+            "https://metrix-ai.vercel.app/store"
+        ),
+        "image": "/assets/store/hero.jpg",
+        "lang": "en",
+    },
+    {
         "id": "p00_in_out_chain",
         "theme": "In-Out Chain",
         "body": (

@@ -171,6 +171,18 @@ def run_trading_prompt(prompt: str, strategy: str | None = None) -> dict[str, An
 
 
 def run_mode(section_id: str, brief: str, *, strategy: str | None = None) -> dict[str, Any]:
+    raw = (section_id or "").strip().lower()
+    if raw in ("store", "a2a", "deeptech", "brand", "libraries", "rails", "quality", "placements") or raw.isdigit():
+        from backend.core.seven_lines import run_line
+        from backend.core.store_catalog import category_by_id
+
+        cat = category_by_id(raw) or category_by_id("1")
+        n = int((cat or {}).get("n") or 1)
+        return run_line(n, brief, with_engine=False)
+    if raw in ("craftshift", "shift", "xcraft"):
+        from backend.core.craftshift_x import run as run_cs
+
+        return run_cs(brief)
     sec = section_by_id(section_id)
     sid = (sec or {}).get("id") or "life"
     if sid == "bots":

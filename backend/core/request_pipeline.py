@@ -1251,4 +1251,11 @@ def get_pipeline() -> RequestPipeline:
 
 def process_client_request(data: dict[str, Any]) -> dict[str, Any]:
     req = ClientRequest.from_dict(data)
-    return get_pipeline().process(req).to_dict()
+    out = get_pipeline().process(req).to_dict()
+    try:
+        from backend.core.complexity_boundary import attach_boundary
+
+        attach_boundary(out, req.business)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("complexity_boundary failed: %s", exc)
+    return out

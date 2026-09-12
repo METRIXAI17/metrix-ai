@@ -29,7 +29,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend import __brand__, __codename__, __version__
-from backend.api.routes import analytics, fin_models, health, miniapp, requests, zones
+from backend.api.routes import analytics, fin_models, health, miniapp, requests, store, zones
 from backend.config import API_PREFIX, CORS_ORIGINS, DEBUG, ENV_NAME, HOST, PORT
 from backend.security import install_security
 
@@ -75,6 +75,7 @@ app.include_router(fin_models.router, prefix=API_PREFIX)
 app.include_router(zones.router, prefix=API_PREFIX)
 app.include_router(analytics.router, prefix=API_PREFIX)
 app.include_router(miniapp.router, prefix=API_PREFIX)
+app.include_router(store.router, prefix=API_PREFIX)
 
 # Serve static frontend (Vercel uses public/; local API mounts same tree at /app)
 _frontend = _ROOT / "public"

@@ -37,6 +37,9 @@ PAID_FEATURES = frozenset(
         "trading_prompt",
         "code_live",
         "two_leg_tape",
+        "store",
+        "craftshift",
+        "think_more",
     }
 )
 # Live market snapshot: Access includes it, does not debit the 40.

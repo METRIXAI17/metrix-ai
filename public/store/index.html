@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Metrix Store — семь комнат, один код</title>
+  <meta name="description" content="Один код. Семь комнат. Друг не спрашивает паспорт дважды." />
+  <meta property="og:image" content="/assets/store/hero.jpg" />
+  <link rel="icon" href="/assets/metrix-brand-m.jpg" />
+  <link rel="stylesheet" href="/css/styles.css?v=store19" />
+  <style>
+    .door-key{font-family:var(--mono);letter-spacing:.28em;font-size:1.6rem;color:var(--gold);padding:.6rem 1rem;border:1px solid rgba(251,191,36,.35);border-radius:12px;background:#0b1018;display:inline-block}
+    .store-hero{display:grid;grid-template-columns:1.1fr .9fr;gap:2rem;align-items:center;padding:2.2rem 0 1rem}
+    .store-hero img{width:100%;border-radius:18px;border:1px solid var(--border);box-shadow:var(--shadow)}
+    .rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin:1.5rem 0 3rem}
+    .room-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s}
+    .room-card:hover{transform:translateY(-3px);border-color:var(--border-strong)}
+    .room-card img{width:100%;height:140px;object-fit:cover;display:block}
+    .room-card .body{padding:1rem 1.1rem 1.2rem}
+    .room-card .n{color:var(--gold);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase}
+    .room-card h3{font-size:1.05rem;margin:.2rem 0 .35rem}
+    .room-card p{color:var(--text-muted);font-size:.9rem}
+    .result{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.2rem;margin:1rem 0 3rem}
+    .result table{width:100%;border-collapse:collapse;font-size:.92rem}
+    .result td{padding:.35rem 0;border-bottom:1px solid var(--border)}
+    .wow{color:var(--accent);font-size:1.15rem;margin:.4rem 0 1rem}
+    @media(max-width:800px){.store-hero{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="logo" href="/"><span class="logo-text">Metrix <span>Store</span></span></a>
+      <div class="nav-links">
+        <a href="/">AI</a>
+        <a href="/craft/">CraftShift</a>
+        <a href="https://t.me/karimmetrixbot">Бот</a>
+        <a href="https://x.com/karimmetrix">@karimmetrix</a>
+      </div>
+    </div>
+  </nav>
+  <main class="wrap" id="top">
+    <header class="store-hero">
+      <div>
+        <div class="eyebrow">Дружба — вход</div>
+        <h1>Один код.<br /><em>Семь комнат.</em></h1>
+        <p class="hero-sub2">Друг не спрашивает паспорт дважды. Код открывает стор, CraftShift и бота.</p>
+        <p><span class="door-key" id="door-show">————</span></p>
+        <div class="hero-actions" style="margin-top:1rem">
+          <input id="door-in" maxlength="6" placeholder="код" style="width:7rem;text-transform:uppercase;letter-spacing:.2em" />
+          <button class="btn btn-ghost" type="button" id="door-go">Войти</button>
+          <button class="btn btn-primary" type="button" id="door-new">Выдать дверь</button>
+        </div>
+      </div>
+      <img src="/assets/store/hero.jpg" alt="Metrix studio" width="960" height="540" />
+    </header>
+    <section>
+      <div class="eyebrow">7</div>
+      <h2>Комнаты</h2>
+      <p class="how-lead">Нажми комнату. Напиши, что ломается. Первый выход — таблица, не эссе.</p>
+      <div class="rooms" id="rooms"></div>
+    </section>
+    <section id="run" hidden>
+      <h2 id="run-title">Комната</h2>
+      <p id="run-one" class="how-lead"></p>
+      <textarea id="brief" rows="4" placeholder="что ломается"></textarea>
+      <div class="hero-actions" style="margin-top:.8rem">
+        <button class="btn btn-primary" type="button" id="run-btn">Собрать объект</button>
+        <button class="btn btn-ghost" type="button" id="think-btn">Подумать ещё</button>
+      </div>
+      <div class="result" id="out" hidden></div>
+    </section>
+  </main>
+  <script>
+    const API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+      ? "http://127.0.0.1:8787" : "https://metrix-ai-production.up.railway.app";
+    const q = new URLSearchParams(location.search);
+    let door = (q.get("door") || localStorage.getItem("metrix_door") || "").toUpperCase();
+    let cat = "1";
+    let lastLattice = null;
+    const roomsEl = document.getElementById("rooms");
+    function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+    function showDoor(c){ door = (c||"").toUpperCase(); if(door){ localStorage.setItem("metrix_door", door); document.getElementById("door-show").textContent = door; } }
+    showDoor(door);
+    async function post(path, body){
+      const r = await fetch(API + path, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body||{}) });
+      return r.json();
+    }
+    async function loadCats(){
+      const r = await fetch(API + "/api/v1/store");
+      const d = await r.json();
+      roomsEl.innerHTML = (d.categories||[]).map(c =>
+        `<article class="room-card" data-id="${esc(c.id)}" data-n="${c.n}">
+          <img src="${esc(c.image)}" alt="" />
+          <div class="body"><div class="n">${c.n}</div><h3>${esc(c.title)}</h3><p>${esc(c.one)}</p></div>
+        </article>`).join("");
+    }
+    loadCats().catch(() => { roomsEl.innerHTML = "<p class='muted'>API не ответил. Комнаты всё равно живы в боте.</p>"; });
+    roomsEl.addEventListener("click", ev => {
+      const card = ev.target.closest(".room-card"); if(!card) return;
+      cat = card.getAttribute("data-n");
+      document.getElementById("run").hidden = false;
+      document.getElementById("run-title").textContent = card.querySelector("h3").textContent;
+      document.getElementById("run-one").textContent = card.querySelector("p").textContent;
+      document.getElementById("run").scrollIntoView({behavior:"smooth"});
+    });
+    document.getElementById("door-new").onclick = async () => {
+      const d = await post("/api/v1/door", { brief: "store" });
+      showDoor(d.code);
+    };
+    document.getElementById("door-go").onclick = async () => {
+      const code = document.getElementById("door-in").value;
+      const d = await fetch(API + "/api/v1/door/" + encodeURIComponent(code)).then(r=>r.json());
+      if(d.ok) showDoor(d.code); else alert("Код не найден");
+    };
+    async function run(think){
+      const brief = document.getElementById("brief").value || "что ломается в контуре";
+      const out = document.getElementById("out");
+      out.hidden = false; out.innerHTML = "<p>Считаю решётку…</p>";
+      if(think && lastLattice){
+        const d = await post("/api/v1/store/think-more", { brief, door, state: lastLattice });
+        lastLattice = d.lattice; renderLat(d.lattice); showDoor((d.door||{}).code); return;
+      }
+      const d = await post("/api/v1/store/run", { brief, door, category: cat });
+      lastLattice = (d.artifact||{}).lattice || d.artifact;
+      showDoor((d.door||{}).code);
+      const a = d.artifact || {};
+      const lat = a.lattice || {};
+      const rows = (lat.table||[]).map(r => `<tr><td>${r.state==="on"?"●":"○"}</td><td>${esc(r.name)}</td><td>${esc(r.poke||"—")}</td></tr>`).join("");
+      out.innerHTML = `<p class="wow">${esc(a.wow || lat.wow || a.title)}</p>
+        <p>${esc(a.break||"")}</p><p><b>${esc(a.move||"")}</b></p>
+        <table>${rows}</table>
+        <p class="muted" style="margin-top:1rem">граница: ${esc((lat.boundary||{}).poke||"")}</p>`;
+    }
+    function renderLat(lat){
+      const rows = (lat.table||[]).map(r => `<tr><td>${r.state==="on"?"●":"○"}</td><td>${esc(r.name)}</td><td>${esc(r.poke||"—")}</td></tr>`).join("");
+      document.getElementById("out").innerHTML = `<p class="wow">${esc(lat.wow)}</p><table>${rows}</table>`;
+    }
+    document.getElementById("run-btn").onclick = () => run(false);
+    document.getElementById("think-btn").onclick = () => run(true);
+    if(!door) document.getElementById("door-new").click();
+  </script>
+</body>
+</html>
