@@ -43,7 +43,7 @@ def test_hits_and_private():
 
     kb = main_keyboard()["keyboard"]
     labels = [cell["text"] for row in kb for cell in row]
-    assert "Хит" in labels
+    assert labels[0] == "Хит"
     nav = nav_inline("https://metrix-ai.vercel.app/tg/")
     flat = str(nav)
     assert "m:hits" in flat

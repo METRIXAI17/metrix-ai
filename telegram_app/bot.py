@@ -82,9 +82,11 @@ def _token() -> str:
 
 
 def _webapp() -> str:
-    # Mini App is static on Vercel. Don't inherit METRIX_PUBLIC_URL (Railway API) —
-    # that made the Telegram button open a dead /tg/ whenever the API host was down.
-    raw = os.getenv("TELEGRAM_WEBAPP_URL", "").strip() or "https://metrix-ai.vercel.app/tg/"
+    # Live Mini App is the API host /tg/. Vercel production deploys were blocked
+    # after the repo went private, so vercel.app/tg stays on the old 3-tab shell.
+    raw = os.getenv("TELEGRAM_WEBAPP_URL", "").strip()
+    if (not raw) or ("vercel.app" in raw.lower()):
+        raw = "https://metrix-ai-production.up.railway.app/tg/"
     if not raw.endswith("/"):
         raw += "/"
     return raw
@@ -93,8 +95,8 @@ def _webapp() -> str:
 def main_keyboard() -> dict:
     return {
         "keyboard": [
-            [{"text": texts.MENU_LIFE}, {"text": texts.MENU_STORE}],
-            [{"text": texts.MENU_SHIFT}, {"text": texts.MENU_HITS}],
+            [{"text": texts.MENU_HITS}, {"text": texts.MENU_LIFE}],
+            [{"text": texts.MENU_STORE}, {"text": texts.MENU_SHIFT}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -126,12 +128,12 @@ def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
     """Primary nav — three sections. Reply keyboard is a fallback; Telegram often hides it."""
     rows = [
         [
+            {"text": "Хит", "callback_data": "m:hits"},
             {"text": "Разговор", "callback_data": "m:life"},
-            {"text": "Стор", "callback_data": "m:store"},
         ],
         [
+            {"text": "Стор", "callback_data": "m:store"},
             {"text": "CraftShift", "callback_data": "m:shift"},
-            {"text": "Хит", "callback_data": "m:hits"},
         ],
         [{"text": "Дверь", "callback_data": "m:door"}, {"text": "Обучение", "callback_data": "m:sub"}],
         [{"text": "Приватка", "callback_data": "m:private"}],
@@ -315,6 +317,7 @@ class BotAPI:
 
 
 def bootstrap(api: BotAPI, webapp: str) -> None:
+    api.call("deleteWebhook", drop_pending_updates=False)
     api.call(
         "setChatMenuButton",
         menu_button={"type": "web_app", "text": "Хит", "web_app": {"url": webapp + "#hits"}},
@@ -896,6 +899,7 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
     action = menu_action(raw)
     if action:
         dispatch_menu(api, chat_id, action, webapp)
+        api.send(chat_id, "Хит · конструкция, не сигнал.", markup=main_keyboard(), html=False)
         return
 
     if raw.lower() in ("pack", "/pack", "конверт", "convert"):
