@@ -59,6 +59,18 @@ ALIASES = {
     "посты": "shop",
     "posts": "shop",
     "post": "shop",
+    "hit": "hits",
+    "hits": "hits",
+    "хит": "hits",
+    "хиты": "hits",
+    "конструкц": "hits",
+    "конструкции": "hits",
+    "glossary": "hits",
+    "глоссарий": "hits",
+    "подписка-хит": "sub",
+    "обучен": "sub",
+    "приватка": "private",
+    "private": "private",
 }
 
 

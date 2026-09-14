@@ -36,6 +36,7 @@ class MonetizationOrchestrator:
         health: float,
         track: str,
         phrases: list[str] | None = None,
+        business_text: str = "",
     ) -> dict[str, Any]:
         promo = self.promo.build(
             idea_title,
@@ -58,6 +59,13 @@ class MonetizationOrchestrator:
             health=health,
             track=track,
         )
+        pointer: dict[str, Any] = {}
+        try:
+            from backend.monetization.sales_pointer import build_pointer
+
+            pointer = build_pointer(business_text or idea_title)
+        except Exception:
+            pointer = {}
 
         brief = " ".join(
             [idea_title or "", industry_name or "", " ".join(phrases or [])]
@@ -77,7 +85,8 @@ class MonetizationOrchestrator:
             "layer": self.name,
             "promo": promo.to_dict(),
             "market_making": mm.to_dict(),
-            "auto_orders": orders.to_dict(),
+            "auto_orders": {**orders.to_dict(), "sales_pointer": pointer},
+            "sales_pointer": pointer,
             "funding": {
                 "structural_income": structural,
                 "assets_1to1": assets,

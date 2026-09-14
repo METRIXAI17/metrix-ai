@@ -538,6 +538,36 @@ def show_artefacts(api: BotAPI, chat_id: int, webapp: str) -> None:
     show_shop(api, chat_id, webapp)
 
 
+def show_hits(api: BotAPI, chat_id: int, webapp: str) -> None:
+    from telegram_app.hits import format_hit, glossary, weekly_hit
+
+    hit = weekly_hit(int(time.time() // 86400 // 7))
+    extra = {
+        "inline_keyboard": [
+            [{"text": "Глоссарий", "callback_data": "ht:gloss"}],
+            [{"text": "Обучение", "callback_data": "ht:sub"}],
+            [{"text": "Приватка", "callback_data": "ht:priv"}],
+        ]
+    }
+    api.send(chat_id, format_hit(hit), markup=nav_inline(webapp, extra=extra["inline_keyboard"]))
+
+
+def show_sub(api: BotAPI, chat_id: int, webapp: str) -> None:
+    from telegram_app.subscription import format_tier
+
+    api.send(
+        chat_id,
+        format_tier("free") + "\n\n" + format_tier("paid"),
+        markup=nav_inline(webapp),
+    )
+
+
+def show_private(api: BotAPI, chat_id: int, webapp: str) -> None:
+    from telegram_app.subscription import format_tier
+
+    api.send(chat_id, format_tier("private"), markup=nav_inline(webapp))
+
+
 def _door_of(chat_id: int, brief: str = "", room: str = "talk") -> str:
     from backend.core.door import bind, mint
 
@@ -667,6 +697,15 @@ def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
     if action == "more":
         show_more(api, chat_id, webapp)
         return
+    if action == "hits":
+        show_hits(api, chat_id, webapp)
+        return
+    if action == "sub":
+        show_sub(api, chat_id, webapp)
+        return
+    if action == "private":
+        show_private(api, chat_id, webapp)
+        return
 
 
 def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
@@ -701,9 +740,23 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
             "door": "door",
             "more": "more",
             "access": "access",
+            "hits": "hits",
+            "sub": "sub",
+            "private": "private",
         }.get(data.split(":", 1)[1])
         if action:
             dispatch_menu(api, chat_id, action, webapp)
+        return
+    if data.startswith("ht:"):
+        kind = data.split(":", 1)[1]
+        if kind == "gloss":
+            from telegram_app.hits import glossary
+
+            api.send(chat_id, glossary(), markup=nav_inline(webapp))
+        elif kind == "sub":
+            show_sub(api, chat_id, webapp)
+        else:
+            show_private(api, chat_id, webapp)
         return
     if data.startswith("rs:"):
         _, verdict, aid = (data.split(":", 2) + ["", ""])[:3]

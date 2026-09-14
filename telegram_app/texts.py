@@ -90,6 +90,14 @@ MENU_DEMO = MENU_LIFE
 MENU_STRAT = MENU_BOTS
 MENU_AGENTS = MENU_TARGET
 MENU_POSTS = MENU_SHOP
+MENU_HITS = "Хит"
+MENU_SUB = "Обучение"
+MENU_PRIVATE = "Приватка"
+
+ASK_HITS = (
+    "Хит — короткий разбор одной финансовой конструкции. Не тикер, не сигнал.\n"
+    "Напишите «хит», «глоссарий», «обучение» или «приватка»."
+)
 
 DESC = HELP[:120]
 SHORT = "Один код. Стор. CraftShift. Разговор."

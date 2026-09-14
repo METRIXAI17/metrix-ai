@@ -95,6 +95,19 @@ class MarketUnitsEngine:
         )
         team_d = team.to_dict()
 
+        flag_kw: dict[str, bool] = {}
+        try:
+            from backend.core.coop.consult_patterns.flags import detect_flags, has_flag
+
+            _fl = detect_flags(business_text)
+            flag_kw = {
+                "missing_metric": has_flag(_fl, "P6"),
+                "multi_loco": has_flag(_fl, "P1"),
+                "magic_sales_kpi": has_flag(_fl, "P2") or has_flag(_fl, "P5") or has_flag(_fl, "P8"),
+            }
+        except Exception:
+            flag_kw = {}
+
         # 4. Coordination layer
         coord = self.coordination.compute(
             density=read.density,
@@ -106,6 +119,7 @@ class MarketUnitsEngine:
             ontology_fit=0.55,
             decision_mode=decision_mode,
             health=float(health if health is not None else 0.5),
+            **flag_kw,
         )
         coord_d = coord.to_dict()
 
@@ -144,6 +158,7 @@ class MarketUnitsEngine:
             ontology_fit=onto.ontology_fit,
             decision_mode=decision_mode,
             health=float(health if health is not None else 0.5),
+            **flag_kw,
         )
         coord_d = coord2.to_dict()
 

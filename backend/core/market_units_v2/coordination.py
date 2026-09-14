@@ -52,6 +52,8 @@ class CoordinationResult:
     critical_path: list[str]
     recommendations: list[str]
     summary: str
+    unblock_mode: str = ""
+    deadlock_reasons: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -60,6 +62,8 @@ class CoordinationResult:
             "sync_score": round(self.sync_score, 4),
             "deadlock_risk": round(self.deadlock_risk, 4),
             "load_balance": round(self.load_balance, 4),
+            "unblock_mode": self.unblock_mode,
+            "deadlock_reasons": list(self.deadlock_reasons),
             "handoff_matrix": {
                 a: {b: round(w, 4) for b, w in row.items()}
                 for a, row in self.handoff_matrix.items()
@@ -94,6 +98,9 @@ class CoordinationLayer:
         ontology_fit: float = 0.5,
         decision_mode: str = "scoring",
         health: float = 0.5,
+        missing_metric: bool = False,
+        multi_loco: bool = False,
+        magic_sales_kpi: bool = False,
     ) -> CoordinationResult:
         family_pressure = family_pressure or {}
         signals = signals or {}
@@ -181,6 +188,17 @@ class CoordinationLayer:
             + (sum(feedback_w) / max(1, len(feedback_w))) * 0.15 * mean_load
             + primary_leverage * 0.1
         )
+        deadlock_reasons: list[str] = []
+        if missing_metric:
+            deadlock_reasons.append("MISSING_METRIC")
+        if multi_loco:
+            deadlock_reasons.append("MULTI_LOCO")
+        if magic_sales_kpi:
+            deadlock_reasons.append("MAGIC_SALES")
+        unblock_mode = ""
+        if deadlock_reasons:
+            deadlock_risk = max(deadlock_risk, 0.72)
+            unblock_mode = "UNBLOCK"
 
         coordination_index = _clamp01(
             sync_score * 0.4
@@ -191,6 +209,11 @@ class CoordinationLayer:
         )
 
         recs: list[str] = []
+        if unblock_mode == "UNBLOCK":
+            recs.append(
+                "UNBLOCK: нет числа ИЛИ >2 потока ИЛИ KPI «+продажи». "
+                "Смена режима, выход на 1 страницу, один next_question. Не ретрай тем же промптом."
+            )
         if deadlock_risk > 0.45:
             recs.append("Break feedback loop: freeze decision mode before re-read")
         if load_balance < 0.55:
@@ -217,5 +240,8 @@ class CoordinationLayer:
             summary=(
                 f"Coordination: CI={coordination_index:.3f} sync={sync_score:.2f} "
                 f"deadlock={deadlock_risk:.2f} balance={load_balance:.2f}"
+                + (f" {unblock_mode}" if unblock_mode else "")
             ),
+            unblock_mode=unblock_mode,
+            deadlock_reasons=deadlock_reasons,
         )

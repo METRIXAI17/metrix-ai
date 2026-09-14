@@ -676,6 +676,41 @@ def niche_answers(industry: str = "", track: str = "ops", lang: str = "ru") -> d
     }
 
 
+class ConsultDiagnoseBody(BaseModel):
+    business: str = Field(..., min_length=20)
+    lang: str = "ru"
+    advanced_only: bool = False
+    prior_style: dict = Field(default_factory=dict)
+
+
+class SalesPointerBody(BaseModel):
+    business: str = Field(..., min_length=12)
+    order_type: str | None = None
+
+
+@router.post("/consult-diagnose")
+def consult_diagnose(body: ConsultDiagnoseBody) -> dict[str, Any]:
+    """Consult slot: diagnosis → one contour → canon → reinforcements."""
+    from backend.core.coop import run_coop_lane
+    from backend.core.freelance_packs import attach_pack
+
+    extra = {"advanced_only": body.advanced_only}
+    lane = run_coop_lane(
+        body.business,
+        extra_params=extra,
+        prior_style=body.prior_style or None,
+        lang=body.lang,
+    )
+    return attach_pack(lane, body.business)
+
+
+@router.post("/sales-pointer")
+def sales_pointer(body: SalesPointerBody) -> dict[str, Any]:
+    from backend.monetization.sales_pointer import build_pointer
+
+    return build_pointer(body.business, order_type=body.order_type)
+
+
 @router.post("/free-work/start")
 def free_work_start(body: FreeWorkStartBody) -> dict[str, Any]:
     """After consult: start free work — phases, clarifications, quality niche answer."""

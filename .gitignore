@@ -6,6 +6,11 @@ node_modules/
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+backend/data/client_briefs/
+briefs/
+!*.pem.example
 __pycache__/
 *.pyc
 .pytest_cache/

@@ -34,6 +34,12 @@ def test_commands_and_bot_suffix():
     assert menu_action("/start") == "start"
 
 
+def test_hits_and_private():
+    assert menu_action("хит") == "hits"
+    assert menu_action("конструкции") == "hits"
+    assert menu_action("приватка") == "private"
+
+
 def test_not_a_menu():
     assert menu_action("SaaS 80 человек без экономики") is None
     assert menu_action("") is None

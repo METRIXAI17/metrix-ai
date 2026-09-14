@@ -196,8 +196,22 @@ class IdeaPortfolioEngine:
                     )
                 )
 
+        extra = extra or {}
+        roles = list(OPS_ROLES)
+        if extra.get("order_type") == "TYPE_A" and not extra.get("advanced_only"):
+            skip = {
+                "marketplace_lattice",
+                "insight_chat",
+                "client_geometry_deep",
+                "demand_heat_overlay",
+                "ads_weave",
+                "post_lead_topology",
+            }
+            roles = [r for r in roles if r["role"] not in skip]
+            target_n = min(target_n, 3)
+
         # B) Ops-success role templates (strategy 1–6)
-        for role in OPS_ROLES:
+        for role in roles:
             title = role["template"].format(industry=industry_id, hook=hook)
             boost = 0.12 if any(g in role["covers"] for g in gaps) else 0.0
             if role["track"] == track:

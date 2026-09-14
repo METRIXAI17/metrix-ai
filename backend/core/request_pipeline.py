@@ -119,6 +119,21 @@ class RequestPipeline:
             logger.warning("task_reader failed: %s", exc)
             assembly = {"ok": False, "error": str(exc)[:240]}
 
+        freelance_lane: dict[str, Any] = {}
+        try:
+            from backend.core.coop import run_coop_lane
+            from backend.core.freelance_packs import attach_pack
+
+            freelance_lane = run_coop_lane(
+                req.business,
+                extra_params=req.extra_params,
+                lang=(getattr(req, "lang", None) or "ru"),
+            )
+            freelance_lane = attach_pack(freelance_lane, req.business)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("coop lane failed: %s", exc)
+            freelance_lane = {"ok": False, "error": str(exc)[:240]}
+
         # ── 2. Orient ─────────────────────────────────────────────────────
         logger.info("orient request_id=%s industry=%s", req.request_id, industry_id)
         orient = self.orientation.orient(
@@ -361,6 +376,24 @@ class RequestPipeline:
             demo_idea["double_bottom_alternatives"] = alt
         demo_idea["portfolio_count"] = len(demo_ideas)
         demo_idea["portfolio_roles"] = [i.get("role") for i in demo_ideas if i.get("role")]
+        if freelance_lane.get("order_type"):
+            try:
+                from backend.core.freelance_packs import apply_order_type_to_ideas
+
+                demo_ideas = apply_order_type_to_ideas(demo_ideas, freelance_lane)
+                if demo_ideas:
+                    demo_idea = dict(demo_ideas[0])
+                    demo_idea["portfolio_count"] = len(demo_ideas)
+                consult_txt = (freelance_lane.get("client_text") or "")[:400]
+                if consult_txt:
+                    demo_idea["summary"] = consult_txt
+                    demo_idea["label"] = (
+                        "Контур: дыра и отчёт"
+                        if freelance_lane.get("order_type") != "TYPE_B"
+                        else "Серия в замке стиля"
+                    )
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("type_a filter failed: %s", exc)
         product = {
             **product,
             "demo_idea": demo_idea,
@@ -413,7 +446,8 @@ class RequestPipeline:
             product={**product, "demo_idea": demo_idea},
             fin_models=fin_models,
             success=success_dict,
-            force=bool(decision.handoff_flags.get("ready_for_paid_block_18")),
+            force=bool(decision.handoff_flags.get("ready_for_paid_block_18"))
+            and bool((freelance_lane.get("handoff") or {}).get("allow_codegen", True)),
         )
         commercial_out: dict[str, Any] = {}
 
@@ -514,6 +548,7 @@ class RequestPipeline:
                 ),
                 track=primary,
                 phrases=list(ling.get("optimized_phrases") or []),
+                business_text=req.business,
             )
 
         # ── 11b. Memo Convert (before commercial so package docs use it) ─
@@ -1124,6 +1159,10 @@ class RequestPipeline:
                     },
                     preferred_track=track,
                 ),
+                "freelance_lane": freelance_lane,
+                "thinking_flags": freelance_lane.get("thinking_flags") or [],
+                "order_type": freelance_lane.get("order_type"),
+                "coop_handoff": freelance_lane.get("handoff") or {},
                 "free_consult": True,
                 "public_pricing": {
                     "free_usd": 0,
@@ -1164,9 +1203,23 @@ class RequestPipeline:
         )
         if isinstance(headline, str) and len(headline) > 100:
             headline = headline[:97].rsplit(" ", 1)[0] + "…"
+        if freelance_lane.get("client_text"):
+            headline = (
+                "Диагноз дыры · один контур"
+                if freelance_lane.get("order_type") != "TYPE_B"
+                else "Style-lock · первый кусок"
+            )
+            blurb = (freelance_lane.get("diagnosis") or {}).get("means") or freelance_lane.get(
+                "client_text"
+            )[:280]
         response.meta["free_consult_card"] = {
             "headline": headline,
             "blurb": blurb,
+            "thinking_flags": [
+                f.get("code") for f in (freelance_lane.get("thinking_flags") or []) if isinstance(f, dict)
+            ],
+            "order_type": freelance_lane.get("order_type"),
+            "framework": ["diagnosis", "one_contour", "canon", "reinforcements"],
             "direction": cat.get("primary") or "ops",
             "direction_label": cat.get("primary_label")
             or str(cat.get("primary") or "ops"),
@@ -1195,6 +1248,17 @@ class RequestPipeline:
             else:
                 fixed_steps.append(s)
         response.next_steps = fixed_steps
+        dead = freelance_lane.get("deadlock") or {}
+        if dead.get("mode") == "UNBLOCK" and dead.get("next_question"):
+            response.next_steps = [str(dead["next_question"])] + [
+                s for s in response.next_steps if s != dead.get("next_question")
+            ]
+            response.operating_mode = f"{response.operating_mode}|unblock"
+        if freelance_lane.get("handoff") and not freelance_lane["handoff"].get("allow_codegen", True):
+            response.next_steps = [
+                "P6: нет числа — квалификация, не production-codegen",
+            ] + response.next_steps
+            response.operating_mode = f"{response.operating_mode}|consult-questions"
 
         self._persist(req, response)
         return response
