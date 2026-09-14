@@ -300,7 +300,7 @@ class BotAPI:
             )
             self.send(
                 chat_id,
-                "Один код. Стор. CraftShift. Кнопки под этим сообщением.",
+                "Один код. Стор. CraftShift. Хит. Кнопки под этим сообщением.",
                 markup=kb,
                 html=False,
             )
@@ -317,13 +317,14 @@ class BotAPI:
 def bootstrap(api: BotAPI, webapp: str) -> None:
     api.call(
         "setChatMenuButton",
-        menu_button={"type": "web_app", "text": "Стор", "web_app": {"url": webapp + "#store"}},
+        menu_button={"type": "web_app", "text": "Хит", "web_app": {"url": webapp + "#hits"}},
     )
     api.call(
         "setMyCommands",
         commands=[
             {"command": "start", "description": "Дверь"},
             {"command": "life", "description": "Разговор"},
+            {"command": "hits", "description": "Хит · конструкция, не сигнал"},
             {"command": "store", "description": "Metrix Store"},
             {"command": "shift", "description": "CraftShift"},
             {"command": "door", "description": "Код двери"},
