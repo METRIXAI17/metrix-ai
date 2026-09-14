@@ -94,7 +94,7 @@ def main_keyboard() -> dict:
     return {
         "keyboard": [
             [{"text": texts.MENU_LIFE}, {"text": texts.MENU_STORE}],
-            [{"text": texts.MENU_SHIFT}],
+            [{"text": texts.MENU_SHIFT}, {"text": texts.MENU_HITS}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -131,10 +131,13 @@ def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
         ],
         [
             {"text": "CraftShift", "callback_data": "m:shift"},
-            {"text": "Дверь", "callback_data": "m:door"},
+            {"text": "Хит", "callback_data": "m:hits"},
         ],
+        [{"text": "Дверь", "callback_data": "m:door"}, {"text": "Обучение", "callback_data": "m:sub"}],
+        [{"text": "Приватка", "callback_data": "m:private"}],
         [{"text": "Ещё 5 комнат", "callback_data": "m:more"}],
         webapp_row(webapp),
+        [{"text": "Открыть хиты", "web_app": {"url": webapp.rstrip("/") + "/#hits"}}],
         subscribe_row(),
         [{"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"}],
     ]
@@ -860,7 +863,7 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
         remember(art)
         api.send(chat_id, format_telegram(art), markup=resonance_kb(art["id"]))
         return
-    if data.startswith("ag:")
+    if data.startswith("ag:"):
         nid = data.split(":", 1)[1]
         sessions.set_mode(chat_id, "await_agent_brief", niche=nid)
         api.send(chat_id, texts.ASK_AGENT, markup=nav_inline(webapp), html=False)

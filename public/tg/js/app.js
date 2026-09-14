@@ -35,7 +35,7 @@
     return r.json();
   }
 
-  const VIEWS = ["life", "bots", "craft", "target", "shop", "store", "shift", "chain", "teammates", "artefacts", "home"];
+  const VIEWS = ["life", "bots", "craft", "target", "shop", "store", "shift", "chain", "teammates", "artefacts", "home", "hits"];
   const ALIAS = {
     home: "life",
     chain: "life",
@@ -49,6 +49,9 @@
     making: "shop",
     artefacts: "shop",
     craftshift: "shift",
+    hit: "hits",
+    хит: "hits",
+    конструкции: "hits",
   };
   const state = {
     view: (location.hash || "").replace("#", "") || "life",
@@ -146,6 +149,10 @@
     if (t.closest("#wf-run")) {
       ev.preventDefault();
       runWorkflow();
+    }
+    if (t.closest("[data-hit-tier]")) {
+      ev.preventDefault();
+      showHitTier(t.closest("[data-hit-tier]").getAttribute("data-hit-tier"));
     }
   });
 
@@ -671,6 +678,45 @@
       '<div id="sec-out"></div></section>'
     );
   }
+
+  function hitsView(pack) {
+    pack = pack || state.hits || {};
+    var hit = pack.hit || {};
+    var body = hit.body || "Конструкция: разность метрик на следующем уровне сложности. Не тикер.";
+    var title = hit.title || "Хит недели";
+    return (
+      '<section class="room">' +
+      '<div class="eyebrow">Консалтинг конструкций</div>' +
+      "<h1>Хит. <em>Не сигнал.</em></h1>" +
+      "<p class='lead'>Разбор одной финансовой конструкции: кто платит кому, где разность уровней, какой тупик розницы. Без тикера и без «купите».</p>" +
+      '<article class="card card-flag" style="--flag-accent:#5eead4">' +
+      '<span class="tag">неделя</span><h3>' +
+      esc(title) +
+      "</h3><p style='white-space:pre-wrap'>" +
+      esc(body) +
+      "</p></article>" +
+      '<div class="row">' +
+      '<button type="button" class="btn btn-ghost" data-hit-tier="gloss">Глоссарий</button>' +
+      '<button type="button" class="btn btn-ghost" data-hit-tier="paid">Обучение</button>' +
+      '<button type="button" class="btn btn-ghost" data-hit-tier="private">Приватка</button>' +
+      "</div>" +
+      '<div id="hit-out"></div>' +
+      '<p class="muted">Не рекомендация сделки. Без чужих депозитов.</p></section>'
+    );
+  }
+
+  async function showHitTier(tier) {
+    var box = document.getElementById("hit-out");
+    if (!box) return;
+    var pack = state.hits || {};
+    if (tier === "gloss") {
+      box.innerHTML = '<article class="card"><p style="white-space:pre-wrap">' + esc((pack.glossary || "").replace(/<[^>]+>/g, "")) + "</p></article>";
+      return;
+    }
+    var html = (pack.tiers && pack.tiers[tier === "paid" ? "paid" : "private"]) || "";
+    box.innerHTML = '<article class="card"><p style="white-space:pre-wrap">' + esc(String(html).replace(/<[^>]+>/g, "")) + "</p></article>";
+  }
+
   async function render() {
     if (!state.catalog) {
       viewEl.innerHTML = "<p class='muted'>Загрузка…</p>";
@@ -685,7 +731,16 @@
     var html;
     if (state.view === "store") html = storeView();
     else if (state.view === "shift") html = shiftView();
-    else html = sectionView(c, state.view);
+    else if (state.view === "hits") {
+      if (!state.hits) {
+        try {
+          state.hits = await get("/api/v1/miniapp/hits");
+        } catch (e) {
+          state.hits = { hit: { title: "Хит", body: "API не ответил. Конструкция: не тикер." } };
+        }
+      }
+      html = hitsView(state.hits);
+    } else html = sectionView(c, state.view);
     viewEl.innerHTML = html;
     bind();
     if (state.view === "store") loadStoreRooms();

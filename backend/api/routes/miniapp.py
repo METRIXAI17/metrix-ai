@@ -173,6 +173,30 @@ def _wall(gate: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+@router.get("/hits")
+def fin_construction_hits() -> dict[str, Any]:
+    """Financial-construction hits for Mini App. Not signals."""
+    from telegram_app.hits import HITS, glossary, weekly_hit
+    from telegram_app.subscription import TIERS, format_tier
+    import time as _t
+
+    hit = weekly_hit(int(_t.time() // 86400 // 7))
+    return {
+        "ok": True,
+        "contour": "fin_consult",
+        "disclaimer": "не рекомендация сделки",
+        "hit": hit,
+        "hits": HITS,
+        "glossary": glossary(),
+        "tiers": {
+            "free": format_tier("free"),
+            "paid": format_tier("paid"),
+            "private": format_tier("private"),
+        },
+        "rules": TIERS["private"]["rules"],
+    }
+
+
 @router.get("/catalog")
 def catalog(
     lang: str = "ru",

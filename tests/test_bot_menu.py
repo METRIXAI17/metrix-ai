@@ -38,6 +38,19 @@ def test_hits_and_private():
     assert menu_action("хит") == "hits"
     assert menu_action("конструкции") == "hits"
     assert menu_action("приватка") == "private"
+    from telegram_app.bot import main_keyboard, nav_inline
+    from telegram_app.hits import weekly_hit, format_hit
+
+    kb = main_keyboard()["keyboard"]
+    labels = [cell["text"] for row in kb for cell in row]
+    assert "Хит" in labels
+    nav = nav_inline("https://metrix-ai.vercel.app/tg/")
+    flat = str(nav)
+    assert "m:hits" in flat
+    assert "#hits" in flat
+    h = format_hit(weekly_hit(0))
+    assert "Не рекомендация сделки" in h
+    assert len(h) > 400
 
 
 def test_not_a_menu():

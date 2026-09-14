@@ -412,7 +412,7 @@ textarea:focus, input:focus {
   left: 0; right: 0; bottom: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 2px;
   padding: 0.4rem 0.35rem calc(0.45rem + var(--safe-b));
   background: rgba(7, 10, 15, 0.94);
