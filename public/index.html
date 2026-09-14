@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Metrix AI — one window to deploy workflows and original projects. Instant expert ideas. Optional payment on implementation approval."
+      content="Metrix AI — помощь в заработке для ИИ-фрилансера: сборка заказа и контур вход → статус → отчёт → повтор. В понедельник видно, что не сгорело."
     />
     <meta name="theme-color" content="#0c1219" />
-    <meta property="og:title" content="Metrix AI — workflows & original projects" />
+    <meta property="og:title" content="Metrix AI — помощь в заработке" />
     <meta
       property="og:description"
-      content="Not a pig in a poke. Instant expert ideas. Optional pay when you approve implementation."
+      content="Собрать заказ. Не слить часы. Дыра и отчёт раньше трубы. Трафик не растим."
     />
     <meta property="og:image" content="assets/metrix-brand-m.jpg" />
-    <title>Metrix AI — one window for workflows</title>
-    <link rel="stylesheet" href="css/styles.css?v=store19" />
+    <title>Metrix AI — помощь в заработке</title>
+    <link rel="stylesheet" href="css/styles.css?v=earn21" />
     <link rel="icon" href="assets/metrix-brand-m.jpg" type="image/jpeg" />
     <link rel="apple-touch-icon" href="assets/metrix-brand-m.jpg" />
   </head>
@@ -47,7 +47,7 @@
             Business Tasks
           </button>
           <button type="button" data-mode="generate" role="tab" aria-selected="false" class="mode-fire" data-i18n="nav_generate">
-            Generate 🔥
+            Сборка заказа
           </button>
           <button type="button" data-mode="promo" role="tab" aria-selected="false" data-i18n="nav_promo">
             Promo
@@ -61,16 +61,16 @@
           <a href="/store/">Store</a>
           <a href="/craft/">CraftShift</a>
           <a href="https://metrix-ai.vercel.app/tg/">Bot</a>
-          <a href="#made-with">Story</a>
-          <a href="#offer" data-i18n="nav_product">Product</a>
-          <a href="#system-map" data-i18n="nav_system">System</a>
-          <a href="#niches" data-i18n="nav_niches">Niches</a>
-          <a href="#flagship-details" data-i18n="nav_flagships">Layers</a>
-          <a href="#how" data-i18n="nav_path">Path</a>
-          <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
+          <a href="#made-with">Дверь</a>
+          <a href="#offer" data-i18n="nav_product">Продукт</a>
+          <a href="#flow" data-i18n="nav_system">Поток</a>
+          <a href="#niches" data-i18n="nav_niches">Слои потока</a>
+          <a href="#flagship-details" data-i18n="nav_flagships">Что получите</a>
+          <a href="#how" data-i18n="nav_path">Путь</a>
+          <a href="#pricing" data-i18n="nav_pricing">Цены</a>
           <div class="lang-switch" role="group" aria-label="Language">
-            <button type="button" class="lang-btn active" data-lang="en" id="lang-en">EN</button>
-            <button type="button" class="lang-btn" data-lang="ru" id="lang-ru">RU</button>
+            <button type="button" class="lang-btn" data-lang="en" id="lang-en">EN</button>
+            <button type="button" class="lang-btn active" data-lang="ru" id="lang-ru">RU</button>
           </div>
           <a href="https://x.com/karimmetrix" target="_blank" rel="noopener noreferrer">@karimmetrix</a>
         </div>
@@ -79,35 +79,34 @@
 
     <main id="top">
       <header class="hero wrap">
-        <div class="hero-badge" data-i18n="hero_badge">Instant ideas · pay after your pay</div>
+        <div class="hero-badge" data-i18n="hero_badge">Помощь в заработке</div>
         <h1>
-          <span data-i18n="hero_h1a">One window to deploy</span><br />
-          <em data-i18n="hero_h1b">workflows and original projects.</em>
+          <span data-i18n="hero_h1a">Собрать заказ.</span><br />
+          <em data-i18n="hero_h1b">Не слить часы.</em>
         </h1>
         <p class="hero-lead" id="master-offer-sub" hidden></p>
         <p class="hero-sub2 hero-sub-shimmer" id="master-offer-sub2" data-i18n="hero_sub"></p>
-        <ol class="chain-stepper" id="chain-stepper" aria-label="Consult direction ship">
-          <li data-i18n="chain_step_1">Consult</li>
-          <li data-i18n="chain_step_2">Direction</li>
-          <li data-i18n="chain_step_3">Ship</li>
+        <ol class="chain-stepper" id="chain-stepper" aria-label="Контур">
+          <li data-i18n="chain_step_1">Вход</li>
+          <li data-i18n="chain_step_2">Статус</li>
+          <li data-i18n="chain_step_3">Эскалация</li>
+          <li data-i18n="chain_step_4">Отчёт</li>
+          <li data-i18n="chain_step_5">Повтор</li>
         </ol>
-        <p class="hero-sub2" data-i18n="chain_stepper_lead">Creates a sequence id. Not a lead into nowhere.</p>
+        <p class="hero-sub2" data-i18n="chain_stepper_lead">Слои одного потока. Не список направлений.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="/store/">Store</a>
-          <a class="btn btn-ghost" href="/craft/">CraftShift</a>
+          <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_earn">
+            Помощь в заработке
+          </button>
+          <button type="button" class="btn btn-ghost" data-mode-jump="generate" data-i18n="cta_generate">
+            Сборка заказа
+          </button>
           <button type="button" class="btn btn-ghost" id="chain-start" data-i18n="cta_chain">
-            Start free work
+            Собрать контур
           </button>
-          <button type="button" class="btn btn-ghost" data-mode-jump="request" data-i18n="cta_consult">
-            Consult + Tech-TZ
-          </button>
-          <button type="button" class="btn btn-ghost mode-fire-btn" data-mode-jump="generate" data-i18n="cta_generate">
-            Generate 🔥
-          </button>
-          <button type="button" class="btn btn-ghost" data-mode-jump="tasks" data-i18n="cta_tasks">
-            Business Tasks
-          </button>
-          <button type="button" class="btn btn-ghost" data-scroll="#niches" data-i18n="cta_niches">10 niches</button>
+          <a class="btn btn-ghost" href="/store/">Store</a>
+          <a class="btn btn-ghost" href="/craft/">CraftShift</a>
+          <a class="btn btn-ghost" href="https://t.me/karimmetrixbot">Бот</a>
         </div>
         <div class="geo-strip" aria-hidden="true">
           <img src="assets/x-posts/sec-life.jpg" alt="" width="640" height="360" />
@@ -117,33 +116,48 @@
         </div>
       </header>
 
+      <section class="flow-band wrap" id="flow" aria-label="Контур">
+        <div class="flow-spill" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <ol class="flow-layers">
+          <li><span data-i18n="flow_1">Вход</span><span data-i18n="flow_1s">Все заявки в один список</span></li>
+          <li><span data-i18n="flow_2">Статус</span><span data-i18n="flow_2s">Хозяин · N минут</span></li>
+          <li><span data-i18n="flow_3">Эскалация</span><span data-i18n="flow_3s">Если не взяли</span></li>
+          <li><span data-i18n="flow_4">Отчёт</span><span data-i18n="flow_4s">Понедельник: пришло / вовремя / сгорело</span></li>
+          <li><span data-i18n="flow_5">Повтор</span><span data-i18n="flow_5s">Ретейнер на отчёте</span></li>
+        </ol>
+        <p class="how-lead" data-i18n="flow_lead">Каждый слой — перелив того же потока, не идея №5.</p>
+      </section>
+
       <section class="section wrap" id="made-with">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Door</div>
-            <h2>One code. Store. CraftShift.</h2>
+            <div class="eyebrow" data-i18n="door_eyebrow">Дверь</div>
+            <h2 data-i18n="door_title">Один код. Стор. CraftShift. Бот.</h2>
           </div>
         </div>
-        <p class="how-lead">
-          Friendship is the door: no second passport. The same 6-character code opens
-          the site, the bot, the store, and CraftShift — a Metrix AI derivative for X posts and video.
+        <p class="how-lead" data-i18n="door_lead">
+          Та же дверь. Комнаты — переливы одного потока, не второй продукт.
         </p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="/store/">Open Store</a>
-          <a class="btn btn-ghost" href="https://t.me/karimmetrixbot">Bot · @karimmetrixbot</a>
+          <a class="btn btn-primary" href="/store/">Store</a>
+          <a class="btn btn-ghost" href="https://t.me/karimmetrixbot">Бот · @karimmetrixbot</a>
+          <button type="button" class="btn btn-ghost" data-mode-jump="request" data-i18n="cta_earn">
+            Помощь в заработке
+          </button>
         </div>
       </section>
 
       <section class="section wrap" id="metrix-store">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Metrix Store</div>
-            <h2>Seven rooms. An object you can keep.</h2>
+            <div class="eyebrow" data-i18n="store_eyebrow">Metrix Store</div>
+            <h2 data-i18n="store_title">Комнаты одного потока</h2>
           </div>
         </div>
-        <p class="how-lead">
-          A2A screener · Deep tech · Brand · Libraries · Sales rails · Quality · Placements in money flows.
-          First result is a table. Think-more adds one constraint — not another essay.
+        <p class="how-lead" data-i18n="store_lead">
+          Первый выход — таблица. Think-more добавляет одно ограничение, не ещё одно эссе. Не стор идей.
         </p>
         <div class="geo-strip" aria-hidden="true">
           <img src="assets/store/hero.jpg" alt="" width="640" height="360" />
@@ -151,7 +165,7 @@
           <img src="assets/store/cat-placements.jpg" alt="" width="640" height="360" />
         </div>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="/store/">Enter Store</a>
+          <a class="btn btn-primary" href="/store/">Store</a>
           <a class="btn btn-ghost" href="/craft/">CraftShift</a>
         </div>
       </section>
@@ -159,23 +173,25 @@
       <section class="section wrap" id="metrix-ai">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Metrix AI · 1.8 · $2490</div>
-            <h2>Physical goods ecom engine</h2>
+            <div class="eyebrow" data-i18n="ai_eyebrow">SKU после пилота</div>
+            <h2 data-i18n="ai_title">Кассовый цикл физического товара</h2>
           </div>
         </div>
         <div class="ai-extract">
           <img src="assets/x-posts/geo-ecom.jpg" alt="" width="640" height="360" />
           <div>
-            <p class="lead">
-              The same engine that already runs in the bot: <b>theses</b>, <b>configs</b>,
-              <b>in-out experiments</b>. $2490 is that engine as a SKU for a physical shop — not a second brain.
+            <p class="lead" data-i18n="ai_lead">
+              Один перелив того же контура под физический SKU. Не второй мозг. Не Access. Не курс.
             </p>
             <ul class="ai-tracks">
-              <li><b>Bot</b> — theses on order, config for IT/production, in-out experiment.</li>
-              <li><b>SKU $2490</b> — same engine planted into physical-goods ecom after a pilot.</li>
-              <li><b>Not</b> — Access 3290, signals, digital courses.</li>
+              <li><b>Бот</b> — тезисы процесса, конфиг, in-out эксперимент. Не сигналы.</li>
+              <li><b>SKU $2490</b> — тот же контур на кассе физического товара после пилота.</li>
+              <li><b>Не входит</b> — Access, сигналы, цифровые курсы, рост трафика.</li>
             </ul>
-            <a class="btn btn-primary" href="/ai/">Open Metrix AI</a>
+            <a class="btn btn-primary" href="/ai/">SKU физ. товара</a>
+            <button type="button" class="btn btn-ghost" data-mode-jump="request" data-i18n="cta_earn">
+              Помощь в заработке
+            </button>
           </div>
         </div>
       </section>
@@ -183,11 +199,11 @@
       <section class="section wrap" id="theses">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Artefacts · conveyor</div>
-            <h2>Theses on order</h2>
+            <div class="eyebrow" data-i18n="theses_eyebrow">Тезисы процесса</div>
+            <h2 data-i18n="theses_title">Тезисы на заказ</h2>
           </div>
         </div>
-        <p class="how-lead">We sell theses only. One process claim you can kill with a fact. Propeller creative = one thesis.</p>
+        <p class="how-lead" data-i18n="theses_lead">Одно убиваемое утверждение про процесс. Не список направлений.</p>
         <div class="thesis-strip" id="thesis-strip">
           <article class="thesis-ad">Отсрочка как вход мертва — поставщик взял предоплату.</article>
           <article class="thesis-ad">Онбординг жрёт маржу на нулевой неделе — пакета нет, есть геройство.</article>
@@ -226,14 +242,14 @@
           />
           <div>
             <div class="eyebrow">Metrix AI</div>
-            <h3 data-i18n="not_pig">Not a pig in a poke</h3>
+            <h3 data-i18n="not_pig">Дыра и отчёт раньше трубы</h3>
             <p data-i18n="not_pig_p">
-              Instant expert ideas. Optional payment for implementation approval after confirmation.
+              Дешёвый бот = чат. Дорогой контур = хозяин + срок + эскалация + недельная цифра потерь. Трафик не растим.
             </p>
             <p class="hint assets-auto-note" data-i18n="assets_note"></p>
             <p class="hint assets-auto-note" data-i18n="auto_note"></p>
-            <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
-              Consult + Tech-TZ
+            <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_earn">
+              Помощь в заработке
             </button>
           </div>
         </div>
@@ -292,9 +308,9 @@
       <section class="section wrap" id="niches">
         <div class="section-head">
           <div>
-            <div class="eyebrow" data-i18n="eyebrow_niches">Niches</div>
-            <h2 data-i18n="niches_title">10 client directions</h2>
-            <p data-i18n="niches_lead">Short cards with symbols. No long copy.</p>
+            <div class="eyebrow" data-i18n="eyebrow_niches">Тот же поток, другой перелив</div>
+            <h2 data-i18n="niches_title">Где сидит контур</h2>
+            <p data-i18n="niches_lead">Не десять идей. Десять мест, где живёт та же дыра.</p>
           </div>
         </div>
         <div class="niche-grid niche-grid-compact" id="niche-grid"></div>
@@ -303,15 +319,15 @@
       <section class="section wrap mode-panel active" id="mode-marketplace" data-panel="marketplace">
         <div class="section-head" id="products">
           <div>
-            <div class="eyebrow" data-i18n="eyebrow_cards">Cards</div>
-            <h2 data-i18n="cards_title">Where to start</h2>
-            <p id="home-catalog-note" data-i18n="cards_lead">Core is decision support. Click a card.</p>
+            <div class="eyebrow" data-i18n="eyebrow_cards">Старт</div>
+            <h2 data-i18n="cards_title">Собрать заказ</h2>
+            <p id="home-catalog-note" data-i18n="cards_lead">Один контур или одна серия. Нажмите карточку. Без списка из семи направлений.</p>
           </div>
         </div>
         <div class="grid grid-flagship" id="program-grid"></div>
         <div class="cr-cta-row" style="margin-top: 1.25rem">
           <button type="button" class="btn btn-primary mode-fire-btn" data-mode-jump="generate" data-i18n="cta_generate">
-            Generate business 🔥
+            Сборка заказа
           </button>
           <button type="button" class="btn btn-ghost" data-mode-jump="tasks" data-i18n="cta_tasks">
             Business Tasks
@@ -323,8 +339,8 @@
       <section class="section wrap mode-panel" id="mode-generate" data-panel="generate" hidden>
         <div class="section-head">
           <div>
-            <div class="eyebrow">🔥</div>
-            <h2 data-i18n="generate_title">Generate business</h2>
+            <div class="eyebrow" data-i18n="cta_generate">Сборка заказа</div>
+            <h2 data-i18n="generate_title">Сборка заказа</h2>
             <p class="how-lead" data-i18n="generate_lead">
               Describe the essence. The system asks for direction at each stage.
             </p>
@@ -399,10 +415,10 @@
 
           <!-- Deliverable strip -->
           <div class="gen-deliver-strip" id="gen-deliver-strip">
-            <div class="deliver-chip ok" id="chip-fill">Шаги A01–A12 · готовы</div>
-            <div class="deliver-chip ok" id="chip-report">Резюме + техконтекст · готово</div>
-            <div class="deliver-chip later" id="chip-author">Уникальность + агент · после оплаты</div>
-            <div class="deliver-chip later" id="chip-gencore">GenCore v2+ · после answers</div>
+            <div class="deliver-chip ok" id="chip-fill">Контур шагов · готов</div>
+            <div class="deliver-chip ok" id="chip-report">ТЗ + отчёт · готово</div>
+            <div class="deliver-chip later" id="chip-author">Ретейнер и сдача · после оплаты</div>
+            <div class="deliver-chip later" id="chip-gencore">Серия в замке стиля · после ответов</div>
           </div>
 
           <div class="cr-cta-row free-dl-row" style="margin: 0.85rem 0">
@@ -431,8 +447,8 @@
             <div class="block-h">
               <span class="block-num">01</span>
               <div>
-                <div class="eyebrow">Шаги архитектуры</div>
-                <h4 class="block-title">A01–A12 · путь решения (не «наполнение»)</h4>
+                <div class="eyebrow">Шаги контура</div>
+                <h4 class="block-title">Путь решения · один поток</h4>
               </div>
             </div>
             <div id="gen-fill-body" class="block-body"></div>
@@ -491,7 +507,7 @@
             <div id="gen-forecast" class="forecast-grid"></div>
           </div>
           <div class="gen-orch-block" id="gen-orch-block">
-            <div class="eyebrow">Ниши</div>
+            <div class="eyebrow">Где сидит дыра</div>
             <p id="gen-orch-note" class="how-lead" style="margin-bottom: 0.75rem"></p>
             <div id="gen-niche-rank" class="niche-rank-row"></div>
             <div class="eyebrow" style="margin-top: 1rem">Стек</div>
@@ -526,11 +542,12 @@
       <section class="section wrap mode-panel" id="mode-promo" data-panel="promo" hidden>
         <div class="section-head">
           <div>
-            <div class="eyebrow">Тариф Marketing · $690</div>
-            <h2>Продвижение · 3 дороги</h2>
+            <div class="eyebrow">Разговор продажи · Auto Orders</div>
+            <h2>Плюс и минус названы. Дорога одна.</h2>
             <p class="how-lead">
-              Площадки · нетворкинг · соцсети. Отдельно — скрипты и идеи продаж в DM.
-              Система читает аналитику из брифа (охват, ER, CAC, конверсия…) и отвечает по делу.
+              TYPE_A: заявки уже есть и теряются без имени — трафик не растим.
+              TYPE_B: стиль можно замкнуть и повторять серию — один креатив без замка хвоста не даёт.
+              Без восклицаний, без «трансформации», без списка из семи направлений.
             </p>
           </div>
         </div>
@@ -538,25 +555,25 @@
           <div class="form-grid">
             <div class="field field-full field-span">
               <label for="promo-headline">Проект / оффер *</label>
-              <input id="promo-headline" type="text" required maxlength="120" placeholder="Напр.: pack карточек для билдеров" />
+              <input id="promo-headline" type="text" required maxlength="120" placeholder="Напр.: заявки из Telegram теряются без имени" />
             </div>
             <div class="field field-full field-span">
               <label for="promo-body">Задача продвижения + цифры *</label>
-              <textarea id="promo-body" required rows="5" placeholder="Кого ищем, что продаём, охват/ER/лиды если есть, где уже пробовали…"></textarea>
+              <textarea id="promo-body" required rows="5" placeholder="Сколько заявок/нед, где живут, кто берёт, что сгорает. Для серии — тон, длина, запреты, референс."></textarea>
             </div>
             <p class="form-error" id="promo-error" role="alert"></p>
-            <button type="submit" class="btn btn-primary btn-lg" id="promo-submit">Собрать план продвижения</button>
+            <button type="submit" class="btn btn-primary btn-lg" id="promo-submit">Собрать разговор продажи</button>
           </div>
         </form>
         <div id="promo-result" class="gen-result" hidden>
           <h3 id="promo-msg">—</h3>
           <div id="promo-roads" class="promo-roads"></div>
           <div class="gen-block-card" style="margin-top:1rem">
-            <div class="eyebrow">Скрипты DM</div>
+            <div class="eyebrow">Короткие реплики</div>
             <div id="promo-dms"></div>
           </div>
           <div class="gen-block-card" style="margin-top:1rem">
-            <div class="eyebrow">Идеи продаж + аналитика</div>
+            <div class="eyebrow">Плюс · минус · дорога</div>
             <div id="promo-extra"></div>
           </div>
         </div>
@@ -645,8 +662,8 @@
             <div id="funding-paid"></div>
           </div>
           <div class="cr-cta-row" style="margin-top:1rem">
-            <button type="button" class="btn btn-primary" data-mode-jump="generate" data-i18n="nav_generate">
-              Generate 🔥
+            <button type="button" class="btn btn-primary" data-mode-jump="generate" data-i18n="cta_generate">
+              Сборка заказа
             </button>
             <button type="button" class="btn btn-ghost" data-mode-jump="request" data-i18n="cta_consult">
               Consult + Tech-TZ
@@ -692,7 +709,7 @@
             <div class="eyebrow" data-i18n="nav_consult">Consult</div>
             <h2 data-i18n="form_title">Describe the business</h2>
             <p data-i18n="form_lead">
-              5–20 sentences. Niche required. Instant expert ideas. Pay after your successful result.
+              Опишите дыру своими словами. Режем TYPE_A-контур и TYPE_B-серию отдельно. Нет числа — вопросы квалификации, не полный пакет.
             </p>
           </div>
         </div>
@@ -818,7 +835,7 @@
             Consult + Tech-TZ
           </button>
           <button type="button" class="btn btn-ghost mode-fire-btn" data-mode-jump="generate" data-i18n="cta_generate">
-            Generate 🔥
+            Сборка заказа
           </button>
         </div>
       </section>
@@ -843,7 +860,7 @@
             <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_consult">
               Consult + Tech-TZ
             </button>
-            <button type="button" class="btn btn-gold" data-mode-jump="generate" data-i18n="nav_generate">Generate 🔥</button>
+            <button type="button" class="btn btn-gold" data-mode-jump="generate" data-i18n="cta_earn">Помощь в заработке</button>
             <button type="button" class="btn btn-ghost" data-mode-jump="funding" data-i18n="nav_funding">Funding</button>
           </div>
         </div>
@@ -893,7 +910,7 @@
         };
       })();
     </script>
-    <script src="js/data.js?v=store19"></script>
-    <script src="js/app.js?v=store19"></script>
+    <script src="js/data.js?v=earn21"></script>
+    <script src="js/app.js?v=earn21"></script>
   </body>
 </html>

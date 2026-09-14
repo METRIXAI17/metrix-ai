@@ -61,7 +61,7 @@
   function init() {
     try {
       if (!localStorage.getItem("metrix_lang")) {
-        D.setLang("en");
+        D.setLang("ru");
       }
     } catch (e) {
       /* ignore */
@@ -2127,19 +2127,19 @@
       },
       {
         id: "full_business_gen",
-        name: isEn ? "Generate Business 🔥" : "Сгенерировать бизнес 🔥",
+        name: isEn ? "Assemble the order" : "Сборка заказа",
         tagline: isEn
-          ? "Orchestrate 10 niches → system + base + panel"
-          : "Оркестрация 10 ниш → система + база + панель",
+          ? "One contour or one series — not a list of directions"
+          : "Один контур или одна серия — не список направлений",
         benefit: isEn
-          ? "Planning brain: ranks niches, service stack, compute"
-          : "Мозг планирования: ранжирует ниши, стек услуг, расчёты",
+          ? "Hole and report before the pipe. Monday number."
+          : "Дыра и отчёт раньше трубы. Цифра понедельника.",
         examples: [
           {
             niche: "all",
             text: isEn
-              ? "In: essence · Out: plan + base + panel across 10 niches"
-              : "Вход: суть · Выход: план + база + панель по 10 нишам",
+              ? "In: fuzzy brief · Out: TZ + statuses + Monday report"
+              : "Вход: размытый бриф · Выход: ТЗ + статусы + отчёт понедельника",
           },
         ],
         cta_mode: "generate",
