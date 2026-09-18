@@ -260,7 +260,7 @@ window.METRIX_DATA = {
       flow_lead: "Каждый слой — перелив того же потока, не идея №5.",
       cta_niches: "Слои потока",
       cta_tasks: "Бизнес-таски",
-      cta_generate: "Собрать демо"
+      cta_generate: "Собрать демо",
       cta_card_consult: "Помощь в заработке →",
       cta_pricing: "Смотреть тарифы",
       eyebrow_product: "Продукт",
