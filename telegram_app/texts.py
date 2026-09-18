@@ -110,5 +110,5 @@ ASK_HITS = (
 )
 
 DESC = HELP[:120]
-SHORT = "Один код. Стор. CraftShift. Разговор."
+SHORT = "2.0.0 · дверь · Access 3 290 ₽"
 NAME = "Metrix"

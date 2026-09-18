@@ -48,6 +48,8 @@ def test_hits_and_private():
     flat = str(nav)
     assert "m:hits" in flat
     assert "#hits" in flat
+    assert "m:cross" in flat
+    assert "v=hl2" in flat
     h = format_hit(weekly_hit(0))
     assert "Не рекомендация сделки" in h
     assert len(h) > 400

@@ -92,6 +92,15 @@ def _webapp() -> str:
     return raw
 
 
+def webapp_open(webapp: str, view: str = "") -> str:
+    """Mini App URL with cache buster. Telegram WebView otherwise keeps old HTML."""
+    base = (webapp or "").split("?")[0].split("#")[0].rstrip("/") + "/"
+    url = base + "?v=hl2"
+    if view:
+        url += "#" + view.lstrip("#")
+    return url
+
+
 def main_keyboard() -> dict:
     return {
         "keyboard": [
@@ -104,8 +113,7 @@ def main_keyboard() -> dict:
 
 
 def webapp_row(webapp: str) -> list[dict]:
-    url = webapp if "#" in webapp else webapp.rstrip("/") + "/#store"
-    return [{"text": "Открыть стор", "web_app": {"url": url}}]
+    return [{"text": "Открыть стор", "web_app": {"url": webapp_open(webapp, "store")}}]
 
 
 def _tribute_url() -> str:
@@ -135,11 +143,14 @@ def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
             {"text": "Стор", "callback_data": "m:store"},
             {"text": "CraftShift", "callback_data": "m:shift"},
         ],
-        [{"text": "Дверь", "callback_data": "m:door"}, {"text": "Обучение", "callback_data": "m:sub"}],
-        [{"text": "Приватка", "callback_data": "m:private"}],
+        [
+            {"text": "Дверь", "callback_data": "m:door"},
+            {"text": "Cross", "callback_data": "m:cross"},
+        ],
+        [{"text": "Обучение", "callback_data": "m:sub"}, {"text": "Приватка", "callback_data": "m:private"}],
         [{"text": "Ещё 5 комнат", "callback_data": "m:more"}],
         webapp_row(webapp),
-        [{"text": "Открыть хиты", "web_app": {"url": webapp.rstrip("/") + "/#hits"}}],
+        [{"text": "Открыть хиты", "web_app": {"url": webapp_open(webapp, "hits")}}],
         subscribe_row(),
         [{"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"}],
     ]
@@ -302,7 +313,7 @@ class BotAPI:
             )
             self.send(
                 chat_id,
-                "Один код. Стор. CraftShift. Хит. Кнопки под этим сообщением.",
+                "2.0.0 HEAVY LAUNCH. Access 3 290 · пилот 45 000 · Cross 80 000. Кнопки ниже.",
                 markup=kb,
                 html=False,
             )
@@ -310,7 +321,7 @@ class BotAPI:
         self.send(chat_id, texts.START, markup=main_keyboard())
         self.send(
             chat_id,
-            "In-Out Chain · AI Teammates · Artefacts — кнопки под этим сообщением.",
+            "2.0.0 HEAVY LAUNCH. Access 3 290 · пилот 45 000 · Cross 80 000. Кнопки ниже.",
             markup=kb,
             html=False,
         )
@@ -320,7 +331,7 @@ def bootstrap(api: BotAPI, webapp: str) -> None:
     api.call("deleteWebhook", drop_pending_updates=False)
     api.call(
         "setChatMenuButton",
-        menu_button={"type": "web_app", "text": "Хит", "web_app": {"url": webapp + "#hits"}},
+        menu_button={"type": "web_app", "text": "Хит", "web_app": {"url": webapp_open(webapp, "hits")}},
     )
     api.call(
         "setMyCommands",
