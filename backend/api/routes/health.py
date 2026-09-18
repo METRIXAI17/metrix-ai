@@ -39,6 +39,8 @@ def health() -> dict:
         "closer": True,
         "sections": ["landing", "engine", "making"],
         "release": __release__,
+        "contours": True,
+        "heavy_launch": True,
     }
 
 

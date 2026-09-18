@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Metrix · контуры</title>
+    <meta name="description" content="Eval, Flight Recorder, Process OS, on-prem, devices. DEMO DATA until a contour is led." />
+    <link rel="stylesheet" href="../css/styles.css?v=hl1" />
+    <link rel="icon" href="../assets/metrix-brand-m.jpg" type="image/jpeg" />
+    <style>
+      .ct-wrap { max-width: 1120px; margin: 0 auto; padding: 88px 20px 64px; }
+      .ct-modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 28px; }
+      .ct-modes button { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: 8px 14px; cursor: pointer; font: inherit; }
+      .ct-modes button.on { border-color: var(--accent); color: var(--accent); }
+      .ct-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      .ct-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+      .ct-card h3 { font-size: 1.05rem; margin: 0 0 8px; }
+      .ct-card p, .ct-card li { color: var(--text-muted); font-size: 0.92rem; }
+      .ct-banner { border: 1px solid var(--gold); color: var(--gold); padding: 8px 12px; border-radius: 10px; margin-bottom: 16px; font-size: 0.85rem; }
+      textarea, input { width: 100%; background: #0b1017; color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font: inherit; }
+      pre { white-space: pre-wrap; font-family: var(--mono); font-size: 0.78rem; color: var(--text-muted); max-height: 420px; overflow: auto; }
+      .ct-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <nav class="nav" aria-label="Main">
+      <div class="nav-inner">
+        <a href="../" class="logo">
+          <span class="logo-text">Metrix <span>AI</span></span>
+        </a>
+        <div class="nav-links">
+          <a href="../">Сайт</a>
+          <a href="https://t.me/karimmetrixbot">Бот</a>
+          <a href="https://x.com/karimmetrix">@karimmetrix</a>
+        </div>
+      </div>
+    </nav>
+    <main class="ct-wrap">
+      <div class="eyebrow">Контуры</div>
+      <h1>Пять контуров. Три цены. Один поток.</h1>
+      <p class="how-lead">Eval · полёт · процесс · on-prem · устройства. C4/C5 за флагом. Не next-gen платформа.</p>
+      <div class="ct-modes" role="tablist">
+        <button type="button" class="on" data-v="client">Client</button>
+        <button type="button" data-v="operator">Operator</button>
+        <button type="button" data-v="workflow">Workflow</button>
+        <button type="button" data-v="eval">Eval</button>
+        <button type="button" data-v="process">Process</button>
+        <button type="button" data-v="devices">Devices</button>
+        <button type="button" data-v="partners">Partners</button>
+        <button type="button" data-v="cross">Cross</button>
+      </div>
+      <div id="banner" class="ct-banner" hidden>DEMO DATA</div>
+      <div id="view"></div>
+    </main>
+    <script>
+      const API = (window.METRIX_RUNTIME && window.METRIX_RUNTIME.apiBaseUrl)
+        || "https://metrix-ai-production.up.railway.app";
+      const $ = (s) => document.querySelector(s);
+      const view = $("#view");
+      const banner = $("#banner");
+      async function api(path, opts) {
+        const r = await fetch(API + path, Object.assign({
+          headers: { "Content-Type": "application/json", "X-Metrix-Tenant": "public" },
+        }, opts || {}));
+        const t = await r.text();
+        try { return JSON.parse(t); } catch { return { raw: t, status: r.status }; }
+      }
+      function card(title, body) {
+        return `<article class="ct-card"><h3>${title}</h3>${body}</article>`;
+      }
+      function pre(obj) { return `<pre>${escapeHtml(JSON.stringify(obj, null, 2))}</pre>`; }
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+      }
+      const screens = {
+        async client() {
+          const d = await api("/api/v1/contours/client-view");
+          banner.hidden = !d.demo_data;
+          const skus = (d.skus || []).map((s) =>
+            `<li><b>${escapeHtml(s.name)}</b> — ${s.price_rub} ₽ · не входит: ${(s.not_included||[]).join(", ")}</li>`
+          ).join("");
+          view.innerHTML = `<div class="ct-grid">
+            ${card("Исход", "<p>Именованная цифра понедельника. Не «AI features».</p>")}
+            ${card("SLA", pre(d.sla || {}))}
+            ${card("Цены", `<ul>${skus}</ul>`)}
+          </div>`;
+        },
+        async operator() {
+          const d = await api("/api/v1/contours/operator-view");
+          banner.hidden = true;
+          view.innerHTML = `<div class="ct-grid">
+            ${card("Nodes / spread", pre({ nodes: d.nodes, spread: d.spread }))}
+            ${card("Flight", pre(d.flight))}
+            ${card("Kill-switch", pre(d.kill || { state: "STATE_OK" }))}
+          </div>`;
+        },
+        async workflow() {
+          const d = await api("/api/v1/contours/onprem/catalog");
+          view.innerHTML = card("Enterprise pipeline", pre(d)) +
+            `<p class="how-lead" style="margin-top:12px">OutcomeContract обязателен до Stage 1.</p>`;
+        },
+        async eval() {
+          view.innerHTML = card("Eval", `
+            <p>Четыре оси. Один knob за прогон.</p>
+            <div class="ct-row"><button type="button" class="btn btn-primary" id="run-eval">Запустить ds_access_v1</button></div>
+            <div id="eval-out"></div>`);
+          $("#run-eval").onclick = async () => {
+            await api("/api/v1/contours/eval/seed", { method: "POST", body: "{}" });
+            const r = await api("/api/v1/contours/eval/runs", {
+              method: "POST",
+              body: JSON.stringify({ dataset_id: "ds_access_v1", param_snapshot: { engine: "orient-v1" } }),
+            });
+            $("#eval-out").innerHTML = pre(r.axes || r);
+          };
+        },
+        async process() {
+          view.innerHTML = card("Process OS", `
+            <p>Сначала OutcomeContract. Потом заявка.</p>
+            <div class="ct-row">
+              <button type="button" class="btn btn-primary" id="bind">Связать исход</button>
+              <button type="button" class="btn btn-ghost" id="lead">Заявка</button>
+              <button type="button" class="btn btn-ghost" id="mon">Понедельник</button>
+            </div>
+            <div id="pr-out"></div>`);
+          $("#bind").onclick = async () => {
+            const r = await api("/api/v1/contours/process/outcome", {
+              method: "POST",
+              body: JSON.stringify({
+                project_id: "default",
+                named_observable: "monday leak %",
+                baseline: "unknown",
+                target: "<10%",
+                measurement: "weekly report",
+                exclusions: "ads",
+                acceptance_test: "named owner + number",
+              }),
+            });
+            $("#pr-out").innerHTML = pre(r);
+          };
+          $("#lead").onclick = async () => {
+            const r = await api("/api/v1/contours/process/leads", {
+              method: "POST",
+              body: JSON.stringify({ source: "site", text: "заявка с сайта, нет хозяина" }),
+            });
+            $("#pr-out").innerHTML = pre(r);
+          };
+          $("#mon").onclick = async () => {
+            $("#pr-out").innerHTML = pre(await api("/api/v1/contours/process/monday"));
+          };
+        },
+        async devices() {
+          const d = await api("/api/v1/contours/map");
+          const on = d.flags && d.flags.ENABLE_COLD_CHAIN;
+          view.innerHTML = card("Devices", on
+            ? "<p>Флаг включён. Реестр и proof-of-condition через API.</p>"
+            : "<p>ENABLE_COLD_CHAIN выключен. Пустое состояние, платформа жива.</p>");
+        },
+        async partners() {
+          const t = await api("/api/v1/contours/partners/templates");
+          view.innerHTML = card("GTM", pre(Object.keys(t.templates || {})));
+        },
+        async cross() {
+          view.innerHTML = card("Cross", `
+            <textarea id="cq" rows="3" placeholder="касса, eval, дверь…"></textarea>
+            <div class="ct-row"><button type="button" class="btn btn-primary" id="go">Искать и упаковать в ключи</button></div>
+            <div id="cx"></div>`);
+          $("#go").onclick = async () => {
+            const r = await api("/api/v1/contours/cross", {
+              method: "POST",
+              body: JSON.stringify({ text: $("#cq").value || "касса eval дверь" }),
+            });
+            $("#cx").innerHTML = pre({ pick: r.assistant, keys: r.packed, options: r.options });
+          };
+        },
+      };
+      document.querySelectorAll(".ct-modes button").forEach((b) => {
+        b.onclick = () => {
+          document.querySelectorAll(".ct-modes button").forEach((x) => x.classList.toggle("on", x === b));
+          screens[b.dataset.v]();
+        };
+      });
+      screens.client();
+    </script>
+  </body>
+</html>

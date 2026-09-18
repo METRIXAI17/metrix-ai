@@ -759,6 +759,27 @@
 
   function tariffCtaMeta(tier) {
     const cta = tier.cta || "request";
+    if (cta === "access") {
+      return {
+        mode: "request",
+        label: t("cta_earn") || "Access",
+        active: true,
+      };
+    }
+    if (cta === "pilot") {
+      return {
+        mode: "request",
+        label: t("cta_consult") || "Pilot",
+        active: true,
+      };
+    }
+    if (cta === "cross") {
+      return {
+        mode: "generate",
+        label: t("cta_generate") || "Cross",
+        active: true,
+      };
+    }
     if (cta === "generate") {
       return {
         mode: "generate",

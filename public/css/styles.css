@@ -38,9 +38,9 @@ html {
 body {
   font-family: var(--font);
   background:
-    radial-gradient(110% 70% at 6% -8%, rgba(45, 212, 191, 0.14), transparent 44%),
-    radial-gradient(80% 50% at 96% 4%, rgba(56, 189, 248, 0.09), transparent 42%),
-    radial-gradient(70% 40% at 50% 108%, rgba(94, 234, 212, 0.06), transparent 48%),
+    radial-gradient(110% 70% at 6% -8%, rgba(45, 212, 191, 0.09), transparent 44%),
+    radial-gradient(80% 50% at 96% 4%, rgba(56, 189, 248, 0.05), transparent 42%),
+    radial-gradient(70% 40% at 50% 108%, rgba(94, 234, 212, 0.04), transparent 48%),
     var(--bg);
   color: var(--text);
   line-height: 1.55;
@@ -331,10 +331,7 @@ textarea {
 
 .hero h1 em {
   font-style: normal;
-  background: linear-gradient(120deg, #5eead4, #38bdf8, #c4b5fd);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent);
 }
 
 .hero-lead {

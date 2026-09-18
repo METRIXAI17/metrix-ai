@@ -78,6 +78,17 @@ LIBRARIES: dict[str, dict[str, Any]] = {
             {"id": "cb_super_program", "concept": "Six Deep Tech components", "apply": "Excel SYNTHESIS…LEDGER"},
         ],
     },
+    "spiritual": {
+        "title": "Spiritual library (attention / void / calm — not natal)",
+        "entries": [
+            {"id": "sp_attention_as_capital", "concept": "Attention as capital", "apply": "named slots; cash counts what is named"},
+            {"id": "sp_void_is_slot", "concept": "Void is an empty slot", "apply": "owner, number, acceptance — not mysticism"},
+            {"id": "sp_calm_point", "concept": "Calm is a led contour", "apply": "empty Monday numbers are a hole, not peace"},
+            {"id": "sp_assembly_not_heat", "concept": "Assembly ≠ heat", "apply": "fit of conditions before tone"},
+            {"id": "sp_world_to_enter", "concept": "A world people want to enter", "apply": "door and rooms, not an ecosystem slogan"},
+            {"id": "sp_silence_between", "concept": "Air between places", "apply": "do not sell the air; do not trade it"},
+        ],
+    },
 }
 
 

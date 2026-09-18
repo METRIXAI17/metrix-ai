@@ -371,7 +371,22 @@ MONETIZATION = {
     "full_package": {
         "name": "Full Orientation Package",
         "base_price_usd": 2490,
-        "description": "Product + Models + Promotion + implement path.",
+        "description": "Product + Models + Promotion + implement path. After a named pilot — not Access.",
+    },
+    "access_month": {
+        "name": "Metrix Access",
+        "price_rub": 3290,
+        "description": "Door + rooms + eval. 40 results / month.",
+    },
+    "custom_spec_pilot": {
+        "name": "Custom spec pilot",
+        "price_rub": 45000,
+        "description": "Recursive conclusions under the hood. Named void and gate.",
+    },
+    "cross_assist": {
+        "name": "Cross assist solution",
+        "price_rub": 80000,
+        "description": "Search proposed options with assistant. Packed into keys.",
     },
     "policy": {
         "expert_ideas_free": True,

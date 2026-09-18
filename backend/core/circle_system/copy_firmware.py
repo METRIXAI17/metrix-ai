@@ -27,6 +27,16 @@ FORBIDDEN = (
     "гороскоп цены",
     "pilot всегда успешен",
     "main без пилота",
+    "ai-powered",
+    "unlock your potential",
+    "leverage synergy",
+    "cutting-edge",
+    "next-generation",
+    "next-gen platform",
+    "empower your team",
+    "transform your business",
+    "scale effortlessly",
+    "ecosystem of solutions",
 )
 
 CANONICAL = (

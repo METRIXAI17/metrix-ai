@@ -36,6 +36,7 @@ backend/data/chains/
 public/cases/*.html
 backend/data/entitlements/
 backend/data/quota/
+backend/data/contours/
 backend/data/miniapp/hits.json
 docs/_probe*
 docs/screenshot_*.png

@@ -71,6 +71,9 @@ ALIASES = {
     "обучен": "sub",
     "приватка": "private",
     "private": "private",
+    "cross": "cross",
+    "кросс": "cross",
+    "ключи": "cross",
 }
 
 

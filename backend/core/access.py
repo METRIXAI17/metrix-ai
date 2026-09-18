@@ -40,6 +40,9 @@ PAID_FEATURES = frozenset(
         "store",
         "craftshift",
         "think_more",
+        "eval",
+        "cross",
+        "flight",
     }
 )
 # Live market snapshot: Access includes it, does not debit the 40.

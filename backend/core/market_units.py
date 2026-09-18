@@ -27,6 +27,29 @@ MARKET_UNITS_VERSION = "2026-08-02-v2"
 
 # ── Client-facing package ladder (showcase) ────────────────────────────────
 
+HEAVY_LAUNCH_SKUS: dict[str, dict[str, Any]] = {
+    "access_month": {
+        "sku": "access_month",
+        "name": "Metrix Access",
+        "price_rub": 3290,
+        "includes": ["eval", "door", "store", "craftshift", "conversation"],
+        "runs": 40,
+    },
+    "custom_spec_pilot": {
+        "sku": "custom_spec_pilot",
+        "name": "Custom spec pilot",
+        "price_rub": 45000,
+        "includes": ["recursive_conclusions", "named_void", "gate", "acceptance"],
+    },
+    "cross_assist": {
+        "sku": "cross_assist",
+        "name": "Cross assist solution",
+        "price_rub": 80000,
+        "includes": ["query_search", "assistant_pick", "packed_keys"],
+    },
+}
+
+
 PACKAGE_PRICING: dict[str, dict[str, Any]] = {
     "orientation_run": {
         "sku": "orientation_run",

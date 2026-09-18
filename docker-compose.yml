@@ -1,0 +1,50 @@
+# Local stack: API + Postgres/Timescale + Redis + static web.
+# Production remains Railway Dockerfile (JSON store). Flags:
+#   ENABLE_COMPUTE_BROKER=1 ENABLE_COLD_CHAIN=1
+services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_USER: metrix
+      POSTGRES_PASSWORD: metrix
+      POSTGRES_DB: metrix
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docs/CONTOURS_SQL.sql:/docker-entrypoint-initdb.d/01.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metrix"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      METRIX_DEBUG: "1"
+      METRIX_ENV: local
+      METRIX_CORS: "http://localhost:8080,http://127.0.0.1:8080,http://localhost:8787"
+      ENABLE_COMPUTE_BROKER: "1"
+      ENABLE_COLD_CHAIN: "1"
+      PORT: "8787"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+    depends_on:
+      - api

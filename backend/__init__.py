@@ -5,7 +5,7 @@ Metrix AI (KARIM METRIX) — Operational Analytical System backend.
 Главный акцент: простой, прозрачный пайплайн обработки клиентских запросов.
 """
 
-__version__ = "1.9.0"
+__version__ = "2.0.0"
 __brand__ = "Metrix AI"
-__codename__ = "DOOR STORE"
-__release__ = "2026-09-12-door-store-craftshift"
+__codename__ = "HEAVY LAUNCH"
+__release__ = "2026-09-18-heavy-launch"

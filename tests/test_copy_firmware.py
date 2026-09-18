@@ -25,6 +25,10 @@ def test_forbidden_stripped():
     low = t.lower()
     assert "guarantee" not in low
     assert "risk-free" not in low
+    t2 = fw.strip_forbidden("ai-powered next-generation unlock your potential")
+    low2 = t2.lower()
+    assert "ai-powered" not in low2
+    assert "unlock your potential" not in low2
 
 
 def test_three_voices():

@@ -332,6 +332,7 @@ def bootstrap(api: BotAPI, webapp: str) -> None:
             {"command": "shift", "description": "CraftShift"},
             {"command": "door", "description": "Код двери"},
             {"command": "access", "description": "Access · 3 290 ₽"},
+            {"command": "cross", "description": "Cross · ключи"},
         ],
     )
     api.call("setMyDescription", description=texts.DESC)
@@ -383,6 +384,14 @@ def _run_section(api: BotAPI, chat_id: int, section: str, brief: str, **kw) -> N
         feat = "watch"
     if not _gate(api, chat_id, feat, _webapp()):
         return
+    try:
+        from backend.core.access import is_entitled as _ent
+        from backend.contours.eval_protocol import access_eval as _ae
+
+        if _ent(subject_hash(chat_id)).get("ok"):
+            _ae(brief, tenant_id=subject_hash(chat_id)[:24])
+    except Exception:
+        pass
     api.send(chat_id, "Собираю…")
     try:
         art = run_mode(section, brief, strategy=kw.get("strategy"))
@@ -649,8 +658,9 @@ def show_more(api: BotAPI, chat_id: int, webapp: str) -> None:
             {"text": "Агенты", "callback_data": "m:target"},
             {"text": "Каталог товара", "callback_data": "m:shop"},
         ],
+        [{"text": "Cross · ключи", "callback_data": "m:cross"}],
     ]
-    api.send(chat_id, "Старые пять комнат — если нужны.", markup=nav_inline(webapp, extra=extra), html=False)
+    api.send(chat_id, "Старые пять комнат — если нужны. Cross пакует запрос в ключи.", markup=nav_inline(webapp, extra=extra), html=False)
 
 
 def show_making(api: BotAPI, chat_id: int, webapp: str) -> None:
@@ -664,6 +674,11 @@ def show_access(api: BotAPI, chat_id: int, webapp: str) -> None:
 
 def show_demo_prompt(api: BotAPI, chat_id: int, webapp: str) -> None:
     show_chain(api, chat_id, webapp)
+
+
+def show_cross(api: BotAPI, chat_id: int, webapp: str) -> None:
+    sessions.set_mode(chat_id, "await_cross")
+    api.send(chat_id, texts.ASK_CROSS, markup=nav_inline(webapp), html=False)
 
 
 def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
@@ -713,6 +728,9 @@ def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
     if action == "private":
         show_private(api, chat_id, webapp)
         return
+    if action == "cross":
+        show_cross(api, chat_id, webapp)
+        return
 
 
 def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
@@ -750,6 +768,7 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
             "hits": "hits",
             "sub": "sub",
             "private": "private",
+            "cross": "cross",
         }.get(data.split(":", 1)[1])
         if action:
             dispatch_menu(api, chat_id, action, webapp)
@@ -953,6 +972,26 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
         sessions.set_mode(chat_id, "idle")
         return
 
+    if mode == "await_cross":
+        if not _gate(api, chat_id, "cross", webapp):
+            return
+        from backend.contours.heavy_launch import cross_search
+
+        packed = cross_search(raw)
+        pick = packed.get("assistant") or {}
+        keys = (packed.get("packed") or {}).get("keys") or {}
+        lines = [
+            f"<b>Cross</b> · {_esc(pick.get('pick') or '—')}",
+            _esc(pick.get("reason_ru") or ""),
+            f"SKU: {_esc(pick.get('sku') or '')}",
+            "",
+            "Ключи:",
+        ]
+        for k, v in list(keys.items())[:5]:
+            lines.append(f"· <code>{_esc(k)}</code> — {_esc((v or {}).get('hint_ru') or '')}")
+        api.send(chat_id, "\n".join(lines), markup=nav_inline(webapp))
+        sessions.set_mode(chat_id, "idle")
+        return
     if mode in ("await_demo", "await_landing", "await_life"):
         _run_section(api, chat_id, "life", raw)
         return

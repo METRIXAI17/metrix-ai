@@ -53,6 +53,12 @@ def test_hits_and_private():
     assert len(h) > 400
 
 
+def test_cross_alias():
+    assert menu_action("cross") == "cross"
+    assert menu_action("/cross") == "cross"
+    assert menu_action("ключи") == "cross"
+
+
 def test_not_a_menu():
     assert menu_action("SaaS 80 человек без экономики") is None
     assert menu_action("") is None

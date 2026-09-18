@@ -23,13 +23,13 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend import __brand__, __codename__, __version__
-from backend.api.routes import analytics, fin_models, health, miniapp, requests, store, zones
+from backend.api.routes import analytics, contours, fin_models, health, miniapp, requests, store, zones
 from backend.config import API_PREFIX, CORS_ORIGINS, DEBUG, ENV_NAME, HOST, PORT
 from backend.security import install_security
 
@@ -76,6 +76,22 @@ app.include_router(zones.router, prefix=API_PREFIX)
 app.include_router(analytics.router, prefix=API_PREFIX)
 app.include_router(miniapp.router, prefix=API_PREFIX)
 app.include_router(store.router, prefix=API_PREFIX)
+app.include_router(contours.router, prefix=API_PREFIX)
+
+
+@app.post("/v1/chat/completions")
+def openai_compat_chat(
+    request_body: dict,
+    x_metrix_tenant: str | None = Header(default=None),
+):
+    """OpenAI-compatible alias for the compute broker (flagged). 503 if flag off."""
+    from backend.api.routes.contours import ChatBody, broker_chat
+
+    body = ChatBody(
+        messages=list(request_body.get("messages") or []),
+        stream=bool(request_body.get("stream")),
+    )
+    return broker_chat(body, x_metrix_tenant)
 
 # Serve static frontend (Vercel uses public/; local API mounts same tree at /app)
 _frontend = _ROOT / "public"
