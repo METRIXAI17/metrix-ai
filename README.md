@@ -4,7 +4,7 @@
 
 Один код. Дверь и комнаты одного потока. Не чат, не каталог идей.
 
-Публичный голос: [@karimmetrix](https://x.com/karimmetrix) · бот [@karimmetrixbot](https://t.me/karimmetrixbot)
+Публичный голос: [@karimmetrix](https://x.com/karimmetrix) · бот [@metrix_ai_bot](https://t.me/metrix_ai_bot)
 
 | | |
 |---|---|

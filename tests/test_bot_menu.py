@@ -26,10 +26,10 @@ def test_commands_and_bot_suffix():
     assert menu_action("/life") == "life"
     assert menu_action("/chain") == "life"
     assert menu_action("/landing") == "life"
-    assert menu_action("/engine@karimmetrixbot") == "craft"
+    assert menu_action("/engine@metrix_ai_bot") == "craft"
     assert menu_action("/making") == "shop"
     assert menu_action("/bots") == "bots"
-    assert menu_action("/strategies@karimmetrixbot") == "bots"
+    assert menu_action("/strategies@metrix_ai_bot") == "bots"
     assert menu_action("/agents") == "target"
     assert menu_action("/start") == "start"
 

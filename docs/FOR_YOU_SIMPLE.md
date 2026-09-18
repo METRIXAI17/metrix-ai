@@ -76,8 +76,8 @@ Railway → твой сервис `metrix-ai` → **Variables** → New variable
 
 | Имя | Что это | Откуда взять |
 |---|---|---|
-| `TELEGRAM_BOT_TOKEN` | Пароль бота | Telegram → **@BotFather** → твой бот → API Token. Уже может стоять. |
-| `TELEGRAM_WEBAPP_URL` | Ссылка Mini App | `https://metrix-ai.vercel.app/tg/` |
+| `TELEGRAM_BOT_TOKEN` | Секрет бота | @BotFather → @metrix_ai_bot → API Token. Старый токен @karimmetrixbot не подходит. |
+| `TELEGRAM_WEBAPP_URL` | Ссылка Mini App | `https://metrix-ai-production.up.railway.app/tg/` |
 | `METRIX_PUBLIC_URL` | Адрес API | `https://metrix-ai-production.up.railway.app` |
 | `METRIX_TOKEN_SECRET` | Секрет для HMAC (не пароль Tribute) | Сам придумай длинную строку. В PowerShell: `[guid]::NewGuid().ToString("N")+[guid]::NewGuid().ToString("N")`. Вставь как есть. Никому не отправляй. |
 | `TRIBUTE_API_KEY` | Ключ Tribute | Telegram → бот **Tribute** → кабинет автора → ⋯ Settings → API Keys → Generate. |

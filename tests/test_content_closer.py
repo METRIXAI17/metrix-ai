@@ -55,7 +55,7 @@ def test_menu_three_sections():
     assert menu_action("Движок") == "craft"
     assert menu_action("Мейкинг") == "shop"
     assert menu_action("/landing") == "life"
-    assert menu_action("/engine@karimmetrixbot") == "craft"
+    assert menu_action("/engine@metrix_ai_bot") == "craft"
     assert menu_action("/making") == "shop"
     assert menu_action("Демо") == "life"
     assert menu_action("Стратегии") == "bots"
