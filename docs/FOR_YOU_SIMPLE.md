@@ -76,7 +76,7 @@ Railway → твой сервис `metrix-ai` → **Variables** → New variable
 
 | Имя | Что это | Откуда взять |
 |---|---|---|
-| `TELEGRAM_BOT_TOKEN` | Секрет бота | @BotFather → @metrix_ai_bot → API Token. Старый токен @karimmetrixbot не подходит. |
+| `TELEGRAM_BOT_TOKEN` | Секрет бота | @BotFather → @karimmetrixbot → API Token. |
 | `TELEGRAM_WEBAPP_URL` | Ссылка Mini App | `https://metrix-ai-production.up.railway.app/tg/` |
 | `METRIX_PUBLIC_URL` | Адрес API | `https://metrix-ai-production.up.railway.app` |
 | `METRIX_TOKEN_SECRET` | Секрет для HMAC (не пароль Tribute) | Сам придумай длинную строку. В PowerShell: `[guid]::NewGuid().ToString("N")+[guid]::NewGuid().ToString("N")`. Вставь как есть. Никому не отправляй. |

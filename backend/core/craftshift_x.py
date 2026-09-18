@@ -42,7 +42,7 @@ def run(brief: str, *, kind: str = "both") -> dict[str, Any]:
         "Shot 4 (6s): X post appears as an object on the desk, then a video frame.\n"
         "Shot 5 (8s): door code stamps into brass. VO: «создано в том числе с помощью "
         "производного проекта от ИИ Metrix AI — CraftShift».\n"
-        "End card: mtrx.ai/store · t.me/metrix_ai_bot · @karimmetrix\n"
+        "End card: mtrx.ai/store · t.me/karimmetrixbot · @karimmetrix\n"
         "Voice: quiet, no guru, no yield promise. Friendship is the door."
     )
     art = {

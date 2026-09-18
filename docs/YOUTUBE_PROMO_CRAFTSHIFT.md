@@ -18,7 +18,7 @@ Shot 4 (6s): an X post appears as a physical object on the desk, then a video fr
 
 Shot 5 (8s): a 6-character brass door code stamps in. VO in Russian: «Один код. Семь комнат. Друг не спрашивает паспорт дважды. Создано в том числе с помощью производного проекта от ИИ Metrix AI.»
 
-End card: metrix-ai.vercel.app/store · t.me/metrix_ai_bot · @karimmetrix
+End card: metrix-ai.vercel.app/store · t.me/karimmetrixbot · @karimmetrix
 Domains to own later: mtrx.ai · mx.store
 
 Voice: Karim, short sentences. No platform names. No $10k MRR.
@@ -26,4 +26,4 @@ Voice: Karim, short sentences. No platform names. No $10k MRR.
 ## Title / description
 
 Title: Один код. Семь комнат.
-Description: Metrix Store + CraftShift. Производная Metrix AI для постов в X и видео. Бот: @metrix_ai_bot
+Description: Metrix Store + CraftShift. Производная Metrix AI для постов в X и видео. Бот: @karimmetrixbot

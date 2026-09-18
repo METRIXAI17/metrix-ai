@@ -48,7 +48,7 @@ def test_menu_five_formal_tabs():
     assert menu_action("Движок") == "craft"
     assert menu_action("Мейкинг") == "shop"
     assert menu_action("/chain") == "life"
-    assert menu_action("/teammates@metrix_ai_bot") == "craft"
+    assert menu_action("/teammates@karimmetrixbot") == "craft"
 
 
 def test_four_models_and_legal_copy():
