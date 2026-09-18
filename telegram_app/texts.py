@@ -111,4 +111,7 @@ ASK_HITS = (
 
 DESC = HELP[:120]
 SHORT = "2.0.0 · дверь · Access 3 290 ₽"
-NAME = "Metrix"
+NAME = "Метрикс АИ бот"
+# Telegram @username is Latin-only and is set in @BotFather, not here.
+# Target handle after BotFather: metrix_ai_bot  (кириллица метрикс_аи_бот недопустима)
+USERNAME = "karimmetrixbot"

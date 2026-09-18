@@ -348,7 +348,7 @@ def bootstrap(api: BotAPI, webapp: str) -> None:
     )
     api.call("setMyDescription", description=texts.DESC)
     api.call("setMyShortDescription", short_description=texts.SHORT)
-    api.call("setMyName", name=texts.NAME)
+    api.call("setMyName", name=texts.NAME)  # display name, not @username
 
 
 def _send_artifact(api: BotAPI, chat_id: int, art: dict) -> None:
