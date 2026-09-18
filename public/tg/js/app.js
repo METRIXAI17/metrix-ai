@@ -461,7 +461,7 @@
         '<p class="lead">Промпт своими словами. Потом оценка: зашло / почти / мимо. Контроль рисков — отдельная карточка, не внутри бота.</p>';
     } else if (sid === "life") {
       vitrine =
-        '<article class="paid-agitate" style="margin-bottom:1rem"><p class="eyebrow">Демо</p><h3>Назовите дыру — соберу объект.</h3><p>Два раза бесплатно. Третий — Access 3 290 ₽: контур ведут, понедельник не пустой.</p></article>' +
+        '<article class="paid-agitate" style="margin-bottom:1rem"><p class="eyebrow">Демо</p><h3>Ситуация своими словами — объект на выходе.</h3><p>Два раза бесплатно. Три продукта: Access 3 290 ₽ · пилот 45 000 ₽ · Cross 80 000 ₽.</p></article>' +
         '<div class="eyebrow section-label">Витрина</div><div class="grid grid-cards">' +
         '<article class="card card-flag"><span class="tag">касса</span><h3>Цифра понедельника</h3><p>Что сгорело — по имени.</p></article>' +
         '<article class="card card-flag"><span class="tag">хозяин</span><h3>Статус</h3><p>N минут. Если не взяли — эскалация.</p></article>' +
