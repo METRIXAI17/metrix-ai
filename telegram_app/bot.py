@@ -95,7 +95,7 @@ def _webapp() -> str:
 def webapp_open(webapp: str, view: str = "") -> str:
     """Mini App URL with cache buster. Telegram WebView otherwise keeps old HTML."""
     base = (webapp or "").split("?")[0].split("#")[0].rstrip("/") + "/"
-    url = base + "?v=hl2"
+    url = base + "?v=hl3"
     if view:
         url += "#" + view.lstrip("#")
     return url
@@ -313,7 +313,7 @@ class BotAPI:
             )
             self.send(
                 chat_id,
-                "2.0.0 HEAVY LAUNCH. Access 3 290 · пилот 45 000 · Cross 80 000. Кнопки ниже.",
+                "Демо: напишите дыру. Два объекта. Дальше Access 3 290 ₽ — иначе понедельник пустой.",
                 markup=kb,
                 html=False,
             )
@@ -321,7 +321,7 @@ class BotAPI:
         self.send(chat_id, texts.START, markup=main_keyboard())
         self.send(
             chat_id,
-            "2.0.0 HEAVY LAUNCH. Access 3 290 · пилот 45 000 · Cross 80 000. Кнопки ниже.",
+            "Демо: напишите дыру. Два объекта. Дальше Access 3 290 ₽ — иначе понедельник пустой.",
             markup=kb,
             html=False,
         )

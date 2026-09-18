@@ -461,10 +461,11 @@
         '<p class="lead">Промпт своими словами. Потом оценка: зашло / почти / мимо. Контроль рисков — отдельная карточка, не внутри бота.</p>';
     } else if (sid === "life") {
       vitrine =
+        '<article class="paid-agitate" style="margin-bottom:1rem"><p class="eyebrow">Демо</p><h3>Назовите дыру — соберу объект.</h3><p>Два раза бесплатно. Третий — Access 3 290 ₽: контур ведут, понедельник не пустой.</p></article>' +
         '<div class="eyebrow section-label">Витрина</div><div class="grid grid-cards">' +
-        '<article class="card card-flag"><span class="tag">сон</span><h3>Сон и нагрузка</h3><p>Один шаг на сегодня, не план на месяц.</p></article>' +
-        '<article class="card card-flag"><span class="tag">деньги</span><h3>Касса дня</h3><p>Где деньги ломаются первым.</p></article>' +
-        '<article class="card card-flag"><span class="tag">дом</span><h3>Дом и ритм</h3><p>Что убрать, чтобы стало легче.</p></article></div>';
+        '<article class="card card-flag"><span class="tag">касса</span><h3>Цифра понедельника</h3><p>Что сгорело — по имени.</p></article>' +
+        '<article class="card card-flag"><span class="tag">хозяин</span><h3>Статус</h3><p>N минут. Если не взяли — эскалация.</p></article>' +
+        '<article class="card card-flag"><span class="tag">Access</span><h3>Стена</h3><p>Без подписки контур снова пустой.</p></article></div>';
     } else if (sid === "craft") {
       vitrine =
         '<div class="eyebrow section-label">Витрина конфигов</div><div class="grid grid-cards">' +

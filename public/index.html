@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Metrix AI — собрать заказ, не слить часы. Контур: вход → статус → отчёт → повтор. В понедельник видно, что не сгорело."
+      content="Metrix AI — объект из ситуации. Два демо бесплатно. Дальше Access: контур, касса, понедельник."
     />
-    <meta name="theme-color" content="#0c1219" />
-    <meta property="og:title" content="Metrix AI — собрать заказ" />
+    <meta name="theme-color" content="#070a0f" />
+    <meta property="og:title" content="Metrix AI — объект, не чат" />
     <meta
       property="og:description"
-      content="Собрать заказ. Не слить часы. Дыра и отчёт раньше трубы. Трафик не растим."
+      content="Назовите дыру. Соберите объект. Если зашло — Access. Если нет — не продаём «ещё чат»."
     />
     <meta property="og:image" content="assets/metrix-brand-m.jpg" />
-    <title>Metrix AI — собрать заказ</title>
-    <link rel="stylesheet" href="css/styles.css?v=hl2" />
+    <title>Metrix AI — объект, не чат</title>
+    <link rel="stylesheet" href="css/styles.css?v=hl3" />
     <link rel="icon" href="assets/metrix-brand-m.jpg" type="image/jpeg" />
     <link rel="apple-touch-icon" href="assets/metrix-brand-m.jpg" />
   </head>
@@ -36,38 +36,25 @@
           <span class="logo-text">Metrix <span>AI</span></span>
         </a>
 
-        <div class="mode-switch mode-switch-wide" role="tablist" aria-label="Mode">
-          <button type="button" class="active" data-mode="marketplace" role="tab" aria-selected="true" data-i18n="nav_products">
-            Products
-          </button>
-          <button type="button" data-mode="request" role="tab" aria-selected="false" data-i18n="nav_consult">
-            Consult
-          </button>
-          <button type="button" data-mode="tasks" role="tab" aria-selected="false" data-i18n="nav_tasks">
-            Слоты
-          </button>
-          <button type="button" data-mode="generate" role="tab" aria-selected="false" class="mode-fire" data-i18n="nav_generate">
-            Сборка заказа
-          </button>
-          <button type="button" data-mode="promo" role="tab" aria-selected="false" data-i18n="nav_promo">
-            Promo
-          </button>
-          <button type="button" data-mode="funding" role="tab" aria-selected="false" data-i18n="nav_funding">
-            Funding
-          </button>
+        <div class="nav-core" aria-label="Путь">
+          <a href="#demo">Демо</a>
+          <a href="#world">Мир</a>
+          <a href="#system-map">Контур</a>
+          <a href="#pricing">Access</a>
+          <a href="https://t.me/karimmetrixbot">Бот</a>
+        </div>
+        <div class="mode-switch mode-switch-wide" role="tablist" aria-label="Mode" hidden>
+          <button type="button" class="active" data-mode="marketplace" role="tab" aria-selected="true">Products</button>
+          <button type="button" data-mode="request" role="tab" aria-selected="false">Consult</button>
+          <button type="button" data-mode="tasks" role="tab" aria-selected="false">Слоты</button>
+          <button type="button" data-mode="generate" role="tab" aria-selected="false" class="mode-fire">Сборка</button>
+          <button type="button" data-mode="promo" role="tab" aria-selected="false">Promo</button>
+          <button type="button" data-mode="funding" role="tab" aria-selected="false">Funding</button>
         </div>
 
         <div class="nav-links">
           <a href="/store/">Store</a>
           <a href="/craft/">CraftShift</a>
-          <a href="/contours/">Контуры</a>
-          <a href="https://metrix-ai-production.up.railway.app/tg/">Bot</a>
-          <a href="#made-with">Дверь</a>
-          <a href="#offer" data-i18n="nav_product">Продукт</a>
-          <a href="#flow" data-i18n="nav_system">Поток</a>
-          <a href="#niches" data-i18n="nav_niches">Слои потока</a>
-          <a href="#flagship-details" data-i18n="nav_flagships">Что получите</a>
-          <a href="#how" data-i18n="nav_path">Путь</a>
           <a href="#pricing" data-i18n="nav_pricing">Цены</a>
           <div class="lang-switch" role="group" aria-label="Language">
             <button type="button" class="lang-btn" data-lang="en" id="lang-en">EN</button>
@@ -80,13 +67,15 @@
 
     <main id="top">
       <header class="hero wrap">
-        <div class="hero-badge" data-i18n="hero_badge">2.0.0 · HEAVY LAUNCH · дверь, не чат</div>
+        <div class="hero-badge" data-i18n="hero_badge">Metrix · дверь в поток</div>
         <h1>
-          <span data-i18n="hero_h1a">Собрать заказ.</span><br />
-          <em data-i18n="hero_h1b">Не слить часы.</em>
+          <span data-i18n="hero_h1a">Назовите дыру.</span><br />
+          <em data-i18n="hero_h1b">Соберите объект.</em>
         </h1>
         <p class="hero-lead" id="master-offer-sub" hidden></p>
-        <p class="hero-sub2 hero-sub-shimmer" id="master-offer-sub2" data-i18n="hero_sub"></p>
+        <p class="hero-sub2 hero-sub-shimmer" id="master-offer-sub2" data-i18n="hero_sub">
+          Два демо бесплатно. Если объект зашёл — Access держит контур: вход, хозяин, понедельник. Если нет — не продаём чат.
+        </p>
         <ol class="chain-stepper" id="chain-stepper" aria-label="Контур">
           <li data-i18n="chain_step_1">Вход</li>
           <li data-i18n="chain_step_2">Статус</li>
@@ -94,30 +83,16 @@
           <li data-i18n="chain_step_4">Отчёт</li>
           <li data-i18n="chain_step_5">Повтор</li>
         </ol>
-        <p class="hero-sub2" data-i18n="chain_stepper_lead">Слои одного потока. Не список направлений.</p>
         <div class="hero-actions">
-          <button type="button" class="btn btn-primary" data-mode-jump="request" data-i18n="cta_earn">
-            Помощь в заработке
+          <button type="button" class="btn btn-primary" data-mode-jump="generate" data-i18n="cta_generate">
+            Собрать демо
           </button>
-          <button type="button" class="btn btn-ghost" data-mode-jump="generate" data-i18n="cta_generate">
-            Сборка заказа
-          </button>
-          <button type="button" class="btn btn-ghost" id="chain-start" data-i18n="cta_chain">
-            Собрать контур
-          </button>
-          <a class="btn btn-ghost" href="/store/">Store</a>
-          <a class="btn btn-ghost" href="/craft/">CraftShift</a>
-          <a class="btn btn-ghost" href="https://t.me/karimmetrixbot">Бот</a>
+          <a class="btn btn-ghost" href="https://t.me/karimmetrixbot">Бот · @karimmetrixbot</a>
+          <a class="btn btn-ghost" href="#pricing" data-i18n="cta_pricing">Access</a>
         </div>
         <p class="hero-sub2" id="sku-strip">
-          Access 3 290 ₽/мес · пилот 45 000 ₽ · Cross 80 000 ₽
+          2 бесплатных объекта · дальше 3 290 ₽ / мес
         </p>
-        <div class="geo-strip" aria-hidden="true">
-          <img src="assets/x-posts/sec-life.jpg" alt="" width="640" height="360" />
-          <img src="assets/x-posts/sec-bots.jpg" alt="" width="640" height="360" />
-          <img src="assets/x-posts/sec-craft.jpg" alt="" width="640" height="360" />
-          <img src="assets/x-posts/sec-shop.jpg" alt="" width="640" height="360" />
-        </div>
       </header>
 
       <section class="flow-band wrap" id="flow" aria-label="Контур">
@@ -132,6 +107,79 @@
           <li><span data-i18n="flow_5">Повтор</span><span data-i18n="flow_5s">Ретейнер на отчёте</span></li>
         </ol>
         <p class="how-lead" data-i18n="flow_lead">Каждый слой — перелив того же потока, не идея №5.</p>
+      </section>
+
+      <section class="section wrap" id="world">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Мир Metrix</div>
+            <h2>Три проекта. Четыре слоя. Один поток.</h2>
+            <p class="how-lead">
+              Не каталог продуктов. Сборка: финансы рисуют цифру, диптех убирает боль поддержки, бренд — дверь, в которую заходят.
+            </p>
+          </div>
+        </div>
+        <div class="world-scheme" id="world-scheme">
+          <div class="world-cols">
+            <article class="world-col" data-node="finance">
+              <span class="world-k">01</span>
+              <h3>Финансы</h3>
+              <p>Касса и понедельник. Что сгорело — по имени.</p>
+            </article>
+            <article class="world-col" data-node="deeptech">
+              <span class="world-k">02</span>
+              <h3>Диптех</h3>
+              <p>Eval, полёт, спека. Контур работает без героя.</p>
+            </article>
+            <article class="world-col" data-node="brand">
+              <span class="world-k">03</span>
+              <h3>Бренд</h3>
+              <p>Дверь и комнаты. Не слоган «AI-powered».</p>
+            </article>
+          </div>
+          <div class="world-layers">
+            <span>Чипы · роботизация</span>
+            <span>Маркеты · воронка</span>
+            <span>Продажи · лёгкое «купить»</span>
+            <span>Ценность · исход до stage 1</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section wrap" id="access-map">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Демо → Access</div>
+            <h2>Стена после двух объектов.</h2>
+            <p class="how-lead">Бесплатно — чтобы увидеть силу. Платно — чтобы контур вели, а не смотрели.</p>
+          </div>
+        </div>
+        <ol class="access-scheme">
+          <li>
+            <b>01 · Демо</b>
+            <span>Ситуация своими словами. Объект на выходе. Два раза.</span>
+          </li>
+          <li class="access-wall">
+            <b>Стена</b>
+            <span>Третий объект — Access. Без подписки контур не ведут.</span>
+          </li>
+          <li>
+            <b>02 · Access 3 290 ₽</b>
+            <span>40 результатов / мес. Eval на каждом. Дверь, стор, бот.</span>
+          </li>
+          <li>
+            <b>03 · Пилот 45 000 ₽</b>
+            <span>Именованная дыра. Рекурсия под капотом. Приёмка.</span>
+          </li>
+          <li>
+            <b>04 · Cross 80 000 ₽</b>
+            <span>Поиск среди предложенных. Упаковка в ключи.</span>
+          </li>
+        </ol>
+        <div class="hero-actions">
+          <button type="button" class="btn btn-primary" data-mode-jump="generate">Собрать демо</button>
+          <a class="btn btn-ghost" href="https://t.me/karimmetrixbot">Демо в боте</a>
+        </div>
       </section>
 
       <section class="section wrap" id="made-with">
@@ -424,6 +472,15 @@
             <div class="deliver-chip later" id="chip-author">Ретейнер и сдача · после оплаты</div>
             <div class="deliver-chip later" id="chip-gencore">Серия в замке стиля · после ответов</div>
           </div>
+          <aside class="paid-agitate" id="paid-agitate">
+            <p class="eyebrow">Стена</p>
+            <h3>Это демо. Контур ведут на Access.</h3>
+            <p>Два бесплатных объекта. Дальше 3 290 ₽ / месяц — иначе понедельник снова пустой.</p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="https://t.me/karimmetrixbot">Открыть Access в боте</a>
+              <a class="btn btn-ghost" href="#pricing">Три цены</a>
+            </div>
+          </aside>
 
           <div class="cr-cta-row free-dl-row" style="margin: 0.85rem 0">
             <button type="button" class="btn btn-ghost" id="gen-dl-csv">↓ Карточки CSV</button>
@@ -914,7 +971,7 @@
         };
       })();
     </script>
-    <script src="js/data.js?v=hl2"></script>
-    <script src="js/app.js?v=hl2"></script>
+    <script src="js/data.js?v=hl3"></script>
+    <script src="js/app.js?v=hl3"></script>
   </body>
 </html>

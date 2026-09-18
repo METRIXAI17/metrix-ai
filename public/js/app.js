@@ -86,6 +86,7 @@
     bindGenerate();
     bindPromo();
     bindFunding();
+    bindWorldScheme();
     startMarquee();
     loadServices();
 
@@ -95,7 +96,7 @@
     }
     const hashMode = (location.hash || "").replace(/^#/, "").toLowerCase();
     if (params.get("mode")) setMode(params.get("mode"));
-    else if (hashMode === "generate" || hashMode === "mode-generate") setMode("generate");
+    else if (hashMode === "generate" || hashMode === "mode-generate" || hashMode === "demo") setMode("generate");
     else if (hashMode === "tasks" || hashMode === "mode-tasks") setMode("tasks");
     else if (hashMode === "request" || hashMode === "consult") setMode("request");
     else if (hashMode === "funding" || hashMode === "mode-funding" || hashMode === "capital")
@@ -109,6 +110,14 @@
 
     // public debug helper
     window.metrixSetMode = setMode;
+  }
+
+  function bindWorldScheme() {
+    $$("#world-scheme .world-col").forEach((el) => {
+      el.addEventListener("mouseenter", () => {
+        $$("#world-scheme .world-col").forEach((x) => x.classList.toggle("is-on", x === el));
+      });
+    });
   }
 
   function applyLangChrome() {
