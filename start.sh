@@ -1,6 +1,6 @@
 #!/bin/sh
 # API always. Bot polls when TELEGRAM_BOT_TOKEN is set (Railway Variables).
-# release: 2026-09-18-heavy-launch-hl2
+# release: 2026-09-18-bot-karimmetrixbot
 # Bot loop: a crash must not leave Telegram silent until the next deploy.
 set -eu
 PORT="${PORT:-8787}"

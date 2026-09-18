@@ -1139,8 +1139,15 @@ def main() -> int:
     webapp = _webapp()
     api = BotAPI(token)
     me = api.call("getMe")
-    print("bot", (me.get("result") or {}).get("username"), "webapp", webapp)
+    uname = str(((me.get("result") or {}).get("username") or ""))
+    print("bot", uname, "webapp", webapp)
     if not me.get("ok"):
+        return 1
+    if uname.lower() != texts.USERNAME.lower():
+        print(
+            f"refusing @{uname}; expected @{texts.USERNAME}. "
+            "Set TELEGRAM_BOT_TOKEN to the @karimmetrixbot token."
+        )
         return 1
     bootstrap(api, webapp)
     offset = 0
