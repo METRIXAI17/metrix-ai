@@ -685,3 +685,86 @@ textarea:focus, input:focus {
   border: 1px solid rgba(251, 191, 36, 0.25);
   background: rgba(251, 191, 36, 0.06);
 }
+
+.wf-rail {
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+  margin: 0 0 1.15rem;
+}
+.wf-rail li {
+  display: grid;
+  grid-template-columns: 2.4rem 1fr;
+  gap: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(80% 120% at 0% 0%, rgba(94, 234, 212, 0.1), transparent 55%),
+    var(--bg-card);
+}
+.wf-rail .n {
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  color: var(--accent);
+  font-weight: 750;
+  font-size: 0.78rem;
+  padding-top: 0.15rem;
+}
+.wf-rail p { color: var(--text-muted); font-size: 0.84rem; margin-top: 0.15rem; }
+
+.ticker-chip {
+  display: inline-flex;
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+  font-size: 0.82rem;
+  color: var(--accent);
+  border: 1px solid rgba(94, 234, 212, 0.4);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  margin: 0.4rem 0 0.7rem;
+  box-shadow: 0 0 18px rgba(94, 234, 212, 0.18);
+}
+
+.eval-meter {
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+  margin: 0.35rem 0 0.45rem;
+}
+.eval-meter span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #5eead4);
+}
+
+.phrase-pair {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0.9rem 0 1rem;
+}
+@media (min-width: 420px) {
+  .phrase-pair { grid-template-columns: 1fr 1fr; }
+}
+.phrase-pair .card { cursor: default; min-height: 0; }
+
+.tariff-tile {
+  position: relative;
+  padding: 1.05rem 1.05rem 1.15rem;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--flag-accent, var(--accent)) 40%, transparent);
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--flag-accent, var(--gold)) 22%, transparent), transparent 55%),
+    linear-gradient(165deg, #121a24, #0b1118);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.tariff-tile h3 {
+  font-family: var(--font);
+  font-size: 1.55rem;
+  letter-spacing: -0.03em;
+}
+.tariff-tile .btn { margin-top: 0.45rem; align-self: flex-start; }
+.sku-inject { flex-wrap: wrap; margin-top: 0.8rem; }

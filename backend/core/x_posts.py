@@ -12,6 +12,19 @@ from backend.core.voice import HANDLE, X_URL
 
 POSTS: list[dict[str, Any]] = [
     {
+        "id": "p00_four_rooms",
+        "theme": "Four rooms",
+        "body": (
+            "Four rooms. One contour.\n\n"
+            "Hits — view free.\n"
+            "Flagship — two lines, not an essay. Unusual move, a concrete library, to the slot.\n"
+            "Web3 Store — requests free. Inbound orders, not a new product line.\n"
+            "Tariffs — $100 no file. $490 / $1000 / $10k — file.\n\n"
+            "Denser specs, same stream."
+        ),
+        "lang": "en",
+    },
+    {
         "id": "p00_door_store",
         "theme": "Metrix Store",
         "body": (

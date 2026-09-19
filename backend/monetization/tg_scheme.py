@@ -12,6 +12,22 @@ from typing import Any
 
 # Prices: RUB for RF cards (YooKassa), USD showcase, Stars for TG-native.
 SKUS: dict[str, dict[str, Any]] = {
+    "sku_100": {
+        "rub": 9900, "usd": 100, "stars": 0, "tier": "micro",
+        "name": "$100 · 120 мелких задач (без файла)",
+    },
+    "sku_490": {
+        "rub": 45900, "usd": 490, "stars": 0, "tier": "assist",
+        "name": "$490 · Assist (файл)",
+    },
+    "sku_1000": {
+        "rub": 99000, "usd": 1000, "stars": 0, "tier": "standard",
+        "name": "$1000 · стандарт (файл)",
+    },
+    "sku_10000": {
+        "rub": 990000, "usd": 10000, "stars": 0, "tier": "contour",
+        "name": "$10 000 · автономный контур (файл)",
+    },
     "access_month": {
         "rub": 3290, "usd": 35, "stars": 0, "tier": "access",
         "name": "Metrix Access · месяц (все вкладки)",

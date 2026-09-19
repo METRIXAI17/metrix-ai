@@ -165,12 +165,61 @@ def _wall(gate: dict[str, Any]) -> dict[str, Any]:
     return {
         "ok": False,
         "wall": True,
-        "cta": "Metrix Access · 3 290 ₽ / месяц · 40 результатов",
+        "cta": "Тарифы: $100 без файла · $490 / $1000 / $10 000 — файл",
         "tribute": TRIBUTE_ACCESS_URL,
         "human": HUMAN_CONTACT_URL,
         "pricing": PRICING["access"],
         **gate,
     }
+
+
+@router.get("/tariffs")
+def tariffs_board(lang: str = "ru") -> dict[str, Any]:
+    from backend.core.pricing_lanes import tariff_board
+
+    return {"ok": True, **tariff_board(lang)}
+
+
+class FlagshipBody(BaseModel):
+    brief: str = ""
+    ticker: str = ""
+    answer: str = ""
+    sku: str = ""
+    lang: str = "ru"
+
+
+@router.post("/flagship")
+def flagship_run(
+    body: FlagshipBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    from backend.core.flagship_engine import answer as flag_answer
+    from backend.core.flagship_engine import fulfill, start
+
+    sub = _subject(_try_auth(x_telegram_init_data))
+    if body.sku and body.ticker:
+        gate = _gate(sub, "flagship_paid")
+        if not gate.get("allowed"):
+            from backend.core.circle_system.chain_store import load_chain
+            from backend.core.tribute_products import create_product
+
+            rec = load_chain(body.ticker) or {}
+            product = create_product(
+                ticker=body.ticker,
+                solution=rec.get("solution") or "",
+                sku_id=body.sku,
+                problem=rec.get("problem") or "",
+            )
+            return {**_wall(gate), "product": product, "ticker": body.ticker, "sku": body.sku}
+        out = fulfill(body.ticker, body.sku, lang=body.lang)
+        return {"ok": True, **out}
+    if body.ticker and body.answer:
+        pack = flag_answer(
+            body.ticker, sanitize_text(body.answer, max_len=800), lang=body.lang
+        )
+        return {"ok": True, **pack}
+    pack = start(sanitize_text(body.brief, max_len=8_000), lang=body.lang, subject=sub or "")
+    return {"ok": True, **pack}
 
 
 @router.get("/hits")

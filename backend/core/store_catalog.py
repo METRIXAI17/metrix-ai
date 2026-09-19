@@ -1,4 +1,4 @@
-"""Metrix Store — seven rooms. Category 7 = placements in financial flows."""
+"""Web3 Store — seven rooms. Requests are free. Lead-gen, not a new product line."""
 
 from __future__ import annotations
 

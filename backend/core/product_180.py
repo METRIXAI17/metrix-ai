@@ -5,9 +5,9 @@ from __future__ import annotations
 
 from typing import Any
 
-VERSION = "1.9.0"
-CODENAME = "FIVE SHOPS"
-RELEASE = "2026-09-04-five-sections"
+VERSION = "2.1.0"
+CODENAME = "FOUR ROOMS"
+RELEASE = "2026-09-20-four-rooms"
 
 # ── Flagship ────────────────────────────────────────────────────────────────
 FLAGSHIP = {
@@ -28,6 +28,34 @@ FLAGSHIP = {
 }
 
 TABS = [
+    {
+        "id": "hits",
+        "title": "Хиты",
+        "title_short": "Хиты",
+        "legacy": ("hit", "хит"),
+        "role_ru": "Конструкция. Смотреть бесплатно.",
+    },
+    {
+        "id": "flagship",
+        "title": "Флагман",
+        "title_short": "Флагман",
+        "legacy": ("life", "chain", "landing", "demo", "лендинг", "демо"),
+        "role_ru": "Две строки, не эссе. Eval, тикер, потом тариф.",
+    },
+    {
+        "id": "store",
+        "title": "Web3 Store",
+        "title_short": "Store",
+        "legacy": ("стор", "web3"),
+        "role_ru": "Запросы бесплатно. Входящий заказ.",
+    },
+    {
+        "id": "tariffs",
+        "title": "Тарифы",
+        "title_short": "Тарифы",
+        "legacy": ("access", "цены"),
+        "role_ru": "$100 без файла. $490 / $1000 / $10 000 — файл.",
+    },
     {
         "id": "life",
         "title": "Идеи для жизни",

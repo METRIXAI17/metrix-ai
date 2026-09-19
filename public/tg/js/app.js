@@ -35,12 +35,14 @@
     return r.json();
   }
 
-  const VIEWS = ["life", "bots", "craft", "target", "shop", "store", "shift", "chain", "teammates", "artefacts", "home", "hits"];
+  const VIEWS = ["hits", "flagship", "store", "tariffs", "life", "bots", "craft", "target", "shop", "shift", "chain", "teammates", "artefacts", "home"];
   const ALIAS = {
-    home: "life",
-    chain: "life",
-    demo: "life",
-    landing: "life",
+    home: "hits",
+    life: "flagship",
+    chain: "flagship",
+    demo: "flagship",
+    landing: "flagship",
+    флагман: "flagship",
     strategies: "bots",
     engine: "craft",
     teammates: "craft",
@@ -54,7 +56,8 @@
     конструкции: "hits",
   };
   const state = {
-    view: (location.hash || "").replace("#", "") || "life",
+    view: (location.hash || "").replace("#", "") || "hits",
+    flagship: null,
     catalog: null,
     last: null,
     closer: null,
@@ -63,7 +66,7 @@
     comfort: [],
   };
   if (ALIAS[state.view]) state.view = ALIAS[state.view];
-  if (VIEWS.indexOf(state.view) < 0) state.view = "life";
+  if (VIEWS.indexOf(state.view) < 0) state.view = "hits";
 
   const viewEl = document.getElementById("view");
 
@@ -153,6 +156,18 @@
     if (t.closest("[data-hit-tier]")) {
       ev.preventDefault();
       showHitTier(t.closest("[data-hit-tier]").getAttribute("data-hit-tier"));
+    }
+    if (t.closest("#fg-run")) {
+      ev.preventDefault();
+      runFlagship();
+    }
+    if (t.closest("#fg-ans")) {
+      ev.preventDefault();
+      answerFlagship();
+    }
+    if (t.closest("[data-sku]")) {
+      ev.preventDefault();
+      payFlagship(t.closest("[data-sku]").getAttribute("data-sku"));
     }
   });
 
@@ -392,10 +407,10 @@
     return (
       '<article class="wall">' +
       "<h3>" +
-      (out.reason === "month_cap" ? "Лимит месяца (40 результатов)" : "Два бесплатных результата использованы") +
+      (out.reason === "month_cap" ? "Лимит тарифа" : "Дальше — тариф с файлом (кроме $100)") +
       "</h3>" +
-      "<p>Бот — ленд-артефакт. Access — 3 290 ₽ / месяц, 40 результатов. " +
-      "Access — 3 290 ₽ / месяц, 40 результатов на пять разделов.</p>" +
+      "<p>Хиты смотреть бесплатно. Web3 Store — запросы бесплатно. " +
+      "$100 — 120 задач без файла. $490 / $1000 / $10 000 — файл.</p>" +
       '<div class="row"><a class="btn btn-primary" href="' +
       esc(url) +
       '" target="_blank" rel="noopener">Оплатить в Tribute</a>' +
@@ -461,7 +476,7 @@
         '<p class="lead">Промпт своими словами. Потом оценка: зашло / почти / мимо. Контроль рисков — отдельная карточка, не внутри бота.</p>';
     } else if (sid === "life") {
       vitrine =
-        '<article class="paid-agitate" style="margin-bottom:1rem"><p class="eyebrow">Демо</p><h3>Ситуация своими словами — объект на выходе.</h3><p>Два раза бесплатно. Три продукта: Access 3 290 ₽ · пилот 45 000 ₽ · Cross 80 000 ₽.</p></article>' +
+        '<article class="paid-agitate" style="margin-bottom:1rem"><p class="eyebrow">Флагман</p><h3>Две строки, не эссе.</h3><p>Хиты и Web3 Store бесплатно. $100 без файла. $490 / $1000 / $10 000 — файл.</p></article>' +
         '<div class="eyebrow section-label">Витрина</div><div class="grid grid-cards">' +
         '<article class="card card-flag"><span class="tag">касса</span><h3>Цифра понедельника</h3><p>Что сгорело — по имени.</p></article>' +
         '<article class="card card-flag"><span class="tag">хозяин</span><h3>Статус</h3><p>N минут. Если не взяли — эскалация.</p></article>' +
@@ -655,10 +670,10 @@
   function storeView() {
     return (
       '<section class="room">' +
-      photoHtml(GEO.store, "Metrix Store", "geo-hero-img") +
-      '<div class="eyebrow">Metrix Store</div>' +
-      "<h1>Семь комнат. <em>Один код.</em></h1>" +
-      "<p class='lead'>Друг не спрашивает паспорт дважды. Нажми комнату.</p>" +
+      photoHtml(GEO.store, "Web3 Store", "geo-hero-img") +
+      '<div class="eyebrow">Web3 Store · запросы бесплатно</div>' +
+      "<h1>Входящий заказ. <em>Не линейка.</em></h1>" +
+      "<p class='lead'>Web3-заказы как lead-gen. Комнаты того же потока. Запросы не списываются.</p>" +
       '<div id="store-rooms" class="grid grid-cards"></div>' +
       '<label>Что ломается</label>' +
       '<textarea id="sec-brief" placeholder="саморазвитие, тыл, касса, фрагментация чипов…"></textarea>' +
@@ -683,13 +698,13 @@
   function hitsView(pack) {
     pack = pack || state.hits || {};
     var hit = pack.hit || {};
-    var body = hit.body || "Конструкция: разность метрик на следующем уровне сложности. Не тикер.";
+    var body = hit.body || "Конструкция: разность метрик на следующем уровне сложности. Не тикер сделки.";
     var title = hit.title || "Хит недели";
     return (
       '<section class="room">' +
-      '<div class="eyebrow">Консалтинг конструкций</div>' +
-      "<h1>Хит. <em>Не сигнал.</em></h1>" +
-      "<p class='lead'>Разбор одной финансовой конструкции: кто платит кому, где разность уровней, какой тупик розницы. Без тикера и без «купите».</p>" +
+      '<div class="eyebrow">Смотреть бесплатно</div>' +
+      "<h1>Хиты. <em>Не сигнал.</em></h1>" +
+      "<p class='lead'>Разбор одной финансовой конструкции: кто платит кому, где разность уровней. Без тикера сделки и без «купите».</p>" +
       '<article class="card card-flag" style="--flag-accent:#5eead4">' +
       '<span class="tag">неделя</span><h3>' +
       esc(title) +
@@ -704,6 +719,195 @@
       '<div id="hit-out"></div>' +
       '<p class="muted">Не рекомендация сделки. Без чужих депозитов.</p></section>'
     );
+  }
+
+  function wfHtml(wf) {
+    var steps = (wf && wf.steps) || [];
+    if (!steps.length) return "";
+    return (
+      '<ol class="wf-rail">' +
+      steps
+        .map(function (s) {
+          return (
+            '<li><span class="n">' +
+            esc(s.n) +
+            "</span><div><b>" +
+            esc(s.title) +
+            "</b><p>" +
+            esc(s.do) +
+            "</p></div></li>"
+          );
+        })
+        .join("") +
+      "</ol>"
+    );
+  }
+
+  function flagshipView() {
+    var p = state.flagship || {};
+    var wf = p.workflow || (state.catalog && state.catalog.flagship_workflow) || {};
+    return (
+      '<section class="room">' +
+      photoHtml(GEO.life, "Флагман", "geo-hero-img") +
+      '<div class="eyebrow">Флагман · бесплатный слой</div>' +
+      "<h1>Две строки. <em>Не эссе.</em></h1>" +
+      "<p class='lead'>Суть одной фразой. Решение одной фразой. Потом 5–20 вопросов, eval, тикер. Файл — после оплаты, кроме $100.</p>" +
+      wfHtml(wf) +
+      '<label>Что ломается — и куда должно сесть</label>' +
+      '<textarea id="fg-brief" placeholder="Касса как туман.\\nНужен хозяин и цифра понедельника."></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="fg-run">Собрать суть</button></div>' +
+      '<div id="fg-out"></div></section>'
+    );
+  }
+
+  function tariffsView(c) {
+    var board = (c && c.tariffs) || {};
+    var paid = board.paid || [];
+    var tiles = paid
+      .map(function (s) {
+        return (
+          '<article class="tariff-tile" style="--flag-accent:' +
+          (s.file ? "#5eead4" : "#fbbf24") +
+          '"><span class="tag">' +
+          (s.file ? "файл" : "без файла") +
+          "</span><h3>$" +
+          esc(s.usd) +
+          "</h3><p>" +
+          esc(s.name_ru || "") +
+          "</p><p class='muted'>" +
+          esc(s.gets_ru || "") +
+          "</p>" +
+          (s.pay_url
+            ? '<a class="btn btn-primary" href="' +
+              esc(s.pay_url) +
+              '" target="_blank" rel="noopener">Tribute</a>'
+            : "") +
+          "</article>"
+        );
+      })
+      .join("");
+    return (
+      '<section class="room">' +
+      '<div class="eyebrow">Тарифы</div>' +
+      "<h1>Хиты и Store. <em>Бесплатно.</em></h1>" +
+      "<p class='lead'>" +
+      esc(board.free_facts || "Хиты — смотреть бесплатно. Web3 Store — запросы бесплатно.") +
+      "</p>" +
+      '<article class="phrase-pair"><div><span class="tag">жизнь</span><h3>Бесплатный слой</h3><p>' +
+      esc((board.free_life && board.free_life.gets_ru) || "") +
+      "</p></div></article>" +
+      '<div class="grid grid-cards tariff-grid">' +
+      tiles +
+      "</div>" +
+      '<p class="muted">' +
+      esc(board.note || "После оплаты файл отдаётся во всех тарифах, кроме $100.") +
+      "</p></section>"
+    );
+  }
+
+  function paintFlagship(box, pack) {
+    if (!box || !pack) return;
+    var ev = pack.eval || {};
+    var q = pack.next_question || (pack.questions && pack.questions[0]) || {};
+    var n = pack.question_count || (pack.questions || []).length;
+    var ans = pack.answered || 0;
+    var skus = ((pack.skus && pack.skus.cards) || [])
+      .map(function (s) {
+        return (
+          '<button type="button" class="btn ' +
+          (s.recommended ? "btn-primary" : "") +
+          '" data-sku="' +
+          esc(s.id) +
+          '">$' +
+          esc(s.usd) +
+          " · " +
+          (s.file ? "файл" : "без файла") +
+          "</button>"
+        );
+      })
+      .join("");
+    var meter = Math.round((ev.score || 0) * 100);
+    box.innerHTML =
+      '<div class="phrase-pair">' +
+      '<article class="card"><span class="tag">суть</span><p>' +
+      esc(pack.problem || "") +
+      "</p></article>" +
+      '<article class="card"><span class="tag">решение</span><p>' +
+      esc(pack.solution || "") +
+      "</p></article></div>" +
+      '<div class="ticker-chip">' +
+      esc(pack.ticker || "") +
+      "</div>" +
+      '<div class="eval-meter"><span style="width:' +
+      meter +
+      '%"></span></div>' +
+      '<p class="muted">Eval ' +
+      meter +
+      "% — " +
+      esc(ev.verdict || "") +
+      "</p>" +
+      (pack.done_questions
+        ? '<div class="row sku-inject">' + skus + "</div>"
+        : '<label>' +
+          esc(pack.prompt || q.text || "Вопрос") +
+          "</label>" +
+          '<textarea id="fg-answer" placeholder="Короткий ответ"></textarea>' +
+          '<div class="row"><button type="button" class="btn btn-primary" id="fg-ans">Дальше · ' +
+          (ans + 1) +
+          "/" +
+          n +
+          "</button></div>") +
+      wfHtml(pack.workflow);
+  }
+
+  async function runFlagship() {
+    var briefEl = document.getElementById("fg-brief");
+    var box = document.getElementById("fg-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Собираю суть и решение…</p>";
+    var out = await post("/api/v1/miniapp/flagship", {
+      brief: briefEl ? briefEl.value : "",
+      lang: "ru",
+    });
+    state.flagship = out;
+    paintFlagship(box, out);
+  }
+
+  async function answerFlagship() {
+    var el = document.getElementById("fg-answer");
+    var box = document.getElementById("fg-out");
+    if (!box || !state.flagship) return;
+    box.innerHTML = "<p class='status'>Пишу в цепочку…</p>";
+    var out = await post("/api/v1/miniapp/flagship", {
+      ticker: state.flagship.ticker,
+      answer: el ? el.value : "",
+      lang: "ru",
+    });
+    state.flagship = out;
+    paintFlagship(box, out);
+  }
+
+  async function payFlagship(sku) {
+    var box = document.getElementById("fg-out");
+    if (!box || !state.flagship) return;
+    var out = await post("/api/v1/miniapp/flagship", {
+      ticker: state.flagship.ticker,
+      sku: sku,
+      lang: "ru",
+    });
+    var url = (out.product && out.product.pay_url) || out.tribute || "https://t.me/tribute";
+    var fileNote =
+      sku === "sku_100"
+        ? "После $100 файл не отдаётся. 120 запросов."
+        : "После оплаты — файл: методика + надстройка.";
+    box.innerHTML =
+      '<article class="wall"><h3>' +
+      esc((out.product && out.product.name) || sku) +
+      "</h3><p>" +
+      fileNote +
+      '</p><div class="row"><a class="btn btn-primary" href="' +
+      esc(url) +
+      '" target="_blank" rel="noopener">Оплатить в Tribute</a></div></article>';
   }
 
   async function showHitTier(tier) {
@@ -732,6 +936,8 @@
     var html;
     if (state.view === "store") html = storeView();
     else if (state.view === "shift") html = shiftView();
+    else if (state.view === "flagship") html = flagshipView();
+    else if (state.view === "tariffs") html = tariffsView(c);
     else if (state.view === "hits") {
       if (!state.hits) {
         try {

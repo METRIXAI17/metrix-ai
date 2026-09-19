@@ -37,14 +37,36 @@ PAID_FEATURES = frozenset(
         "trading_prompt",
         "code_live",
         "two_leg_tape",
-        "store",
         "craftshift",
         "think_more",
         "eval",
         "cross",
         "flight",
+        "product_file",
+        "flagship_paid",
     }
 )
+# Hits view, Web3 Store requests, Flagship free layer — never debit.
+FREE_FEATURES = frozenset(
+    {
+        "hits",
+        "store",
+        "life_intake",
+        "workflow",
+        "tariffs",
+        "catalog",
+        "flagship_free",
+        "store_run",
+    }
+)
+SKU_LIMITS = {
+    "sku_100": {"runs": 120, "days": 31, "tier": "micro", "file": False},
+    "sku_490": {"runs": 40, "days": 31, "tier": "assist", "file": True},
+    "sku_1000": {"runs": 80, "days": 90, "tier": "standard", "file": True},
+    "sku_10000": {"runs": 200, "days": 180, "tier": "contour", "file": True},
+    "access_month": {"runs": 40, "days": 31, "tier": "access", "file": False},
+    "access_year": {"runs": 40, "days": 366, "tier": "access", "file": False},
+}
 # Live market snapshot: Access includes it, does not debit the 40.
 WATCH_FEATURES = frozenset({"watch", "scan", "live", "stop_on_shift"})
 
@@ -125,14 +147,21 @@ def redeem(token: str, *, bind_subject: str | None = None) -> dict[str, Any]:
     return {"ok": True, "tier": rec.get("tier") or "access", "expires": rec.get("expires"), "sku": rec.get("sku")}
 
 
-def entitle_subject(subject: str, *, days: int = 31, sku: str = "access_month") -> dict[str, Any]:
+def _sku_meta(sku: str) -> dict[str, Any]:
+    return dict(SKU_LIMITS.get(sku) or SKU_LIMITS["access_month"])
+
+
+def entitle_subject(subject: str, *, days: int | None = None, sku: str = "access_month") -> dict[str, Any]:
+    meta = _sku_meta(sku)
     rec = {
         "sku": sku,
-        "tier": "access",
+        "tier": meta.get("tier") or "access",
         "issued": _iso(_now()),
-        "expires": _iso(_now() + timedelta(days=days)),
+        "expires": _iso(_now() + timedelta(days=days if days is not None else int(meta.get("days") or 31))),
         "subject_hash": subject,
         "via": "tribute",
+        "file": bool(meta.get("file")),
+        "runs": int(meta.get("runs") or ACCESS_RUNS_MONTH),
     }
     _save(_ent_path("sub_" + subject), rec)
     return rec
@@ -163,15 +192,18 @@ def _month_path(subject: str) -> Path:
 def quota_status(subject: str | None) -> dict[str, Any]:
     entitled = is_entitled(subject)
     if entitled.get("ok") and subject:
+        rec = _load(_ent_path("sub_" + subject))
+        limit = int((_sku_meta(str(rec.get("sku") or entitled.get("sku") or "access_month")).get("runs") or ACCESS_RUNS_MONTH))
         used = int(_load(_month_path(subject)).get("used") or 0)
-        remaining = max(0, ACCESS_RUNS_MONTH - used)
+        remaining = max(0, limit - used)
         return {
             **entitled,
             "used": used,
-            "limit": ACCESS_RUNS_MONTH,
+            "limit": limit,
             "remaining": remaining,
             "gated": remaining <= 0,
             "unit": "result",
+            "file": bool(_sku_meta(str(rec.get("sku") or "")).get("file")),
         }
     used = 0
     if subject:
@@ -189,15 +221,15 @@ def quota_status(subject: str | None) -> dict[str, Any]:
 
 
 def consume(subject: str | None, feature: str) -> dict[str, Any]:
-    """Free: 2 results then Access wall. Access: ACCESS_RUNS_MONTH maps / month.
+    """Hits + Web3 Store + Flagship free layer never debit.
 
-    Live snapshots (watch/scan/live) do not debit Access. Market ticks are not maps.
+    Paid SKUs: sku_100 = 120 small tasks, no file; 490/1000/10000 debit and may deliver a file.
     """
     st = quota_status(subject)
-    if feature == "stop_on_shift":
-        return {**st, "allowed": True, "feature": feature, "debited": False, "note": "stop_check_no_debit"}
+    if feature in FREE_FEATURES or feature == "stop_on_shift":
+        return {**st, "allowed": True, "feature": feature, "debited": False, "note": "free_room"}
     if feature in WATCH_FEATURES:
-        if st.get("ok") and st.get("tier") == "access":
+        if st.get("ok"):
             return {**st, "allowed": True, "feature": feature, "debited": False, "note": "live_no_debit"}
         feature = "strategy"
     if feature not in PAID_FEATURES:
@@ -208,22 +240,22 @@ def consume(subject: str | None, feature: str) -> dict[str, Any]:
             "allowed": False,
             "feature": feature,
             "wall": True,
-            "cta": "Metrix Access",
-            "sku": "access_month",
+            "cta": "Тарифы",
+            "sku": "sku_490",
             "reason": "need_telegram_or_token",
         }
     if st.get("gated"):
-        kind = "month_cap" if st.get("tier") == "access" else "free_done"
+        kind = "month_cap" if st.get("ok") else "free_done"
         return {
             **st,
             "allowed": False,
             "feature": feature,
             "wall": True,
-            "cta": "Metrix Access",
-            "sku": "access_month",
+            "cta": "Тарифы",
+            "sku": st.get("sku") or "sku_490",
             "reason": kind,
         }
-    p = _month_path(subject) if st.get("tier") == "access" and st.get("ok") else _free_path(subject)
+    p = _month_path(subject) if st.get("ok") else _free_path(subject)
     cur = _load(p)
     cur["used"] = int(cur.get("used") or 0) + 1
     _save(p, cur)
@@ -262,7 +294,17 @@ def apply_tribute_event(payload: dict[str, Any]) -> dict[str, Any]:
     )
     period = data.get("period") or data.get("interval") or "month"
     days = 366 if "year" in str(period).lower() else 31
-    sku = "access_year" if days > 60 else "access_month"
+    from backend.core.pricing_lanes import map_tribute_amount
+
+    amount = data.get("amount") or data.get("price") or data.get("sum") or payload.get("amount")
+    pname = (
+        str(data.get("product_name") or data.get("product") or data.get("name") or payload.get("product_name") or "")
+    )
+    sku = map_tribute_amount(amount, pname)
+    if sku == "access_month" and days > 60:
+        sku = "access_year"
+    meta = _sku_meta(sku)
+    days = int(meta.get("days") or days)
     if "cancel" in event:
         if telegram_id:
             rec = _load(_ent_path("sub_" + subject_hash(telegram_id)))

@@ -15,6 +15,8 @@ from backend.core.teammates import list_teammates, workflow_payload
 from backend.core.functions import FUNCTIONS
 from backend.core.strategies import list_strategies
 from backend.core.x_posts import HANDLE, X_URL
+from backend.core.pricing_lanes import PUBLIC_TABS, tariff_board
+from backend.core.workflow_turnaround import turnaround
 from backend.monetization.tg_scheme import SKUS, scheme_payload
 
 
@@ -204,15 +206,17 @@ def catalog_payload(lang: str = "ru") -> dict[str, Any]:
         "app": "Karim Metrix",
         "nav": [
             {
-                "id": s["id"],
-                "title": s["title"],
-                "short": s["title_short"],
-                "image": s["image"],
-                "one_liner": s["one_liner"],
-                "accent": s["accent"],
+                "id": t["id"],
+                "title": t["title"] if ru else t["title_en"],
+                "short": t["title_short"],
+                "one_liner": t["one_liner"],
+                "accent": t["accent"],
+                "free": t.get("free"),
             }
-            for s in list_sections(lang=lang)
+            for t in PUBLIC_TABS
         ],
+        "tabs": PUBLIC_TABS,
+        "tariffs": tariff_board(lang),
         "sections": list_sections(lang=lang),
         "functions": fns,
         "flagships": flagships,
@@ -220,6 +224,7 @@ def catalog_payload(lang: str = "ru") -> dict[str, Any]:
         "niches": list_niches(),
         "teammates": list_teammates(),
         "workflow": workflow_payload(),
+        "flagship_workflow": turnaround(lang=lang),
         "product": catalog_overlay(),
         "promo": [],
         "hits": hit_board,
@@ -230,8 +235,8 @@ def catalog_payload(lang: str = "ru") -> dict[str, Any]:
         },
         "scheme": scheme_payload(),
         "promise": (
-            "Идеи для жизни · Торговые боты · Конфиги для ремесла · Таргет ИИ-агентов · Каталог магазина. "
-            "Access 3 290 ₽. Код модели, не сигналы."
+            "Хиты смотреть бесплатно. Web3 Store — запросы бесплатно. "
+            "Флагман: две строки, не эссе. $100 без файла. $490 / $1000 / $10 000 — файл."
         ),
         "sales": access_offer(lang=lang),
     }

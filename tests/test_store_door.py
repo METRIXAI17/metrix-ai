@@ -58,8 +58,10 @@ def test_line_objects_without_engine():
 def test_menu_store_and_legacy():
     assert menu_action("Стор") == "store"
     assert menu_action("CraftShift") == "shift"
-    assert menu_action("Разговор") == "life"
-    assert menu_action("Идеи для жизни") == "life"
+    assert menu_action("Разговор") == "flagship"
+    assert menu_action("Идеи для жизни") == "flagship"
+    assert menu_action("Флагман") == "flagship"
+    assert menu_action("Тарифы") == "tariffs"
     assert menu_action("Торговые боты") == "bots"
     assert menu_action("/store") == "store"
     assert menu_action("/shift") == "shift"

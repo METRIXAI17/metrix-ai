@@ -102,6 +102,7 @@ def section_by_id(sid: str) -> dict[str, Any] | None:
         "chain": "life",
         "in_out": "life",
         "life_ideas": "life",
+        "flagship": "life",
         "trading": "bots",
         "bots": "bots",
         "craft": "craft",

@@ -117,6 +117,27 @@ BANKS: dict[str, list[dict[str, Any]]] = {
 # Generic filler replacements (all directions)
 GLOBAL_BANK: list[dict[str, Any]] = [
     {
+        "pattern": r"\bэссе\b",
+        "alts_ru": ["две строки", "короткий solve, не эссе"],
+        "pattern_en": r"\bessay\b",
+        "alts_en": ["two lines", "short solve, not an essay"],
+        "p": 0.85,
+    },
+    {
+        "pattern": r"\bнов(ая|ую)\s+линейк\w*\b",
+        "alts_ru": ["комнаты того же потока", "тот же контур, плотнее спеки"],
+        "pattern_en": r"\bnew product line\b",
+        "alts_en": ["rooms of the same stream", "denser specs, same contour"],
+        "p": 0.9,
+    },
+    {
+        "pattern": r"\bготовое решение\b",
+        "alts_ru": ["до слота", "кастомные спеки, не витрина"],
+        "pattern_en": r"\bready[- ]made solution\b",
+        "alts_en": ["delivered to the slot", "custom specs, not a storefront"],
+        "p": 0.8,
+    },
+    {
         "pattern": r"\bв современном мире\b",
         "alts_ru": ["в вашем контуре", "на текущем unit-цикле"],
         "pattern_en": r"\bin today's world\b",
