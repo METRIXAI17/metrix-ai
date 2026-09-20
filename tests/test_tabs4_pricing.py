@@ -29,7 +29,10 @@ def test_bot_keyboard_four_rooms():
     nav = str(nav_inline("https://example.test/tg/"))
     assert "m:flagship" in nav
     assert "m:tariffs" in nav
-    assert "v=t4" in webapp_open("https://example.test/tg/", "hits")
+    assert "v=t5" in webapp_open("https://example.test/tg/", "hits")
+    nav = str(nav_inline("https://example.test/tg/"))
+    assert "m:check" in nav
+    assert "Сверить файл" in nav
 
 
 def test_hits_and_store_never_debit():
@@ -57,10 +60,15 @@ def test_intake_phrases_questions_ticker_chain():
     pack = intake("Касса как туман, понедельник пустой.\nНужен хозяин.", lang="ru")
     assert 8 <= len(pack["problem"]) <= 160
     assert 8 <= len(pack["solution"]) <= 180
-    assert 5 <= pack["question_count"] <= 20
+    assert 5 <= pack["question_count"] <= 10
     assert pack["ticker"].startswith("MX-")
     assert pack["chain_id"] == pack["ticker"]
     assert pack["eval"]["score"] <= 0.93
+    from backend.core.life_intake import format_telegram
+
+    tg = format_telegram(pack)
+    assert "Eval:" not in tg
+    assert pack.get("eval_visible") is False
     ids = {c["id"] for c in pack["skus"]["cards"]}
     assert {"sku_100", "sku_490", "sku_1000"} <= ids
 
@@ -109,7 +117,8 @@ def test_design_contour_is_not_yield_pitch():
 def test_workflow_turnaround_free():
     wf = turnaround(lang="ru", contour=True)
     assert wf["free"] is True
-    assert len(wf["steps"]) >= 6
+    assert len(wf["steps"]) == 5
+    assert "цепочка" not in " ".join(s.get("do") or "" for s in wf["steps"]).lower()
 
 
 def test_flagship_start_from_brief():

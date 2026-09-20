@@ -180,6 +180,23 @@ def tariffs_board(lang: str = "ru") -> dict[str, Any]:
     return {"ok": True, **tariff_board(lang)}
 
 
+class CheckBody(BaseModel):
+    ticker: str = ""
+    lang: str = "ru"
+
+
+@router.post("/check-file")
+def check_file_run(
+    body: CheckBody,
+    x_telegram_init_data: str | None = Header(default=None),
+) -> dict[str, Any]:
+    from backend.core.flagship_engine import check_before_pay
+
+    _ = _try_auth(x_telegram_init_data)
+    pack = check_before_pay((body.ticker or "").strip(), lang=body.lang)
+    return {"ok": bool(pack.get("ok")), **pack}
+
+
 class FlagshipBody(BaseModel):
     brief: str = ""
     ticker: str = ""
@@ -198,6 +215,7 @@ def flagship_run(
 
     sub = _subject(_try_auth(x_telegram_init_data))
     if body.sku and body.ticker:
+        sku = "sku_490"
         gate = _gate(sub, "flagship_paid")
         if not gate.get("allowed"):
             from backend.core.circle_system.chain_store import load_chain
@@ -207,11 +225,11 @@ def flagship_run(
             product = create_product(
                 ticker=body.ticker,
                 solution=rec.get("solution") or "",
-                sku_id=body.sku,
+                sku_id=sku,
                 problem=rec.get("problem") or "",
             )
-            return {**_wall(gate), "product": product, "ticker": body.ticker, "sku": body.sku}
-        out = fulfill(body.ticker, body.sku, lang=body.lang)
+            return {**_wall(gate), "product": product, "ticker": body.ticker, "sku": sku}
+        out = fulfill(body.ticker, sku, lang=body.lang)
         return {"ok": True, **out}
     if body.ticker and body.answer:
         pack = flag_answer(

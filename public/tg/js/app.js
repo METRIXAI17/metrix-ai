@@ -35,7 +35,7 @@
     return r.json();
   }
 
-  const VIEWS = ["hits", "flagship", "store", "tariffs", "life", "bots", "craft", "target", "shop", "shift", "chain", "teammates", "artefacts", "home"];
+  const VIEWS = ["hits", "flagship", "store", "tariffs", "check", "life", "bots", "craft", "target", "shop", "shift", "chain", "teammates", "artefacts", "home"];
   const ALIAS = {
     home: "hits",
     life: "flagship",
@@ -43,6 +43,8 @@
     demo: "flagship",
     landing: "flagship",
     флагман: "flagship",
+    check: "check",
+    сверка: "check",
     strategies: "bots",
     engine: "craft",
     teammates: "craft",
@@ -169,6 +171,10 @@
       ev.preventDefault();
       payFlagship(t.closest("[data-sku]").getAttribute("data-sku"));
     }
+    if (t.closest("#ck-run")) {
+      ev.preventDefault();
+      runCheck();
+    }
   });
 
   function esc(s) {
@@ -185,6 +191,7 @@
     target: "/tg/assets/sec-target.jpg",
     shop: "/tg/assets/sec-shop.jpg",
     store: "/assets/store/hero.jpg",
+    hits: "/tg/assets/hit-sticker.jpg",
     shift: "/assets/store/craft.jpg",
     chain: "/tg/assets/sec-life.jpg",
     target_place: "/tg/assets/geo-gold.jpg",
@@ -698,13 +705,14 @@
   function hitsView(pack) {
     pack = pack || state.hits || {};
     var hit = pack.hit || {};
-    var body = hit.body || "Конструкция: разность метрик на следующем уровне сложности. Не тикер сделки.";
-    var title = hit.title || "Хит недели";
+    var body = hit.body || "Мувик конструкции. Не сигнал.";
+    var title = hit.title || "Хит";
     return (
       '<section class="room">' +
-      '<div class="eyebrow">Смотреть бесплатно</div>' +
-      "<h1>Хиты. <em>Не сигнал.</em></h1>" +
-      "<p class='lead'>Разбор одной финансовой конструкции: кто платит кому, где разность уровней. Без тикера сделки и без «купите».</p>" +
+      photoHtml("/tg/assets/hit-sticker.jpg", "Хиты", "sticker-hero") +
+      '<div class="eyebrow room-label">Хиты</div>' +
+      "<h1>Хиты — <em>не сигнальный ассистент</em></h1>" +
+      "<p class='lead room-desc'>Мувики, которые заслужили данные. 🎞</p>" +
       '<article class="card card-flag" style="--flag-accent:#5eead4">' +
       '<span class="tag">неделя</span><h3>' +
       esc(title) +
@@ -716,8 +724,7 @@
       '<button type="button" class="btn btn-ghost" data-hit-tier="paid">Обучение</button>' +
       '<button type="button" class="btn btn-ghost" data-hit-tier="private">Приватка</button>' +
       "</div>" +
-      '<div id="hit-out"></div>' +
-      '<p class="muted">Не рекомендация сделки. Без чужих депозитов.</p></section>'
+      '<div id="hit-out"></div></section>'
     );
   }
 
@@ -749,12 +756,12 @@
     return (
       '<section class="room">' +
       photoHtml(GEO.life, "Флагман", "geo-hero-img") +
-      '<div class="eyebrow">Флагман · бесплатный слой</div>' +
+      '<div class="eyebrow room-label">Флагман · бесплатный слой</div>' +
       "<h1>Две строки. <em>Не эссе.</em></h1>" +
-      "<p class='lead'>Суть одной фразой. Решение одной фразой. Потом 5–20 вопросов, eval, тикер. Файл — после оплаты, кроме $100.</p>" +
+      "<p class='lead room-desc'>Выдаёт суть твоего вопроса и решение одной фразой. Потом несколько вопросов — сводка векторов. Внутри $490: комбо рекурсивных решений и терминальная посадка процесса. Eval — после оплаты.</p>" +
       wfHtml(wf) +
-      '<label>Что ломается — и куда должно сесть</label>' +
-      '<textarea id="fg-brief" placeholder="Касса как туман.\\nНужен хозяин и цифра понедельника."></textarea>' +
+      '<label>Опиши вопрос — двумя строками</label>' +
+      '<textarea id="fg-brief" placeholder="Что сейчас тяжело думать.\\nКуда должно сесть."></textarea>' +
       '<div class="row"><button type="button" class="btn btn-primary" id="fg-run">Собрать суть</button></div>' +
       '<div id="fg-out"></div></section>'
     );
@@ -786,16 +793,17 @@
         );
       })
       .join("");
+    var fg = board.flagship || {};
     return (
       '<section class="room">' +
-      '<div class="eyebrow">Тарифы</div>' +
-      "<h1>Хиты и Store. <em>Бесплатно.</em></h1>" +
+      '<div class="eyebrow room-label">Тарифы</div>' +
+      "<h1>Флагман — <em>контур в ваш проект</em></h1>" +
+      "<p class='lead room-desc'>" +
+      esc(fg.role_ru || "Автономный контур в ваш проект. Плотнее спеки, тот же поток. В боте посадка $490.") +
+      "</p>" +
       "<p class='lead'>" +
       esc(board.free_facts || "Хиты — смотреть бесплатно. Web3 Store — запросы бесплатно.") +
       "</p>" +
-      '<article class="phrase-pair"><div><span class="tag">жизнь</span><h3>Бесплатный слой</h3><p>' +
-      esc((board.free_life && board.free_life.gets_ru) || "") +
-      "</p></div></article>" +
       '<div class="grid grid-cards tariff-grid">' +
       tiles +
       "</div>" +
@@ -805,28 +813,44 @@
     );
   }
 
+  function checkView() {
+    var tick = (state.flagship && state.flagship.ticker) || "";
+    return (
+      '<section class="room">' +
+      '<div class="eyebrow room-label">До оплаты</div>' +
+      "<h1>Сверить <em>файл</em></h1>" +
+      "<p class='lead room-desc'>Суть, решение и векторы. Eval откроется после $490.</p>" +
+      '<label>Тикер</label>' +
+      '<textarea id="ck-ticker" placeholder="MX-…">' +
+      esc(tick) +
+      "</textarea>" +
+      '<div class="row"><button type="button" class="btn-iridescent" id="ck-run">Сверить файл</button></div>' +
+      '<div id="ck-out"></div></section>'
+    );
+  }
+
   function paintFlagship(box, pack) {
     if (!box || !pack) return;
-    var ev = pack.eval || {};
     var q = pack.next_question || (pack.questions && pack.questions[0]) || {};
     var n = pack.question_count || (pack.questions || []).length;
     var ans = pack.answered || 0;
-    var skus = ((pack.skus && pack.skus.cards) || [])
-      .map(function (s) {
-        return (
-          '<button type="button" class="btn ' +
-          (s.recommended ? "btn-primary" : "") +
-          '" data-sku="' +
-          esc(s.id) +
-          '">$' +
-          esc(s.usd) +
-          " · " +
-          (s.file ? "файл" : "без файла") +
-          "</button>"
-        );
+    var vec = (pack.vectors || [])
+      .map(function (row) {
+        return "<li><b>" + esc(row.k) + "</b> — " + esc(row.v) + "</li>";
       })
       .join("");
-    var meter = Math.round((ev.score || 0) * 100);
+    var pay = pack.done_questions
+      ? '<p class="room-desc">Внутри $490: комбо рекурсивных решений и терминальная посадка процесса. Eval — после оплаты.</p>' +
+        '<div class="row sku-inject"><button type="button" class="btn btn-primary" data-sku="sku_490">$490 · Assist</button></div>'
+      : '<label>' +
+        esc(pack.prompt || q.text || "Вопрос") +
+        "</label>" +
+        '<textarea id="fg-answer" placeholder="Своими словами: блок, мысль, трудность"></textarea>' +
+        '<div class="row"><button type="button" class="btn btn-primary" id="fg-ans">Дальше · ' +
+        (ans + 1) +
+        "/" +
+        n +
+        "</button></div>";
     box.innerHTML =
       '<div class="phrase-pair">' +
       '<article class="card"><span class="tag">суть</span><p>' +
@@ -838,25 +862,8 @@
       '<div class="ticker-chip">' +
       esc(pack.ticker || "") +
       "</div>" +
-      '<div class="eval-meter"><span style="width:' +
-      meter +
-      '%"></span></div>' +
-      '<p class="muted">Eval ' +
-      meter +
-      "% — " +
-      esc(ev.verdict || "") +
-      "</p>" +
-      (pack.done_questions
-        ? '<div class="row sku-inject">' + skus + "</div>"
-        : '<label>' +
-          esc(pack.prompt || q.text || "Вопрос") +
-          "</label>" +
-          '<textarea id="fg-answer" placeholder="Короткий ответ"></textarea>' +
-          '<div class="row"><button type="button" class="btn btn-primary" id="fg-ans">Дальше · ' +
-          (ans + 1) +
-          "/" +
-          n +
-          "</button></div>") +
+      (vec ? '<ol class="wf-rail">' + vec + "</ol>" : "") +
+      pay +
       wfHtml(pack.workflow);
   }
 
@@ -892,22 +899,58 @@
     if (!box || !state.flagship) return;
     var out = await post("/api/v1/miniapp/flagship", {
       ticker: state.flagship.ticker,
-      sku: sku,
+      sku: "sku_490",
       lang: "ru",
     });
     var url = (out.product && out.product.pay_url) || out.tribute || "https://t.me/tribute";
-    var fileNote =
-      sku === "sku_100"
-        ? "После $100 файл не отдаётся. 120 запросов."
-        : "После оплаты — файл: методика + надстройка.";
+    var ev = out.eval_visible ? out.eval || {} : null;
     box.innerHTML =
-      '<article class="wall"><h3>' +
-      esc((out.product && out.product.name) || sku) +
-      "</h3><p>" +
-      fileNote +
+      '<article class="wall"><h3>$490 · Assist</h3><p>Комбо рекурсивных решений и терминальная посадка процесса. Eval — после оплаты.</p>' +
+      (ev
+        ? '<p class="room-desc">Eval ' +
+          Math.round((ev.score || 0) * 100) +
+          "% — " +
+          esc(ev.verdict || "") +
+          "</p>"
+        : "") +
+      '<div class="row"><a class="btn btn-primary" href="' +
+      esc(url) +
+      '" target="_blank" rel="noopener">Оплатить $490</a></div></article>';
+  }
+
+  async function runCheck() {
+    var el = document.getElementById("ck-ticker");
+    var box = document.getElementById("ck-out");
+    if (!box) return;
+    box.innerHTML = "<p class='status'>Сверяю…</p>";
+    var out = await post("/api/v1/miniapp/check-file", {
+      ticker: el ? el.value : "",
+      lang: "ru",
+    });
+    if (!out.ok) {
+      box.innerHTML = "<p class='room-desc'>" + esc(out.ask || "Сначала Флагман.") + "</p>";
+      return;
+    }
+    var vec = (out.vectors || [])
+      .map(function (row) {
+        return "<li><b>" + esc(row.k) + "</b> — " + esc(row.v) + "</li>";
+      })
+      .join("");
+    var url = (out.pay && out.pay.pay_url) || "https://t.me/tribute";
+    box.innerHTML =
+      '<div class="ticker-chip">' +
+      esc(out.ticker || "") +
+      "</div><p>" +
+      esc(out.problem || "") +
+      "</p><p>" +
+      esc(out.solution || "") +
+      "</p><ol class='wf-rail'>" +
+      vec +
+      "</ol><p class='room-desc'>" +
+      esc(out.inside || "") +
       '</p><div class="row"><a class="btn btn-primary" href="' +
       esc(url) +
-      '" target="_blank" rel="noopener">Оплатить в Tribute</a></div></article>';
+      '" target="_blank" rel="noopener">$490</a></div>';
   }
 
   async function showHitTier(tier) {
@@ -938,6 +981,7 @@
     else if (state.view === "shift") html = shiftView();
     else if (state.view === "flagship") html = flagshipView();
     else if (state.view === "tariffs") html = tariffsView(c);
+    else if (state.view === "check") html = checkView();
     else if (state.view === "hits") {
       if (!state.hits) {
         try {

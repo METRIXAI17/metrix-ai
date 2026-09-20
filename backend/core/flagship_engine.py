@@ -7,7 +7,7 @@ from typing import Any
 from backend.core.circle_system.chain_store import load_chain
 from backend.core.design_contour import analyze as analyze_contour
 from backend.core.life_intake import apply_answers, format_telegram as format_intake
-from backend.core.life_intake import intake
+from backend.core.life_intake import intake, vectors_of
 from backend.core.pricing_lanes import sku_of, tariff_board
 from backend.core.product_file import generate_paid_file
 from backend.core.tribute_products import create_product
@@ -49,7 +49,7 @@ def answer(ticker: str, text: str, *, lang: str = "ru") -> dict[str, Any]:
     if not qid and questions:
         qid = f"q{len(answers)+1}"
     if qid:
-        answers[qid] = (text or "").strip()[:400]
+        answers[qid] = (text or "").strip()[:800]
     pack = apply_answers(ticker, answers, lang=lang)
     remaining = [
         q for q in (pack.get("questions") or []) if not str(answers.get(q.get("id")) or "").strip()
@@ -62,12 +62,45 @@ def answer(ticker: str, text: str, *, lang: str = "ru") -> dict[str, Any]:
         n = pack.get("question_count") or len(pack.get("questions") or [])
         pack["prompt"] = f"Вопрос {pack['answered']+1}/{n}: {remaining[0].get('text')}"
     else:
-        pack["prompt"] = pack.get("next") or "Вопросы закрыты. Выберите тариф."
+        pack["vectors"] = vectors_of(pack)
+        pack["prompt"] = pack.get("next") or "Сводка векторов готова. $490 — посадка."
     return pack
 
 
-def fulfill(ticker: str, sku_id: str, *, lang: str = "ru") -> dict[str, Any]:
+def check_before_pay(ticker: str = "", *, lang: str = "ru") -> dict[str, Any]:
+    ru = (lang or "ru").startswith("ru")
+    rec = load_chain(ticker) if ticker else None
+    if not rec:
+        return {
+            "ok": False,
+            "need": "flagship",
+            "ask": (
+                "Сначала Флагман — две строки. Потом сверить собранное до оплаты."
+                if ru
+                else "Flagship first — two lines. Then check what was assembled, before pay."
+            ),
+        }
+    sku = sku_of("sku_490")
+    vec = vectors_of({**rec, "questions": rec.get("questions") or [], "answers": rec.get("answers") or {}})
+    return {
+        "ok": True,
+        "ticker": rec.get("ticker") or ticker,
+        "problem": rec.get("problem") or "",
+        "solution": rec.get("solution") or "",
+        "vectors": vec,
+        "eval_visible": False,
+        "pay": sku,
+        "inside": (
+            "До оплаты видно суть, решение и векторы. Внутри $490 — комбо рекурсивных решений и терминальная посадка процесса. Eval откроется после оплаты."
+            if ru
+            else "Before pay you see essence, sit, and vectors. Inside $490 — recursive combo + terminal process. Eval after pay."
+        ),
+    }
+
+
+def fulfill(ticker: str, sku_id: str = "sku_490", *, lang: str = "ru") -> dict[str, Any]:
     rec = load_chain(ticker) or {}
+    sku_id = "sku_490"
     product = create_product(
         ticker=ticker,
         solution=rec.get("solution") or "",
@@ -75,14 +108,24 @@ def fulfill(ticker: str, sku_id: str, *, lang: str = "ru") -> dict[str, Any]:
         problem=rec.get("problem") or "",
     )
     paid = generate_paid_file(ticker, sku_id=sku_id, lang=lang)
-    return {"ok": True, "product": product, "file": paid, "ticker": ticker, "sku": sku_id}
+    ev = rec.get("eval") or {}
+    return {
+        "ok": True,
+        "product": product,
+        "file": paid,
+        "ticker": ticker,
+        "sku": sku_id,
+        "eval": ev,
+        "eval_visible": True,
+    }
 
 
 def format_start_telegram(lang: str = "ru") -> str:
     wf = format_wf(turnaround(lang=lang), lang=lang)
     ask = (
-        "\n\n<b>Флагман.</b> Две строки, не эссе.\n"
-        "Что ломается — одной фразой.\nЧто должно сесть — второй."
+        "\n\n<b>Флагман.</b> Бесплатный слой. Две строки, не эссе.\n"
+        "Выдаёт суть твоего вопроса и решение одной фразой.\n"
+        "Потом несколько вопросов — сводка векторов результата."
     )
     return wf + ask
 
@@ -94,15 +137,37 @@ def format_pack_telegram(pack: dict[str, Any]) -> str:
 
 
 def format_skus_telegram(pack: dict[str, Any]) -> str:
-    rec = pack.get("recommended_sku") or "sku_490"
-    lines = ["<b>Тариф под эту цепочку</b>", f"Тикер <code>{pack.get('ticker')}</code>", ""]
-    for c in (pack.get("skus") or {}).get("cards") or []:
-        mark = " ←" if c.get("id") == rec or c.get("recommended") else ""
-        file_note = "файл" if c.get("file") else "без файла"
-        lines.append(f"<b>${c.get('usd')}</b> · {c.get('name_ru')} · {file_note}{mark}")
-        lines.append(c.get("move") or c.get("gets_ru") or "")
-        lines.append("")
-    lines.append("Хиты смотреть бесплатно. Web3 Store — запросы бесплатно.")
+    s = sku_of("sku_490")
+    vec = pack.get("vectors") or []
+    lines = [
+        f"<b>{pack.get('ticker') or ''}</b> · сводка векторов",
+        "",
+    ]
+    for row in vec[:8]:
+        lines.append(f"· <b>{row.get('k')}</b> — {row.get('v')}")
+    lines.append("")
+    lines.append(pack.get("paid_inside") or s.get("gets_ru") or "")
+    lines.append("")
+    lines.append(f"<b>$490</b> · Assist. Комбо рекурсивных решений + терминальная посадка процесса.")
+    lines.append("Eval — после оплаты.")
+    return "\n".join(lines)
+
+
+def format_check_telegram(pack: dict[str, Any]) -> str:
+    if not pack.get("ok"):
+        return pack.get("ask") or "Сначала Флагман."
+    lines = [
+        "<b>Сверить файл</b> · до оплаты",
+        f"Тикер <code>{pack.get('ticker')}</code>",
+        "",
+        f"Суть: {pack.get('problem')}",
+        f"Решение: {pack.get('solution')}",
+        "",
+    ]
+    for row in (pack.get("vectors") or [])[:8]:
+        lines.append(f"· {row.get('k')}: {row.get('v')}")
+    lines.append("")
+    lines.append(pack.get("inside") or "")
     return "\n".join(lines)
 
 

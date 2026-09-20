@@ -60,6 +60,7 @@ SECTION_PHOTO = {
     "ampli": PHOTO_ROOT / "geo-ampli.jpg",
     "two_leg_tape": PHOTO_ROOT / "geo-tape.jpg",
     "risk": PHOTO_ROOT / "geo-risk.jpg",
+    "hits": HERE / "hit-sticker.jpg",
 }
 
 
@@ -95,7 +96,7 @@ def _webapp() -> str:
 def webapp_open(webapp: str, view: str = "") -> str:
     """Mini App URL with cache buster. Telegram WebView otherwise keeps old HTML."""
     base = (webapp or "").split("?")[0].split("#")[0].rstrip("/") + "/"
-    url = base + "?v=t4"
+    url = base + "?v=t5"
     if view:
         url += "#" + view.lstrip("#")
     return url
@@ -133,8 +134,9 @@ def human_row() -> list[dict]:
 
 
 def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
-    """Primary nav — four rooms. Reply keyboard is a fallback; Telegram often hides it."""
+    """Primary nav — check-file on top, then four rooms."""
     rows = [
+        [{"text": "✦ Сверить файл", "callback_data": "m:check"}],
         [
             {"text": "Хиты", "callback_data": "m:hits"},
             {"text": "Флагман", "callback_data": "m:flagship"},
@@ -144,7 +146,6 @@ def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
             {"text": "Тарифы", "callback_data": "m:tariffs"},
         ],
         webapp_row(webapp),
-        [{"text": "Открыть хиты", "web_app": {"url": webapp_open(webapp, "hits")}}],
         [{"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"}],
     ]
     if extra:
@@ -357,8 +358,9 @@ def bootstrap(api: BotAPI, webapp: str) -> None:
         "setMyCommands",
         commands=[
             {"command": "start", "description": "Четыре комнаты"},
-            {"command": "hits", "description": "Хиты · смотреть бесплатно"},
-            {"command": "flagship", "description": "Флагман · две строки"},
+            {"command": "hits", "description": "Хиты · не сигнальный ассистент"},
+            {"command": "flagship", "description": "Флагман · две строки · $490"},
+            {"command": "check", "description": "Сверить файл до оплаты"},
             {"command": "store", "description": "Web3 Store · запросы бесплатно"},
             {"command": "tariffs", "description": "Тарифы"},
         ],
@@ -506,14 +508,16 @@ def show_posts(api: BotAPI, chat_id: int, webapp: str) -> None:
     api.send(chat_id, texts.POSTS_INTRO, markup=nav_inline(webapp, extra=extra))
 
 
-def pay_kb(ticker: str = "") -> list[list[dict]]:
+def pay_kb(ticker: str = "", *, flagship: bool = False) -> list[list[dict]]:
     from backend.core.pricing_lanes import sku_of
 
+    ids = ("sku_490",) if flagship else ("sku_100", "sku_490", "sku_1000", "sku_10000")
     rows = []
-    for sid in ("sku_100", "sku_490", "sku_1000", "sku_10000"):
+    for sid in ids:
         s = sku_of(sid)
         url = s.get("pay_url") or _tribute_url()
-        rows.append([{"text": s.get("name_ru") or sid, "url": url}])
+        label = "$490 · Assist" if sid == "sku_490" else (s.get("name_ru") or sid)
+        rows.append([{"text": label, "url": url}])
     if ticker:
         rows.append([{"text": f"Тикер {ticker}", "callback_data": f"tk:{ticker}"}])
     return rows
@@ -538,12 +542,14 @@ def _fulfill_if_paid(api: BotAPI, chat_id: int, webapp: str) -> bool:
     py = Path(paid.get("py_path") or "")
     sessions.set_mode(chat_id, "idle", ticker=ticker, fulfilled=ticker + sku)
     if py.exists():
-        api.send_document(
-            chat_id,
-            py,
-            caption=f"<b>{ticker}</b> · надстройка того же движка. Не обещание дохода.",
-            markup=nav_inline(webapp),
+        ev = (out.get("eval") or {})
+        score = float(ev.get("score") or 0)
+        cap = (
+            f"<b>{ticker}</b> · посадка\n"
+            f"Eval: {score:.0%} — {ev.get('verdict') or 'sit'}\n"
+            "Комбо рекурсивных решений + терминальный процесс. Не обещание дохода."
         )
+        api.send_document(chat_id, py, caption=cap, markup=nav_inline(webapp))
         return True
     api.send(chat_id, "Файл собран, но путь пуст. Напишите ещё раз.", markup=nav_inline(webapp))
     return True
@@ -567,7 +573,7 @@ def show_flagship(api: BotAPI, chat_id: int, webapp: str) -> None:
 
 def show_tariffs(api: BotAPI, chat_id: int, webapp: str) -> None:
     extra = pay_kb(sessions.load(chat_id).get("ticker") or "")
-    api.send(chat_id, texts.ASK_TARIFFS, markup=nav_inline(webapp, extra=extra), html=False)
+    api.send(chat_id, texts.ASK_TARIFFS, markup=nav_inline(webapp, extra=extra), html=True)
 
 
 def show_life(api: BotAPI, chat_id: int, webapp: str) -> None:
@@ -640,7 +646,7 @@ def show_artefacts(api: BotAPI, chat_id: int, webapp: str) -> None:
 
 
 def show_hits(api: BotAPI, chat_id: int, webapp: str) -> None:
-    from telegram_app.hits import format_hit, glossary, weekly_hit
+    from telegram_app.hits import STICKER, format_hit, weekly_hit
 
     hit = weekly_hit(int(time.time() // 86400 // 7))
     extra = {
@@ -650,7 +656,25 @@ def show_hits(api: BotAPI, chat_id: int, webapp: str) -> None:
             [{"text": "Приватка", "callback_data": "ht:priv"}],
         ]
     }
+    photo = STICKER if STICKER.exists() else SECTION_PHOTO.get("hits")
+    if photo and photo.exists():
+        api.send_photo(
+            chat_id,
+            photo,
+            format_hit(hit),
+            markup=nav_inline(webapp, extra=extra["inline_keyboard"]),
+        )
+        return
     api.send(chat_id, format_hit(hit), markup=nav_inline(webapp, extra=extra["inline_keyboard"]))
+
+
+def show_check(api: BotAPI, chat_id: int, webapp: str) -> None:
+    from backend.core.flagship_engine import check_before_pay, format_check_telegram
+
+    ticker = sessions.load(chat_id).get("ticker") or ""
+    pack = check_before_pay(ticker, lang="ru")
+    extra = pay_kb(ticker, flagship=True) if pack.get("ok") else []
+    api.send(chat_id, format_check_telegram(pack), markup=nav_inline(webapp, extra=extra))
 
 
 def show_sub(api: BotAPI, chat_id: int, webapp: str) -> None:
@@ -783,6 +807,9 @@ def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
     if action == "tariffs":
         show_tariffs(api, chat_id, webapp)
         return
+    if action == "check":
+        show_check(api, chat_id, webapp)
+        return
     if action in ("bots", "strategies"):
         show_bots(api, chat_id, webapp)
         return
@@ -838,6 +865,7 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
             "demo": "flagship",
             "flagship": "flagship",
             "tariffs": "tariffs",
+            "check": "check",
             "bots": "bots",
             "teammates": "craft",
             "engine": "craft",
@@ -1110,7 +1138,7 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
             return
         pack = flag_answer(ticker, raw, lang="ru")
         if pack.get("done_questions"):
-            extra = pay_kb(ticker)
+            extra = pay_kb(ticker, flagship=True)
             api.send(chat_id, format_skus_telegram(pack), markup=nav_inline(webapp, extra=extra))
             sessions.set_mode(chat_id, "await_paid", ticker=ticker)
             return
@@ -1125,8 +1153,13 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
     if mode == "await_paid":
         if _fulfill_if_paid(api, chat_id, webapp):
             return
-        extra = pay_kb(st.get("ticker") or "")
-        api.send(chat_id, texts.ASK_TARIFFS, markup=nav_inline(webapp, extra=extra), html=False)
+        extra = pay_kb(st.get("ticker") or "", flagship=True)
+        api.send(
+            chat_id,
+            "Сводка готова. $490 — комбо рекурсивных решений и терминальная посадка. Eval после оплаты.",
+            markup=nav_inline(webapp, extra=extra),
+            html=False,
+        )
         return
     if mode == "await_bots":
         _run_section(api, chat_id, "bots", raw, strategy=st.get("strategy"))

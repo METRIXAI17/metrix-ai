@@ -107,7 +107,7 @@ PUBLIC_TABS = [
         "title_en": "Hits",
         "title_short": "Хиты",
         "free": True,
-        "one_liner": "Разбор конструкции. Не тикер, не сигнал. Смотреть бесплатно.",
+        "one_liner": "Мувики, которые заслужили данные. Не сигнальный ассистент.",
         "accent": "#5eead4",
     },
     {
@@ -116,7 +116,7 @@ PUBLIC_TABS = [
         "title_en": "Flagship",
         "title_short": "Флагман",
         "free": True,
-        "one_liner": "Две строки, не эссе. Суть и решение. Потом 5–20 вопросов, eval, тикер.",
+        "one_liner": "Выдаёт суть вопроса и решение одной фразой. Потом вопросы — сводка векторов. $490.",
         "accent": "#38bdf8",
     },
     {
@@ -134,7 +134,7 @@ PUBLIC_TABS = [
         "title_en": "Tariffs",
         "title_short": "Тарифы",
         "free": True,
-        "one_liner": "Хиты и Store бесплатно. $100 без файла. $490 / $1000 / $10 000 — файл.",
+        "one_liner": "Флагман — автономный контур в ваш проект. Хиты и Store бесплатно.",
         "accent": "#fbbf24",
     },
 ]
@@ -200,9 +200,23 @@ def tariff_board(lang: str = "ru") -> dict[str, Any]:
         "free_life": free,
         "paid": paid,
         "human": HUMAN_CONTACT_URL or "https://x.com/karimmetrix",
+        "flagship": {
+            "usd": 490,
+            "role_ru": (
+                "Флагман — автономный контур в ваш проект. "
+                "Плотнее спеки, тот же поток. Комнаты, не новая линейка. "
+                "В боте посадка $490: комбо рекурсивных решений и терминальный процесс."
+            ),
+            "role_en": (
+                "Flagship is an autonomous contour on your project. "
+                "Denser specs, same stream. Rooms, not a new product line. "
+                "In the bot the sit is $490: recursive combo + terminal process."
+            ),
+        },
         "note": (
-            "После оплаты файл отдаётся во всех тарифах, кроме $100."
+            "Флагман в тарифах = контур в ваш проект. В комнате Флагман оплата одна: $490. "
+            "После оплаты файл — кроме $100."
             if ru
-            else "After payment a file is delivered on every tariff except $100."
+            else "Flagship in tariffs = contour on your project. In the Flagship room the pay is $490. File after pay except $100."
         ),
     }

@@ -7,60 +7,44 @@ from typing import Any
 
 STEPS: list[dict[str, str]] = [
     {
-        "id": "two_lines",
+        "id": "essence",
         "n": "01",
-        "title_ru": "Две строки",
-        "title_en": "Two lines",
-        "do_ru": "Суть и желаемая посадка. Не эссе.",
-        "do_en": "Essence and the slot it should sit in. Not an essay.",
+        "title_ru": "Суть",
+        "title_en": "Essence",
+        "do_ru": "Опиши вопрос.",
+        "do_en": "Describe the question.",
     },
     {
-        "id": "phrases",
+        "id": "two_lines",
         "n": "02",
-        "title_ru": "Две фразы назад",
-        "title_en": "Two phrases back",
-        "do_ru": "Движок возвращает суть одной фразой и решение одной фразой.",
-        "do_en": "Engine returns the problem in one phrase and the solution in one phrase.",
+        "title_ru": "Две строки",
+        "title_en": "Two lines",
+        "do_ru": "Движок подсвечивает проблему и выдаёт способ решения.",
+        "do_en": "The engine highlights the problem and returns a way to sit it.",
     },
     {
         "id": "questions",
         "n": "03",
-        "title_ru": "5–20 вопросов",
-        "title_en": "5–20 questions",
-        "do_ru": "Простые настройки. Кастом, не допрос.",
-        "do_en": "Simple settings. Custom, not an interrogation.",
+        "title_ru": "5–10 вопросов",
+        "title_en": "5–10 questions",
+        "do_ru": "Настройки контекста. Своими словами: блоки, мысль, трудность.",
+        "do_en": "Context settings. In your words: blocks, thought, friction.",
     },
     {
-        "id": "eval",
+        "id": "vector",
         "n": "04",
-        "title_ru": "Eval",
-        "title_en": "Eval",
-        "do_ru": "Насколько реально можем помочь. Без 100%.",
-        "do_en": "How much we can actually help. Never a fake 100%.",
-    },
-    {
-        "id": "ticker",
-        "n": "05",
-        "title_ru": "Тикер",
-        "title_en": "Ticker",
-        "do_ru": "Объект получает имя в системе. Цепочка пишется в файл.",
-        "do_en": "The object gets a name in the system. The chain is written to a file.",
+        "title_ru": "Нужный вектор",
+        "title_en": "The vector",
+        "do_ru": "Сводка, куда сядет результат. Без эссе.",
+        "do_en": "A summary of where the result will sit. No essay.",
     },
     {
         "id": "pay",
-        "n": "06",
-        "title_ru": "Оплата",
-        "title_en": "Pay",
-        "do_ru": "$100 — 120 запросов, без файла. $490 / $1000 / $10 000 — файл.",
-        "do_en": "$100 — 120 requests, no file. $490 / $1000 / $10k — file.",
-    },
-    {
-        "id": "file",
-        "n": "07",
-        "title_ru": "Файл",
-        "title_en": "File",
-        "do_ru": "Рекурсивная методика + спеки, переведённые в кодовую надстройку того же движка.",
-        "do_en": "Recursive methodology + specs, translated into a code overlay of the same engine.",
+        "n": "05",
+        "title_ru": "Посадка",
+        "title_en": "Sit",
+        "do_ru": "$490 — комбо рекурсивных решений и терминальная посадка процесса. Eval — после оплаты.",
+        "do_en": "$490 — a combo of recursive solutions and a terminal process sit. Eval after pay.",
     },
 ]
 
@@ -78,15 +62,15 @@ def turnaround(*, lang: str = "ru", contour: bool = False) -> dict[str, Any]:
             }
         )
     lead = (
-        "Разворот, как сядет дизайн. Бесплатно. Комнаты, не новая линейка."
+        "Выдаёт суть твоего вопроса и решение одной фразой. Потом несколько вопросов — сводка векторов."
         if ru
-        else "How the design will sit. Free. Rooms, not a new product line."
+        else "Returns the essence of your question and a one-phrase sit. Then a few questions — a vector summary."
     )
     if contour:
         lead = (
-            "Автономный контур в ваш проект: сначала этот разворот, потом две строки, потом спеки."
+            "Флагман сажает автономный контур в ваш проект. Плотнее спеки, тот же поток."
             if ru
-            else "Autonomous contour on your project: this turnaround first, then two lines, then specs."
+            else "Flagship sits an autonomous contour on your project. Denser specs, same stream."
         )
     return {
         "module": "WorkflowTurnaround",
@@ -94,16 +78,16 @@ def turnaround(*, lang: str = "ru", contour: bool = False) -> dict[str, Any]:
         "lead": lead,
         "steps": steps,
         "kill": (
-            "Не обещаем доход. Не открываем новую линейку."
+            "Eval открывается после оплаты. Не обещаем доход."
             if ru
-            else "No yield promise. No new product line."
+            else "Eval opens after pay. No yield promise."
         ),
     }
 
 
 def format_telegram(pack: dict[str, Any] | None = None, *, lang: str = "ru") -> str:
     p = pack or turnaround(lang=lang)
-    lines = [f"<b>Разворот</b>", p.get("lead") or "", ""]
+    lines = ["<b>Разворот</b>", p.get("lead") or "", ""]
     for s in p.get("steps") or []:
         lines.append(f"<code>{s['n']}</code> <b>{s['title']}</b> — {s['do']}")
     lines.append("")

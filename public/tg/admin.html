@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Metrix · админка</title>
+  <link rel="stylesheet" href="/tg/css/app.css?v=t5" />
+  <style>
+    .admin { padding: 1.2rem 1rem 4rem; max-width: 720px; margin: 0 auto; }
+    .admin table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .admin th, .admin td { text-align: left; padding: 0.45rem 0.35rem; border-bottom: 1px solid rgba(148,163,184,.16); vertical-align: top; }
+    .admin th { color: #5eead4; font-size: 0.68rem; letter-spacing: .08em; text-transform: uppercase; }
+    .admin input { width: 100%; margin: 0.4rem 0 0.8rem; padding: 0.55rem 0.7rem; border-radius: 10px; border: 1px solid rgba(94,234,212,.3); background: #111822; color: #e8eef7; }
+  </style>
+</head>
+<body>
+  <div class="admin">
+    <div class="eyebrow">Karim</div>
+    <h1>Админка. <em>Первый слой.</em></h1>
+    <p class="lead">Цепочки и тикеры. Ключ — METRIX_OPS_KEY / METRIX_ADMIN_KEY.</p>
+    <label>Ключ</label>
+    <input id="key" type="password" placeholder="ops key" />
+    <button type="button" class="btn btn-primary" id="load">Открыть</button>
+    <p class="muted" id="meta"></p>
+    <div id="out"></div>
+  </div>
+  <script>
+    (function () {
+      var API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+        ? "http://127.0.0.1:8787" : "";
+      document.getElementById("load").onclick = async function () {
+        var key = document.getElementById("key").value || sessionStorage.getItem("mx_ops") || "";
+        sessionStorage.setItem("mx_ops", key);
+        var r = await fetch(API + "/api/v1/admin/overview", { headers: { "X-Metrix-Ops-Key": key } });
+        var d = await r.json();
+        document.getElementById("meta").textContent = d.note || (r.ok ? (d.count + " цепочек") : "ключ не принят");
+        if (!r.ok) return;
+        var rows = (d.chains || []).map(function (c) {
+          return "<tr><td><code>" + (c.ticker || "") + "</code></td><td>" + (c.problem || "") +
+            "</td><td>" + (c.sku || "") + "</td><td>" + (c.file ? "файл" : "—") + "</td></tr>";
+        }).join("");
+        document.getElementById("out").innerHTML =
+          "<table><thead><tr><th>тикер</th><th>суть</th><th>sku</th><th>файл</th></tr></thead><tbody>" +
+          rows + "</tbody></table>";
+      };
+    })();
+  </script>
+</body>
+</html>

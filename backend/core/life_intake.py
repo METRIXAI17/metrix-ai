@@ -18,26 +18,16 @@ _WHO = ("хозяин", "кто", "owner", "нажима", "слот")
 
 
 Q_BANK: list[dict[str, str]] = [
-    {"id": "when", "ru": "Где ломается чаще — утром, в сдаче, в кассе?", "en": "Where does it break — morning, handoff, or cash?"},
-    {"id": "who", "ru": "Кто нажимает, если объект сел?", "en": "Who presses if the object sits?"},
-    {"id": "days", "ru": "Какой срок — дни, не месяцы?", "en": "What window — days, not months?"},
-    {"id": "killed", "ru": "Что уже пробовали и убили?", "en": "What did you already try and kill?"},
-    {"id": "dont", "ru": "Что нельзя трогать?", "en": "What must not be touched?"},
-    {"id": "unit", "ru": "За какой unit уже платят?", "en": "Which unit already gets paid?"},
-    {"id": "in_out", "ru": "Часы горят на in или на out?", "en": "Do hours burn on the way in or out?"},
-    {"id": "monday", "ru": "Какая цифра понедельника должна появиться?", "en": "Which Monday number must appear?"},
-    {"id": "library", "ru": "Какая библиотека уже в руках — не «ещё одна»?", "en": "Which library is already in hand — not another one?"},
-    {"id": "slot", "ru": "Какой слот должен принять объект?", "en": "Which slot must receive the object?"},
-    {"id": "rooms", "ru": "Какие комнаты уже есть — не какую линейку открыть?", "en": "Which rooms already exist — not which line to open?"},
-    {"id": "silence", "ru": "Когда молчать клиенту?", "en": "When should the client be left in silence?"},
-    {"id": "kill", "ru": "Какое правило убивает тезис?", "en": "Which rule kills the thesis?"},
-    {"id": "owner_min", "ru": "Сколько минут на статус, пока не эскалация?", "en": "How many minutes for status before escalate?"},
-    {"id": "unusual", "ru": "Какой нестандартный ход выглядел неправильно в учебнике?", "en": "Which unusual move looked wrong in the textbook?"},
-    {"id": "proof", "ru": "Какой артефакт уже можно положить на стол?", "en": "Which artifact can already go on the table?"},
-    {"id": "cash", "ru": "Где касса — туман, отсрочка, или нет имени у сгоревшего?", "en": "Cash: fog, delay, or burned hours without a name?"},
-    {"id": "retain", "ru": "Что должно остаться тем же контуром, только плотнее?", "en": "What must stay the same contour, only denser?"},
-    {"id": "web3", "ru": "Это заказ Web3 как входящий — или жизнь/касса?", "en": "Is this a Web3 inbound order — or life/cash?"},
-    {"id": "file_need", "ru": "Файл после оплаты нужен — или хватит 120 коротких запросов?", "en": "Do you need the file after pay — or 120 short requests?"},
+    {"id": "thought", "ru": "Какая мысль крутится и не садится? Напиши как есть.", "en": "Which thought loops and will not sit? Write it as it is."},
+    {"id": "block", "ru": "Где самый жирный блок трудности — в голове, в людях, в кассе, в сроке?", "en": "Where is the thickest block — head, people, cash, or time?"},
+    {"id": "stuck", "ru": "Где мысль застревает: в начале, в середине или на сдаче?", "en": "Where does the thought stick: start, middle, or handoff?"},
+    {"id": "tried", "ru": "Что уже пробовал своими руками — и почему отпустил?", "en": "What did you already try with your hands — and why did you let it go?"},
+    {"id": "fear", "ru": "Чего боишься сломать, если решение сядет?", "en": "What are you afraid of breaking if the sit lands?"},
+    {"id": "easier", "ru": "Как выглядит «стало легче» одним вечером — своими словами.", "en": "What does «it got easier» look like in one evening — in your words."},
+    {"id": "alone", "ru": "Ты в этом один или кто рядом, если сядет?", "en": "Are you alone in this, or who is next to you if it sits?"},
+    {"id": "hard_easy", "ru": "Что в голове кажется сложным, а руками — простым? Или наоборот.", "en": "What feels hard in the head and simple in the hands? Or the other way."},
+    {"id": "skip", "ru": "Какой кусок контекста мы не должны пропустить?", "en": "Which piece of context must we not skip?"},
+    {"id": "vector", "ru": "Куда должен показать вектор, если коротко: касса, покой, слот, люди?", "en": "Where should the vector point, short: cash, quiet, slot, people?"},
 ]
 
 
@@ -80,10 +70,10 @@ def solution_phrase(brief: str, lang: str = "ru") -> str:
 
 def _n_questions(brief: str, contour: bool) -> int:
     words = len((brief or "").split())
-    n = 5 + min(15, words // 4)
+    n = 5 + min(5, words // 6)
     if contour:
-        n = max(n, 12)
-    return max(5, min(20, n))
+        n = max(n, 7)
+    return max(5, min(10, n))
 
 
 def _is_contour(brief: str) -> bool:
@@ -103,11 +93,9 @@ def pick_questions(brief: str, *, lang: str = "ru", n: int | None = None) -> lis
     for i, q in enumerate(Q_BANK):
         boost = 0
         qid = q["id"]
-        if contour and qid in ("rooms", "retain", "monday", "owner_min", "in_out"):
+        if contour and qid in ("vector", "block", "skip", "alone"):
             boost += 4
-        if any(w in t for w in ("касс", "cash")) and qid == "cash":
-            boost += 3
-        if any(w in t for w in ("web3", "заказ")) and qid == "web3":
+        if any(w in t for w in ("касс", "cash", "голов", "мысл")) and qid in ("thought", "block"):
             boost += 3
         scored.append((boost * 10 + (20 - i), q))
     scored.sort(key=lambda x: -x[0])
@@ -232,10 +220,16 @@ def intake(
         "recommended_sku": rec_sku,
         "chain_id": saved.get("chain_id") or tick,
         "contour": contour,
-        "next": (
-            "Ответьте на вопросы по одному. Потом — тариф. Файл после оплаты, кроме $100."
+        "eval_visible": False,
+        "paid_inside": (
+            "Внутри $490: комбо рекурсивных решений и терминальная посадка процесса. Eval откроется после оплаты."
             if ru
-            else "Answer the questions one by one. Then a tariff. File after pay, except $100."
+            else "Inside $490: a combo of recursive solutions and a terminal process sit. Eval opens after pay."
+        ),
+        "next": (
+            "Ответь своими словами — блок, мысль, трудность. Потом сводка векторов и $490."
+            if ru
+            else "Answer in your words — block, thought, friction. Then a vector summary and $490."
         ),
     }
 
@@ -250,16 +244,30 @@ def apply_answers(ticker: str, answers: dict[str, str], *, lang: str = "ru") -> 
     return pack
 
 
+def vectors_of(pack: dict[str, Any]) -> list[dict[str, str]]:
+    qs = pack.get("questions") or []
+    ans = pack.get("answers") or {}
+    rows = [
+        {"k": "суть", "v": str(pack.get("problem") or "")},
+        {"k": "решение", "v": str(pack.get("solution") or "")},
+    ]
+    for q in qs:
+        qid = q.get("id") or ""
+        val = str(ans.get(qid) or "").strip()
+        if val:
+            rows.append({"k": q.get("text") or qid, "v": val})
+    return rows
+
+
 def format_telegram(pack: dict[str, Any]) -> str:
-    ev = pack.get("eval") or {}
     q0 = (pack.get("questions") or [{}])[0]
     n = pack.get("question_count") or len(pack.get("questions") or [])
-    score = float(ev.get("score") or 0)
     lines = [
         f"<b>{pack.get('ticker') or 'MX'}</b>",
         f"Суть: {pack.get('problem')}",
         f"Решение: {pack.get('solution')}",
-        f"Eval: {score:.0%} — {ev.get('verdict') or ''}",
+        "",
+        pack.get("paid_inside") or "",
         "",
         pack.get("next") or "",
         "",

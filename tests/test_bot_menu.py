@@ -53,13 +53,14 @@ def test_hits_and_private():
     nav = nav_inline("https://metrix-ai.vercel.app/tg/")
     flat = str(nav)
     assert "m:hits" in flat
-    assert "#hits" in flat
+    assert "m:check" in flat
     assert "m:flagship" in flat
     assert "m:tariffs" in flat
-    assert "v=t4" in flat
+    assert "v=t5" in flat
     h = format_hit(weekly_hit(0))
+    assert "не сигнальный ассистент" in h
+    assert "Мувики, которые заслужили данные" in h
     assert "Не рекомендация сделки" in h
-    assert len(h) > 400
 
 
 def test_cross_alias():

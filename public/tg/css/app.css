@@ -768,3 +768,65 @@ textarea:focus, input:focus {
 }
 .tariff-tile .btn { margin-top: 0.45rem; align-self: flex-start; }
 .sku-inject { flex-wrap: wrap; margin-top: 0.8rem; }
+
+.room-label {
+  color: #7dd3fc !important;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+.room-desc {
+  color: #a5f3fc !important;
+  font-weight: 650;
+  max-width: 46ch;
+}
+.sticker-hero {
+  width: 148px;
+  height: 148px;
+  object-fit: cover;
+  border-radius: 28px;
+  display: block;
+  margin: 0 auto 1rem;
+  box-shadow:
+    0 0 0 1px rgba(94, 234, 212, 0.35),
+    0 12px 40px rgba(56, 189, 248, 0.28);
+}
+
+.btn-iridescent {
+  appearance: none;
+  border: 1px solid rgba(94, 234, 212, 0.45);
+  color: #ecfeff;
+  font: 750 0.78rem/1.2 var(--font-ui);
+  letter-spacing: 0.04em;
+  padding: 0.48rem 0.85rem;
+  min-height: 40px;
+  border-radius: 999px;
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(120deg, rgba(14, 22, 32, 0.92), rgba(17, 24, 34, 0.88));
+  box-shadow: 0 0 16px rgba(94, 234, 212, 0.22);
+}
+.btn-iridescent::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  background: repeating-linear-gradient(
+    110deg,
+    rgba(94, 234, 212, 0.0) 0 6px,
+    rgba(94, 234, 212, 0.55) 6px 7px,
+    rgba(56, 189, 248, 0.35) 7px 12px,
+    rgba(196, 181, 253, 0.28) 12px 13px,
+    rgba(251, 191, 36, 0.22) 13px 18px
+  );
+  mix-blend-mode: screen;
+  animation: iridescent-shift 2.8s linear infinite;
+  opacity: 0.85;
+}
+@keyframes iridescent-shift {
+  0% { transform: translateX(-18%) translateY(-8%); }
+  100% { transform: translateX(18%) translateY(8%); }
+}
+.btn-iridescent:active { transform: translateY(1px); }
