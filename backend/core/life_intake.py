@@ -389,14 +389,14 @@ def intake(
         "modern": chain.get("modern") or [],
         "eval_visible": False,
         "paid_inside": (
-            "$100 — кастом спека и варианты мелких задач. $490 — рекурсия на том же слоте. Eval после оплаты."
+            "Внутри $490: комбо рекурсивных решений и терминальная посадка процесса. Eval откроется после оплаты."
             if ru
-            else "$100 — custom spec and small-task variants. $490 — recursion on the same slot. Eval after pay."
+            else "Inside $490: a combo of recursive solutions and a terminal process sit. Eval opens after pay."
         ),
         "next": (
-            "Ответь на вопрос своими словами. Потом сводка и выбор: спека $100 или рекурсия $490."
+            "Ответь своими словами — блок, мысль, трудность. Потом сводка векторов и $490."
             if ru
-            else "Answer the question in your words. Then a summary and a choice: $100 spec or $490 recursion."
+            else "Answer in your words — block, thought, friction. Then a vector summary and $490."
         ),
     }
 

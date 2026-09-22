@@ -94,8 +94,7 @@ def consult_intro() -> str:
         "В результате — файл этой рекурсии.\n"
         f"{price_line('files')}\n\n"
         "Напишите двумя строками, что ломается и куда это должно сесть. Сначала выберите режим.\n\n"
-        "После оплаты вы получите алгоритм флагмана: вопросы своими словами, "
-        "сводку векторов, рекурсивный файл и eval. До оплаты этого файла нет."
+        + after_pay_block()
     )
 
 
@@ -152,23 +151,17 @@ def work_mode(mode: str) -> str:
 
 
 def after_pay_block(pack: dict[str, Any] | None = None) -> str:
-    """Flagship algorithm, stated as what payment unlocks."""
-    pack = pack or {}
-    qs = pack.get("questions") or []
-    lines = [
-        "<b>После оплаты вы получите</b>",
-        "Алгоритм флагмана на этом тикере:",
-        "1. Вопросы своими словами. Движок добирает контекст, не эссе.",
-    ]
-    for i, q in enumerate(qs[:6], 1):
-        lines.append(f"   {i}. {_esc(q.get('text'))}")
-    if not qs:
-        lines.append("   Пять–десять вопросов: граница, слот, хозяин, цифра, что уже пробовали.")
-    lines.append("2. Сводку векторов: куда сядет результат.")
-    lines.append("3. Рекурсивный файл: bound, kill, библиотека, понедельник и кодовая надстройка того же движка.")
-    lines.append("4. Eval. До оплаты числа нет.")
-    lines.append(price_line("files"))
-    return "\n".join(lines)
+    """Old flagship turnaround, unchanged, under one heading."""
+    _ = pack
+    from backend.core.workflow_turnaround import format_telegram, turnaround
+
+    body = format_telegram(turnaround(lang="ru"))
+    ask = (
+        "<b>Флагман.</b> Бесплатный слой. Две строки, не эссе.\n"
+        "Выдаёт суть твоего вопроса и решение одной фразой.\n"
+        "Потом несколько вопросов — сводка векторов результата."
+    )
+    return "<b>После оплаты вы получите</b>\n\n" + body + "\n\n" + ask
 
 
 def format_consult(pack: dict[str, Any], mode: str) -> str:

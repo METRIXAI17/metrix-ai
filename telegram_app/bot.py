@@ -1244,7 +1244,7 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
                 n = pack.get("question_count") or len(qs)
                 api.send(
                     chat_id,
-                    f"После оплаты. Вопрос 1/{n}: {qs[0].get('text')}",
+                    f"Вопрос 1/{n}: {qs[0].get('text')}",
                     markup=nav_inline(webapp),
                     html=False,
                 )
@@ -1261,9 +1261,11 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
             api.send(chat_id, "Сначала две строки в консультации.", html=False)
             return
         if not is_entitled(subject_hash(chat_id)).get("ok"):
+            from telegram_app.catalog import after_pay_block
+
             api.send(
                 chat_id,
-                "Вопросы, сводка векторов, рекурсивный файл и eval — после оплаты.",
+                after_pay_block(),
                 markup=nav_inline(webapp, extra=[[pay_button("files")]]),
             )
             return

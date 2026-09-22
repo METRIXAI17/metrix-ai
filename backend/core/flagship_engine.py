@@ -91,9 +91,9 @@ def check_before_pay(ticker: str = "", *, lang: str = "ru") -> dict[str, Any]:
         "eval_visible": False,
         "pay": sku,
         "inside": (
-            "До оплаты видно суть, решение и варианты. $100 — кастом спека. $490 — рекурсия. Eval после оплаты."
+            "До оплаты видно суть, решение и векторы. Внутри $490 — комбо рекурсивных решений и терминальная посадка процесса. Eval откроется после оплаты."
             if ru
-            else "Before pay: essence, solution, variants. $100 custom spec. $490 recursion. Eval after pay."
+            else "Before pay you see essence, sit, and vectors. Inside $490 — recursive combo + terminal process. Eval after pay."
         ),
     }
 
@@ -149,8 +149,8 @@ def format_skus_telegram(pack: dict[str, Any]) -> str:
     lines.append("")
     lines.append(pack.get("paid_inside") or s.get("gets_ru") or "")
     lines.append("")
-    lines.append("<b>После оплаты вы получите</b> рекурсивный файл и eval.")
-    lines.append("Комбо рекурсивных решений и терминальная посадка процесса.")
+    lines.append("<b>$490</b> · Assist. Комбо рекурсивных решений + терминальная посадка процесса.")
+    lines.append("Eval — после оплаты.")
     return "\n".join(lines)
 
 
