@@ -1221,36 +1221,23 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
         pack = intake(raw, lang="ru", subject=subject_hash(chat_id))
         sessions.set_mode(
             chat_id,
-            "await_consult",
+            "await_consult_q",
             consult_mode=chosen,
             ticker=pack.get("ticker"),
             last_engine_brief=raw,
         )
-        from backend.core.access import is_entitled
-
-        paid = bool(is_entitled(subject_hash(chat_id)).get("ok"))
-        extra = [pay_button("files")]
-        api.send(chat_id, format_consult(pack, chosen), markup=nav_inline(webapp, extra=[extra]))
-        if paid:
-            qs = pack.get("questions") or []
-            if qs:
-                sessions.set_mode(
-                    chat_id,
-                    "await_consult_q",
-                    consult_mode=chosen,
-                    ticker=pack.get("ticker"),
-                    last_engine_brief=raw,
-                )
-                n = pack.get("question_count") or len(qs)
-                api.send(
-                    chat_id,
-                    f"Вопрос 1/{n}: {qs[0].get('text')}",
-                    markup=nav_inline(webapp),
-                    html=False,
-                )
+        api.send(chat_id, format_consult(pack, chosen), markup=nav_inline(webapp, extra=[[pay_button("files")]]))
+        qs = pack.get("questions") or []
+        if qs:
+            n = pack.get("question_count") or len(qs)
+            api.send(
+                chat_id,
+                f"Вопрос 1/{n}: {qs[0].get('text')}",
+                markup=nav_inline(webapp),
+                html=False,
+            )
         return
     if mode == "await_consult_q":
-        from backend.core.access import is_entitled
         from backend.core.flagship_engine import answer as flag_answer
         from backend.core.flagship_engine import format_skus_telegram
         from telegram_app.catalog import pay_button
@@ -1259,15 +1246,6 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
         if not ticker:
             sessions.set_mode(chat_id, "await_consult", consult_mode=st.get("consult_mode") or "hood")
             api.send(chat_id, "Сначала две строки в консультации.", html=False)
-            return
-        if not is_entitled(subject_hash(chat_id)).get("ok"):
-            from telegram_app.catalog import after_pay_block
-
-            api.send(
-                chat_id,
-                after_pay_block(),
-                markup=nav_inline(webapp, extra=[[pay_button("files")]]),
-            )
             return
         pack = flag_answer(ticker, raw, lang="ru")
         if pack.get("done_questions"):

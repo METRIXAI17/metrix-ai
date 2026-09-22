@@ -206,8 +206,6 @@ def format_consult(pack: dict[str, Any], mode: str) -> str:
         lines.append("")
         lines.append("<b>В результате</b>")
         lines.append("Суть, решение и варианты выше.")
-    lines.append("")
-    lines.append(after_pay_block(pack))
     return "\n".join(lines)
 
 
