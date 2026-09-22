@@ -50,3 +50,33 @@ def overview(x_metrix_ops_key: str | None = Header(default=None)) -> dict[str, A
         "chains": chains,
         "note": "Первый срез админки: цепочки и тикеры. Eval и касса — следующие слои.",
     }
+
+
+@router.get("/specs")
+def specs_index(x_metrix_ops_key: str | None = Header(default=None)) -> dict[str, Any]:
+    from backend.core.owner_specs import owner_specs_open
+
+    if not (_authorized(x_metrix_ops_key) or owner_specs_open()):
+        raise HTTPException(401, "admin key")
+    ids = list_chain_ids(limit=40)
+    rows = []
+    for cid in ids:
+        rec = load_chain(cid) or {}
+        custom = rec.get("custom_spec") or {}
+        paid = rec.get("paid_file") or {}
+        if not custom and not paid and not rec.get("variants"):
+            continue
+        rows.append(
+            {
+                "ticker": rec.get("ticker") or cid,
+                "problem": rec.get("problem") or "",
+                "solution": rec.get("solution") or "",
+                "cycle_section": rec.get("cycle_section") or "",
+                "question_level": rec.get("question_level") or "",
+                "variants": rec.get("variants") or [],
+                "custom_spec": bool(custom),
+                "recursive_file": bool(paid),
+                "paths": (custom.get("paths") or {}) | ((paid.get("paths") or {}) if isinstance(paid, dict) else {}),
+            }
+        )
+    return {"ok": True, "open": True, "count": len(rows), "specs": rows}

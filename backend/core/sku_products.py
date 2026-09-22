@@ -20,13 +20,13 @@ def bake_into_output(
     for sid, move_ru, move_en in (
         (
             "sku_100",
-            "120 коротких посадок. Без файла. Когда задача мелкая и не просит контур.",
-            "120 short sits. No file. When the task is small and does not ask for a contour.",
+            "Кастом спека: суть, решение, варианты мелких задач. Без кодовой рекурсии.",
+            "Custom spec: essence, solution, small-task variants. No code recursion.",
         ),
         (
             "sku_490",
-            "Две строки, не эссе. Нестандартный ход, конкретная библиотека, до слота.",
-            "Two lines, not an essay. Unusual move, concrete library, delivered to the slot.",
+            "Рекурсия на том же слоте. Bound, kill, библиотека, понедельник. Файл.",
+            "Recursion on the same slot. Bound, kill, library, Monday. File.",
         ),
         (
             "sku_1000",
@@ -56,8 +56,8 @@ def bake_into_output(
         "recommended": recommended,
         "cards": cards,
         "note": (
-            "100, 490, 1000 заложены в выдачу. Файл — после оплаты, кроме $100."
+            "100 — кастом спека. 490 — рекурсия. 1000 — тот же файл плотнее."
             if ru
-            else "100, 490, 1000 are baked into the output. File after pay, except $100."
+            else "100 is the custom spec. 490 is the recursion. 1000 is the same file, denser."
         ),
     }

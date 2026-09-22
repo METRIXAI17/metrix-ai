@@ -88,13 +88,13 @@ CATEGORIES: list[dict[str, Any]] = [
         "id": "placements",
         "title": "Размещения в потоках",
         "title_en": "Flow placements",
-        "one": "Терминальный ИИ: агент садится в денежный поток и молчит, пока не его ход.",
+        "one": "Терминальный ИИ: агент садится в ваш денежный поток и молчит, пока не его ход.",
         "unit": "Placement seat",
         "accent": "#f59e0b",
         "image": "/assets/store/cat-placements.jpg",
         "line": 7,
         "sku": "store_placements",
-        "placeholder": "Куда посадить агента в чужой денежный поток…",
+        "placeholder": "Куда посадить агента в вашем денежном потоке…",
     },
 ]
 

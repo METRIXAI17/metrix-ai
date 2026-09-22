@@ -165,7 +165,7 @@ def _wall(gate: dict[str, Any]) -> dict[str, Any]:
     return {
         "ok": False,
         "wall": True,
-        "cta": "Тарифы: $100 без файла · $490 / $1000 / $10 000 — файл",
+        "cta": "Тарифы: $100 кастом спека · $490 рекурсия · $1000 / $10 000 — файл",
         "tribute": TRIBUTE_ACCESS_URL,
         "human": HUMAN_CONTACT_URL,
         "pricing": PRICING["access"],
@@ -215,8 +215,12 @@ def flagship_run(
 
     sub = _subject(_try_auth(x_telegram_init_data))
     if body.sku and body.ticker:
-        sku = "sku_490"
+        sku = body.sku if body.sku in ("sku_100", "sku_490", "sku_1000", "sku_10000") else "sku_490"
         gate = _gate(sub, "flagship_paid")
+        from backend.core.owner_specs import owner_specs_open
+
+        if owner_specs_open():
+            gate = {**gate, "allowed": True, "debited": False, "note": "owner_specs"}
         if not gate.get("allowed"):
             from backend.core.circle_system.chain_store import load_chain
             from backend.core.tribute_products import create_product

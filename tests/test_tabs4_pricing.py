@@ -22,17 +22,16 @@ def test_four_tabs_order():
 
 def test_bot_keyboard_four_rooms():
     labels = [c["text"] for row in main_keyboard()["keyboard"] for c in row]
-    assert labels == ["Хиты", "Флагман", "Web3 Store", "Тарифы"]
-    assert menu_action("Флагман") == "flagship"
-    assert menu_action("тарифы") == "tariffs"
-    assert menu_action("Web3 Store") == "store"
+    assert labels == ["Консультации", "Приватка", "Боты и ядра", "Профиль"]
+    assert menu_action("Флагман") == "consult"
+    assert menu_action("Консультации") == "consult"
+    assert menu_action("Профиль") == "profile"
     nav = str(nav_inline("https://example.test/tg/"))
-    assert "m:flagship" in nav
-    assert "m:tariffs" in nav
+    assert "m:consult" in nav
+    assert "m:private" in nav
+    assert "m:work" in nav
+    assert "m:profile" in nav
     assert "v=t5" in webapp_open("https://example.test/tg/", "hits")
-    nav = str(nav_inline("https://example.test/tg/"))
-    assert "m:check" in nav
-    assert "Сверить файл" in nav
 
 
 def test_hits_and_store_never_debit():
@@ -87,11 +86,16 @@ def test_overlay_parses_and_recurses():
     assert "TODO" not in ov["source"]
 
 
-def test_sku_100_has_no_file():
+def test_sku_100_is_custom_spec_not_overlay():
     pack = intake("Мелкие задачи, 120 запросов без файла.", lang="ru")
     paid = generate_paid_file(pack["ticker"], sku_id="sku_100")
-    assert paid.get("file") is False
-    assert paid.get("reason") == "sku_100_no_file"
+    assert paid.get("kind") == "custom_spec"
+    assert paid.get("file") is True
+    assert len(paid.get("specs") or []) >= 4
+    assert len(paid.get("variants") or []) >= 3
+    assert "class Overlay" not in (paid.get("source") or "")
+    assert SKUS["sku_100"]["file"] is False
+    assert SKUS["sku_100"].get("custom_spec") is True
 
 
 def test_paid_file_for_490():
@@ -125,6 +129,38 @@ def test_flagship_start_from_brief():
     pack = start("SaaS 80 человек, фичи пилим, никто не знает победу", lang="ru")
     assert pack.get("ticker")
     assert pack.get("problem")
+
+
+def test_sacrifice_sits_in_web3_at_normal_questions():
+    from backend.core.business_gen.client_segmentation import segment_client
+    from backend.core.life_intake import question_system_state
+
+    state = question_system_state()
+    assert state["operating_level"] == "normal"
+    assert state["max_level"] == "max"
+    brief = (
+        "Жертвенность: отдаю своё и не называю границу.\n"
+        "Это должно сесть в web3, не в бизнес для чужих клиентов."
+    )
+    pack = intake(brief, lang="ru", section="flagship")
+    assert pack["cycle_section"] == "web3"
+    assert pack["section_fix"]
+    assert pack["question_level"] == "normal"
+    assert pack["frame"] == "web3_order"
+    assert pack["eternal_b2b"] is False
+    assert "Жертвенность" in pack["problem"]
+    assert "web3" in pack["solution"].lower()
+    assert len(pack["variants"]) >= 4
+    assert all(q.get("level") == "normal" for q in pack["questions"])
+    seg = segment_client(brief, lang="ru")
+    assert seg["primary"]["id"] == "web3_order"
+    assert seg["eternal_b2b"] is False
+    b2b = segment_client(
+        "Online architecture design library for IT product builders with niche cards for B2B studios.",
+        lang="ru",
+    )
+    assert b2b["eternal_b2b"] is True
+    assert b2b["primary"]["id"] in ("b2b_knowledge", "b2b_product", "agency")
 
 
 def test_product_eval_suite_normal_level():

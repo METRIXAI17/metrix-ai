@@ -105,8 +105,8 @@ def webapp_open(webapp: str, view: str = "") -> str:
 def main_keyboard() -> dict:
     return {
         "keyboard": [
-            [{"text": texts.MENU_HITS}, {"text": texts.MENU_FLAGSHIP}],
-            [{"text": texts.MENU_STORE}, {"text": texts.MENU_TARIFFS}],
+            [{"text": texts.MENU_CONSULT}, {"text": texts.MENU_PRIVATE}],
+            [{"text": texts.MENU_WORK}, {"text": texts.MENU_PROFILE}],
         ],
         "resize_keyboard": True,
         "one_time_keyboard": False,
@@ -134,18 +134,16 @@ def human_row() -> list[dict]:
 
 
 def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
-    """Primary nav — check-file on top, then four rooms."""
+    """Primary nav — four rooms."""
     rows = [
-        [{"text": "✦ Сверить файл", "callback_data": "m:check"}],
         [
-            {"text": "Хиты", "callback_data": "m:hits"},
-            {"text": "Флагман", "callback_data": "m:flagship"},
+            {"text": "Консультации", "callback_data": "m:consult"},
+            {"text": "Приватка", "callback_data": "m:private"},
         ],
         [
-            {"text": "Web3 Store", "callback_data": "m:store"},
-            {"text": "Тарифы", "callback_data": "m:tariffs"},
+            {"text": "Боты и ядра", "callback_data": "m:work"},
+            {"text": "Профиль", "callback_data": "m:profile"},
         ],
-        webapp_row(webapp),
         [{"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"}],
     ]
     if extra:
@@ -323,7 +321,7 @@ class BotAPI:
         if not photo.exists():
             photo = AVATAR if AVATAR.exists() else MARK
         kb = start_inline(webapp)
-        cap = texts.START + f"\n\nДверь <code>{rec['code']}</code> — четыре комнаты, один код."
+        cap = texts.START + f"\n\nДверь <code>{rec['code']}</code> — консультации, приватка, боты, профиль."
         sent = self.send_photo(chat_id, photo, cap)
         if sent.get("ok"):
             self.send(
@@ -334,7 +332,7 @@ class BotAPI:
             )
             self.send(
                 chat_id,
-                "Хиты · Флагман · Web3 Store · Тарифы.",
+                "Консультации · Приватка · Боты и ядра · Профиль.",
                 markup=kb,
                 html=False,
             )
@@ -342,7 +340,7 @@ class BotAPI:
         self.send(chat_id, texts.START, markup=main_keyboard())
         self.send(
             chat_id,
-            "Хиты · Флагман · Web3 Store · Тарифы.",
+            "Консультации · Приватка · Боты и ядра · Профиль.",
             markup=kb,
             html=False,
         )
@@ -357,12 +355,11 @@ def bootstrap(api: BotAPI, webapp: str) -> None:
     api.call(
         "setMyCommands",
         commands=[
-            {"command": "start", "description": "Четыре комнаты"},
-            {"command": "hits", "description": "Хиты · не сигнальный ассистент"},
-            {"command": "flagship", "description": "Флагман · две строки · $490"},
-            {"command": "check", "description": "Сверить файл до оплаты"},
-            {"command": "store", "description": "Web3 Store · запросы бесплатно"},
-            {"command": "tariffs", "description": "Тарифы"},
+            {"command": "start", "description": "Четыре раздела"},
+            {"command": "consult", "description": "Консультации · два режима"},
+            {"command": "private", "description": "Приватка · два режима"},
+            {"command": "work", "description": "Большие боты и мелкие ядра"},
+            {"command": "profile", "description": "Профиль"},
         ],
     )
     api.call("setMyDescription", description=texts.DESC)
@@ -687,10 +684,60 @@ def show_sub(api: BotAPI, chat_id: int, webapp: str) -> None:
     )
 
 
-def show_private(api: BotAPI, chat_id: int, webapp: str) -> None:
-    from telegram_app.subscription import format_tier
+def _consult_kb() -> list[list[dict]]:
+    from telegram_app.catalog import pay_button
 
-    api.send(chat_id, format_tier("private"), markup=nav_inline(webapp))
+    return [
+        [
+            {"text": "1 · Под капотом", "callback_data": "cn:hood"},
+            {"text": "2 · Рекурсивка", "callback_data": "cn:recurse"},
+        ],
+        [pay_button("files")],
+    ]
+
+
+def show_consult(api: BotAPI, chat_id: int, webapp: str) -> None:
+    from telegram_app.catalog import consult_intro
+
+    sessions.set_mode(chat_id, "await_consult", consult_mode="")
+    api.send(chat_id, consult_intro(), markup=nav_inline(webapp, extra=_consult_kb()))
+
+
+def show_private(api: BotAPI, chat_id: int, webapp: str) -> None:
+    from telegram_app.catalog import pay_button, private_intro
+
+    extra = [
+        [
+            {"text": "1 · Под капотом", "callback_data": "pv:hood"},
+            {"text": "2 · В результате", "callback_data": "pv:out"},
+        ],
+        [pay_button("private")],
+    ]
+    api.send(chat_id, private_intro(), markup=nav_inline(webapp, extra=extra))
+
+
+def show_work(api: BotAPI, chat_id: int, webapp: str) -> None:
+    from telegram_app.catalog import pay_button, work_intro
+
+    extra = [
+        [
+            {"text": "Большой бот", "callback_data": "wk:bot"},
+            {"text": "Мелкое ядро", "callback_data": "wk:core"},
+        ],
+        [pay_button("dev")],
+        [pay_button("files")],
+    ]
+    api.send(chat_id, work_intro(), markup=nav_inline(webapp, extra=extra))
+
+
+def show_profile(api: BotAPI, chat_id: int, webapp: str) -> None:
+    from backend.core.access import is_entitled
+    from telegram_app.catalog import format_profile, pay_button, tribute_board
+
+    ent = is_entitled(subject_hash(chat_id))
+    extra = [[pay_button("dev")], [pay_button("private")], [pay_button("files")]]
+    body = format_profile(sessions.load(chat_id), ent) + "\n\n" + tribute_board()
+    api.send(chat_id, body, markup=nav_inline(webapp, extra=extra))
 
 
 def _door_of(chat_id: int, brief: str = "", room: str = "talk") -> str:
@@ -801,8 +848,14 @@ def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
     if action == "access":
         show_access(api, chat_id, webapp)
         return
-    if action in ("life", "chain", "landing", "demo", "flagship"):
-        show_flagship(api, chat_id, webapp)
+    if action in ("life", "chain", "landing", "demo", "flagship", "consult"):
+        show_consult(api, chat_id, webapp)
+        return
+    if action == "work":
+        show_work(api, chat_id, webapp)
+        return
+    if action == "profile":
+        show_profile(api, chat_id, webapp)
         return
     if action == "tariffs":
         show_tariffs(api, chat_id, webapp)
@@ -863,7 +916,10 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
             "chain": "flagship",
             "landing": "flagship",
             "demo": "flagship",
-            "flagship": "flagship",
+            "flagship": "consult",
+            "consult": "consult",
+            "work": "work",
+            "profile": "profile",
             "tariffs": "tariffs",
             "check": "check",
             "bots": "bots",
@@ -890,6 +946,39 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
         }.get(data.split(":", 1)[1])
         if action:
             dispatch_menu(api, chat_id, action, webapp)
+        return
+    if data.startswith("cn:"):
+        mode = data.split(":", 1)[1]
+        if mode not in ("hood", "recurse"):
+            mode = "hood"
+        sessions.set_mode(chat_id, "await_consult", consult_mode=mode)
+        title = "Рекурсивка" if mode == "recurse" else "Под капотом"
+        api.send(
+            chat_id,
+            f"Режим «{title}». Две строки: что ломается — и куда это должно сесть.",
+            markup=nav_inline(webapp, extra=_consult_kb()),
+            html=False,
+        )
+        return
+    if data.startswith("pv:"):
+        from telegram_app.catalog import pay_button, private_mode
+
+        kind = "hood" if data.endswith("hood") else "out"
+        api.send(
+            chat_id,
+            private_mode(kind),
+            markup=nav_inline(webapp, extra=[[pay_button("private")]]),
+        )
+        return
+    if data.startswith("wk:"):
+        from telegram_app.catalog import pay_button, work_mode
+
+        kind = "bot" if data.endswith("bot") else "core"
+        api.send(
+            chat_id,
+            work_mode(kind),
+            markup=nav_inline(webapp, extra=[[pay_button("dev")], [pay_button("files")]]),
+        )
         return
     if data.startswith("ht:"):
         kind = data.split(":", 1)[1]
@@ -1113,6 +1202,32 @@ def handle_text(api: BotAPI, chat_id: int, text: str, webapp: str) -> None:
             lines.append(f"· <code>{_esc(k)}</code> — {_esc((v or {}).get('hint_ru') or '')}")
         api.send(chat_id, "\n".join(lines), markup=nav_inline(webapp))
         sessions.set_mode(chat_id, "idle")
+        return
+    if mode == "await_consult":
+        from telegram_app.catalog import format_consult, pay_button
+
+        chosen = st.get("consult_mode") or ""
+        if chosen not in ("hood", "recurse"):
+            api.send(
+                chat_id,
+                "Сначала режим: «Под капотом» или «Рекурсивка».",
+                markup=nav_inline(webapp, extra=_consult_kb()),
+                html=False,
+            )
+            return
+        api.send(chat_id, "Собираю суть и решение…", html=False)
+        from backend.core.life_intake import intake
+
+        pack = intake(raw, lang="ru", subject=subject_hash(chat_id))
+        sessions.set_mode(
+            chat_id,
+            "await_consult",
+            consult_mode=chosen,
+            ticker=pack.get("ticker"),
+            last_engine_brief=raw,
+        )
+        extra = [pay_button("files")] if chosen == "recurse" else []
+        api.send(chat_id, format_consult(pack, chosen), markup=nav_inline(webapp, extra=[extra] if extra else None))
         return
     if mode in ("await_demo", "await_landing", "await_life", "await_flagship"):
         from backend.core.flagship_engine import format_pack_telegram, start as flag_start

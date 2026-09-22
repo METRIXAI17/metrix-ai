@@ -91,16 +91,17 @@ def check_before_pay(ticker: str = "", *, lang: str = "ru") -> dict[str, Any]:
         "eval_visible": False,
         "pay": sku,
         "inside": (
-            "До оплаты видно суть, решение и векторы. Внутри $490 — комбо рекурсивных решений и терминальная посадка процесса. Eval откроется после оплаты."
+            "До оплаты видно суть, решение и варианты. $100 — кастом спека. $490 — рекурсия. Eval после оплаты."
             if ru
-            else "Before pay you see essence, sit, and vectors. Inside $490 — recursive combo + terminal process. Eval after pay."
+            else "Before pay: essence, solution, variants. $100 custom spec. $490 recursion. Eval after pay."
         ),
     }
 
 
 def fulfill(ticker: str, sku_id: str = "sku_490", *, lang: str = "ru") -> dict[str, Any]:
     rec = load_chain(ticker) or {}
-    sku_id = "sku_490"
+    if sku_id not in ("sku_100", "sku_490", "sku_1000", "sku_10000"):
+        sku_id = "sku_490"
     product = create_product(
         ticker=ticker,
         solution=rec.get("solution") or "",

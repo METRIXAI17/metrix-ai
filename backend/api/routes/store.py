@@ -43,17 +43,36 @@ def store_catalog(lang: str = "ru") -> dict[str, Any]:
 
 @router.post("/store/run")
 def store_run(body: BriefBody) -> dict[str, Any]:
-    cat = category_by_id(body.category or str(body.line or 1)) or category_by_id("1")
+    from backend.core.life_intake import cycle_section, intake
+
+    brief_in = (body.brief or "").strip()
+    sec = cycle_section(brief_in, "web3")
+    # A notion with no chosen room sits in Quality (the concept line), still inside Web3.
+    default_room = "quality" if sec == "web3" and any(
+        w in brief_in.lower() for w in ("жертв", "понят", "концеп")
+    ) else "1"
+    cat = category_by_id(body.category or str(body.line or default_room)) or category_by_id(default_room)
     n = int((cat or {}).get("n") or 1)
-    brief = (body.brief or "").strip() or (cat or {}).get("placeholder") or "контур"
+    brief = brief_in or (cat or {}).get("placeholder") or "контур"
     rec = _door_of(body, f"store:{cat.get('id') if cat else n}")
     art = run_line(n, brief, with_engine=body.with_engine)
     bind(rec["code"], artifact_id=str(art.get("id") or ""), room=f"store:{cat.get('id') if cat else n}")
+    pack = intake(brief, lang=body.lang or "ru", section="web3") if brief_in else {}
     return {
         "ok": True,
         "door": public_view(rec),
         "category": cat,
+        "cycle_section": "web3",
         "artifact": art,
+        "intake": {
+            "ticker": pack.get("ticker"),
+            "problem": pack.get("problem"),
+            "solution": pack.get("solution"),
+            "variants": pack.get("variants") or [],
+            "question_level": pack.get("question_level"),
+            "frame": pack.get("frame"),
+            "eternal_b2b": pack.get("eternal_b2b"),
+        } if pack else {},
         "telegram_html": table_telegram(art.get("lattice") or lattice(brief)),
     }
 

@@ -9,6 +9,45 @@ from typing import Any
 
 PATHS: list[dict[str, Any]] = [
     {
+        "id": "own_contour",
+        "label": "L.path.own_contour",
+        "name_ru": "Свой контур · Web3 · спека · рекурсия",
+        "name_en": "Own contour · Web3 · spec · recursion",
+        "match": (
+            "жертв",
+            "web3",
+            "свой контур",
+            "моя",
+            "отда",
+            "on-chain",
+            "ончейн",
+            "токен",
+        ),
+        "segment_pref": ("own_contour", "web3_order", "b2c_person", "founder_solo"),
+        "sophistication": 0.84,
+        "spine": ["product_pack", "unit_pack"],
+        "result_sections": [
+            "own_door_rooms",
+            "b2c_if_person",
+            "web3_store_order",
+            "custom_spec_100",
+            "recursive_490",
+            "kill_other_peoples_business",
+        ],
+        "premium_artifacts": [
+            {
+                "id": "PA1",
+                "ru": "Кастом спека $100: суть, решение, 4 варианта мелких задач",
+                "en": "Custom spec $100: essence, solution, 4 small-task variants",
+            },
+            {
+                "id": "PA2",
+                "ru": "Рекурсия $490 на том же слоте: bound → kill → slot → library → monday",
+                "en": "Recursion $490 on the same slot: bound → kill → slot → library → monday",
+            },
+        ],
+    },
+    {
         "id": "library_ship",
         "label": "L.path.library_ship",
         "name_ru": "Library → unit → ship",
@@ -345,7 +384,14 @@ def select_user_path(
             score += 2.0
         ranked.append((score, {**p, "hits": hits}))
     ranked.sort(key=lambda x: -x[0])
+    own_ids = {"own_contour", "web3_order", "b2c_person"}
+    b2b_defaults = {"library_ship", "agency_margin", "builder_pack"}
     best = ranked[0][1] if ranked and ranked[0][0] > 0 else PATHS[0]
+    # Own contour must not fall through into an agency/library built for someone else.
+    if segment_id in own_ids and best.get("id") in b2b_defaults:
+        best = next(p for p in PATHS if p["id"] == "own_contour")
+    if segment_id in own_ids and ranked and ranked[0][0] <= 0:
+        best = next(p for p in PATHS if p["id"] == "own_contour")
     path_fit = min(1.0, 0.5 + 0.15 * len(best.get("hits") or []) + (0.1 if segment_id in (best.get("segment_pref") or ()) else 0))
 
     arts = best.get("premium_artifacts") or []

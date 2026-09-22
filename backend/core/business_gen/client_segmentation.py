@@ -128,7 +128,78 @@ SEGMENTS: list[dict[str, Any]] = [
         "implement_fit": {"product_pack": 0.75, "unit_pack": 0.7, "ch_network": 0.85},
         "persona": "platform_ops",
     },
+    {
+        "id": "own_contour",
+        "label": "L.segment.own_contour",
+        "name_ru": "Свой контур",
+        "name_en": "Own contour",
+        "keywords": ("свой", "моя", "мне", "контур", "касса", "понедельник"),
+        "implement_fit": {"product_pack": 0.8, "unit_pack": 0.75, "ch_network": 0.4},
+        "persona": "owner",
+    },
+    {
+        "id": "web3_order",
+        "label": "L.segment.web3_order",
+        "name_ru": "Web3 заказ своего контура",
+        "name_en": "Web3 order on their contour",
+        "keywords": ("web3", "жертв", "ончейн", "on-chain", "токен", "wallet", "nft"),
+        "implement_fit": {"product_pack": 0.72, "unit_pack": 0.7, "ch_network": 0.55},
+        "persona": "web3_owner",
+    },
+    {
+        "id": "b2c_person",
+        "label": "L.segment.b2c_person",
+        "name_ru": "Человек, не агентство",
+        "name_en": "Person, not an agency",
+        "keywords": ("мне", "я ", "жизнь", "день", "один"),
+        "implement_fit": {"product_pack": 0.6, "unit_pack": 0.55, "ch_network": 0.35},
+        "persona": "person",
+    },
 ]
+
+
+# Explicit "we sell to other companies" — only then B2B stays primary.
+_SERVES_OTHERS = (
+    "b2b",
+    "агентств",
+    "agency",
+    "чужой бизнес",
+    "чужих клиент",
+    "для чужих",
+    "handoff",
+    "retainer",
+)
+
+_WEB3 = ("web3", "жертв", "ончейн", "on-chain", "токен", "wallet", "nft", "смарт-контракт")
+
+MODERN_OWN = (
+    {"id": "rooms", "ru": "Комнаты его двери, не новая линейка.", "en": "Rooms of their door, not a new line."},
+    {"id": "b2c", "ru": "Если это человек — цепочка B2C, не матрица передач.", "en": "A person gets the B2C chain, not a handoff matrix."},
+    {"id": "web3", "ru": "Понятие и заказ садятся в Web3 Store.", "en": "The notion and the order sit in Web3 Store."},
+    {"id": "spec100", "ru": "$100 — кастом спека и варианты мелких задач.", "en": "$100 — custom spec and small-task variants."},
+    {"id": "recurse490", "ru": "$490 — рекурсия на том же слоте.", "en": "$490 — recursion on the same slot."},
+    {"id": "kill_b2b", "ru": "Не собирать бизнес для чужих клиентов.", "en": "Do not assemble a business for someone else's clients."},
+)
+
+
+def serves_other_businesses(text: str) -> bool:
+    """True only when the brief asks to serve other companies.
+
+    A kill line («не бизнес для чужих») is the opposite signal.
+    """
+    t = (text or "").lower()
+    if any(w in t for w in ("b2b", "агентств", "agency", "handoff", "retainer")):
+        return True
+    if any(w in t for w in ("не для чуж", "не бизнес для", "не в бизнес", "свой контур", "вечный b2b")):
+        return False
+    return any(w in t for w in ("чужой бизнес", "чужих клиент", "для чужих"))
+
+
+def _seg_by_id(sid: str) -> dict[str, Any]:
+    for seg in SEGMENTS:
+        if seg["id"] == sid:
+            return seg
+    return SEGMENTS[-3]
 
 
 def segment_client(
@@ -164,12 +235,19 @@ def segment_client(
         scores.append((s, {**seg, "hits": hits, "raw_score": s}))
 
     scores.sort(key=lambda x: -x[0])
-    primary = scores[0][1] if scores and scores[0][0] > 0 else {
-        **SEGMENTS[4],  # founder_solo default
-        "hits": [],
-        "raw_score": 0.0,
-    }
-    secondary = [s[1] for s in scores[1:4] if s[0] > 0][:3]
+    others = serves_other_businesses(t)
+    web3 = any(w in t for w in _WEB3)
+    if others:
+        primary = scores[0][1] if scores and scores[0][0] > 0 else {
+            **_seg_by_id("founder_solo"),
+            "hits": [],
+            "raw_score": 0.0,
+        }
+    else:
+        # Eternal B2B is off. Own contour / Web3 order / person — not a business for other people.
+        picked = _seg_by_id("web3_order" if web3 else "own_contour")
+        primary = {**picked, "hits": [h for h in picked["keywords"] if h in t], "raw_score": 3.0}
+    secondary = [s[1] for s in scores if s[0] > 0 and s[1]["id"] != primary["id"]][:3]
 
     # normalize fit
     max_raw = max(scores[0][0], 1.0) if scores else 1.0
@@ -202,9 +280,16 @@ def segment_client(
             {"id": s[1]["id"], "score": round(s[0], 3), "label": s[1]["label"]} for s in scores[:6]
         ],
         "wayd_labels": [primary["label"]] + [s["label"] for s in secondary[:2]],
+        "eternal_b2b": others,
+        "frame": "b2b_service" if others else ("web3_order" if web3 else "own_contour"),
+        "modern": [] if others else [dict(m) for m in MODERN_OWN],
         "precision_note": (
-            "Exact B2B segmentation from brief signals + industry + profile priors"
+            "Explicit B2B: they serve other businesses."
+            if others and L == "en"
+            else "Явный B2B: они обслуживают чужие бизнесы."
+            if others
+            else "Own contour. Eternal B2B is off — rooms, B2C, Web3, custom spec, recursion."
             if L == "en"
-            else "Точная B2B-сегментация по сигналам брифа + industry + profile priors"
+            else "Свой контур. Вечный B2B снят: комнаты, B2C, Web3, кастом спека, рекурсия."
         ),
     }

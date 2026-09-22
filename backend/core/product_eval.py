@@ -79,6 +79,18 @@ def score_intake(pack: dict[str, Any]) -> dict[str, Any]:
 
 
 def score_file(paid: dict[str, Any], *, expect_file: bool) -> dict[str, Any]:
+    if paid.get("kind") == "custom_spec":
+        specs = paid.get("specs") or []
+        variants = paid.get("variants") or []
+        axes = {
+            "specs": 1.0 if len(specs) >= 4 else 0.2,
+            "variants": 1.0 if len(variants) >= 3 else 0.0,
+            "essence": 1.0 if (paid.get("problem") and paid.get("solution")) else 0.0,
+            "no_overlay": 0.0 if "class Overlay" in (paid.get("source") or "") else 1.0,
+            "no_stub": 1.0,
+        }
+        mean = sum(axes.values()) / len(axes)
+        return {"score": round(mean, 3), "axes": axes, "go": mean >= THRESHOLD}
     if not expect_file:
         ok = paid.get("file") is False or paid.get("reason") == "sku_100_no_file"
         return {"score": 1.0 if ok else 0.0, "axes": {"no_file": 1.0 if ok else 0.0}, "go": ok}

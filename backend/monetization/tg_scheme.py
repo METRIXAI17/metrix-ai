@@ -14,11 +14,11 @@ from typing import Any
 SKUS: dict[str, dict[str, Any]] = {
     "sku_100": {
         "rub": 9900, "usd": 100, "stars": 0, "tier": "micro",
-        "name": "$100 · 120 мелких задач (без файла)",
+        "name": "$100 · кастом спека",
     },
     "sku_490": {
         "rub": 45900, "usd": 490, "stars": 0, "tier": "assist",
-        "name": "$490 · Assist (файл)",
+        "name": "$490 · рекурсия (файл)",
     },
     "sku_1000": {
         "rub": 99000, "usd": 1000, "stars": 0, "tier": "standard",

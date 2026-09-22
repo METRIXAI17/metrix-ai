@@ -55,7 +55,7 @@ ARTEFACTS = (
     {
         "id": "placement_seat",
         "title": "Placement Seat",
-        "one": "Стул агента в чужом денежном потоке.",
+        "one": "Стул агента в вашем денежном потоке.",
     },
     {
         "id": "proof_packet",
