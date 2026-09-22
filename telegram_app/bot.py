@@ -96,7 +96,7 @@ def _webapp() -> str:
 def webapp_open(webapp: str, view: str = "") -> str:
     """Mini App URL with cache buster. Telegram WebView otherwise keeps old HTML."""
     base = (webapp or "").split("?")[0].split("#")[0].rstrip("/") + "/"
-    url = base + "?v=t5"
+    url = base + "?v=t6"
     if view:
         url += "#" + view.lstrip("#")
     return url
@@ -350,7 +350,7 @@ def bootstrap(api: BotAPI, webapp: str) -> None:
     api.call("deleteWebhook", drop_pending_updates=False)
     api.call(
         "setChatMenuButton",
-        menu_button={"type": "web_app", "text": "Хит", "web_app": {"url": webapp_open(webapp, "hits")}},
+        menu_button={"type": "web_app", "text": "Metrix", "web_app": {"url": webapp_open(webapp, "consult")}},
     )
     api.call(
         "setMyCommands",

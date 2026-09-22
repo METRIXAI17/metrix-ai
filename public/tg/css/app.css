@@ -451,7 +451,7 @@ textarea:focus, input:focus {
   background: transparent;
   color: var(--text-dim);
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   padding: 0.45rem 0.15rem 0.25rem;

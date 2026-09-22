@@ -35,14 +35,15 @@
     return r.json();
   }
 
-  const VIEWS = ["hits", "flagship", "store", "tariffs", "check", "life", "bots", "craft", "target", "shop", "shift", "chain", "teammates", "artefacts", "home"];
+  const VIEWS = ["consult", "private", "work", "profile", "hits", "flagship", "store", "tariffs", "check", "life", "bots", "craft", "target", "shop", "shift", "chain", "teammates", "artefacts", "home"];
   const ALIAS = {
-    home: "hits",
-    life: "flagship",
-    chain: "flagship",
-    demo: "flagship",
-    landing: "flagship",
-    флагман: "flagship",
+    home: "consult",
+    landing: "consult",
+    flagship: "consult",
+    life: "consult",
+    chain: "consult",
+    demo: "consult",
+    флагман: "consult",
     check: "check",
     сверка: "check",
     strategies: "bots",
@@ -58,7 +59,7 @@
     конструкции: "hits",
   };
   const state = {
-    view: (location.hash || "").replace("#", "") || "hits",
+    view: (location.hash || "").replace("#", "") || "consult",
     flagship: null,
     catalog: null,
     last: null,
@@ -68,7 +69,7 @@
     comfort: [],
   };
   if (ALIAS[state.view]) state.view = ALIAS[state.view];
-  if (VIEWS.indexOf(state.view) < 0) state.view = "hits";
+  if (VIEWS.indexOf(state.view) < 0) state.view = "consult";
 
   const viewEl = document.getElementById("view");
 
@@ -158,6 +159,36 @@
     if (t.closest("[data-hit-tier]")) {
       ev.preventDefault();
       showHitTier(t.closest("[data-hit-tier]").getAttribute("data-hit-tier"));
+    }
+    var modeBtn = t.closest("[data-mode]");
+    if (modeBtn) {
+      ev.preventDefault();
+      state.consultMode = modeBtn.getAttribute("data-mode");
+      var lab = document.getElementById("cn-mode");
+      if (lab) lab.textContent = state.consultMode === "recurse" ? "Режим: рекурсивка." : "Режим: под капотом.";
+      return;
+    }
+    var pv = t.closest("[data-pv]");
+    if (pv) {
+      ev.preventDefault();
+      var box = document.getElementById("pv-out");
+      if (box) {
+        box.innerHTML = pv.getAttribute("data-pv") === "hood"
+          ? "<article class='card'><h3>Под капотом</h3><p>Комната не публикует цепочку. Без сигналов, без чужих депозитов, без обещания дохода.</p></article>"
+          : "<article class='card'><h3>В результате</h3><p>Раз в неделю одна посадка: суть, одно решение, один файл, если рой уже отработал.</p></article>";
+      }
+      return;
+    }
+    var wk = t.closest("[data-wk]");
+    if (wk) {
+      ev.preventDefault();
+      var wbox = document.getElementById("wk-out");
+      if (wbox) {
+        wbox.innerHTML = wk.getAttribute("data-wk") === "bot"
+          ? "<article class='card'><h3>Большой бот</h3><p>Один путь денег: кто платит, когда бот молчит, какой факт его выключает. 3490 ₽.</p></article>"
+          : "<article class='card'><h3>Мелкое ядро</h3><p>Одна функция: читатель брифа, спека или один шаг рекурсии. Тот же разраб, меньший объём.</p></article>";
+      }
+      return;
     }
     if (t.closest("#fg-run")) {
       ev.preventDefault();
@@ -864,7 +895,91 @@
       "</div>" +
       (vec ? '<ol class="wf-rail">' + vec + "</ol>" : "") +
       pay +
-      wfHtml(pack.workflow);
+      (state.view === "consult" ? "" : wfHtml(pack.workflow));
+  }
+
+  var AFTER_PAY =
+    "<h2>После оплаты вы получите</h2>" +
+    "<p class='lead'>Выдаёт суть твоего вопроса и решение одной фразой. Потом несколько вопросов — сводка векторов.</p>" +
+    '<ol class="wf-rail">' +
+    "<li><span class='n'>01</span><div><b>Суть</b><p>Опиши вопрос.</p></div></li>" +
+    "<li><span class='n'>02</span><div><b>Две строки</b><p>Движок подсвечивает проблему и выдаёт способ решения.</p></div></li>" +
+    "<li><span class='n'>03</span><div><b>5–10 вопросов</b><p>Настройки контекста. Своими словами: блоки, мысль, трудность.</p></div></li>" +
+    "<li><span class='n'>04</span><div><b>Нужный вектор</b><p>Сводка, куда сядет результат. Без эссе.</p></div></li>" +
+    "<li><span class='n'>05</span><div><b>Посадка</b><p>$490 — комбо рекурсивных решений и терминальная посадка процесса. Eval — после оплаты.</p></div></li>" +
+    "</ol>" +
+    "<p class='muted'>Eval открывается после оплаты. Не обещаем доход.</p>" +
+    "<p class='lead'><b>Флагман.</b> Бесплатный слой. Две строки, не эссе.<br>Выдаёт суть твоего вопроса и решение одной фразой.<br>Потом несколько вопросов — сводка векторов результата.</p>";
+
+  function consultView() {
+    return (
+      '<section class="room">' +
+      '<div class="eyebrow room-label">Консультации</div>' +
+      "<h1>Суть и <em>решение</em></h1>" +
+      "<p class='lead room-desc'>Два режима отдельно. В каждом — суть, решение и несколько вариантов.</p>" +
+      '<div class="row">' +
+      '<button type="button" class="btn btn-ghost" data-mode="hood">1 · Под капотом</button>' +
+      '<button type="button" class="btn btn-ghost" data-mode="recurse">2 · Рекурсивка</button>' +
+      "</div>" +
+      '<p id="cn-mode" class="muted">Режим не выбран.</p>' +
+      AFTER_PAY +
+      '<label>Две строки: что ломается — и куда это должно сесть</label>' +
+      '<textarea id="fg-brief" placeholder="Что ломается.\\nКуда должно сесть."></textarea>' +
+      '<div class="row"><button type="button" class="btn btn-primary" id="fg-run">Собрать</button></div>' +
+      '<div id="fg-out"></div></section>'
+    );
+  }
+
+  function privateView() {
+    return (
+      '<section class="room">' +
+      '<div class="eyebrow room-label">Приватка</div>' +
+      "<h1>Два режима. <em>Сразу.</em></h1>" +
+      "<p class='lead room-desc'>Подписка 990 ₽ · $12 в месяц. Без сигналов, без чужих депозитов, без обещания дохода.</p>" +
+      '<div class="row">' +
+      '<button type="button" class="btn btn-ghost" data-pv="hood">1 · Под капотом</button>' +
+      '<button type="button" class="btn btn-ghost" data-pv="out">2 · В результате</button>' +
+      "</div>" +
+      '<div id="pv-out"></div>' +
+      '<div class="row"><a class="btn btn-primary" href="https://t.me/tribute" target="_blank" rel="noopener">Подписка на приватку · 990 ₽</a></div>' +
+      "</section>"
+    );
+  }
+
+  function workView() {
+    return (
+      '<section class="room">' +
+      '<div class="eyebrow room-label">Боты и ядра</div>' +
+      "<h1>Большой бот. <em>Мелкое ядро.</em></h1>" +
+      "<p class='lead room-desc'>Покупка разраба — 3490 ₽ · $39. Готовый файл роя — 1490 ₽ · $19.</p>" +
+      '<div class="row">' +
+      '<button type="button" class="btn btn-ghost" data-wk="bot">Большой бот</button>' +
+      '<button type="button" class="btn btn-ghost" data-wk="core">Мелкое ядро</button>' +
+      "</div>" +
+      '<div id="wk-out"></div>' +
+      '<div class="row">' +
+      '<a class="btn btn-primary" href="https://t.me/tribute" target="_blank" rel="noopener">Покупка разраба · 3490 ₽</a>' +
+      '<a class="btn btn-ghost" href="https://t.me/tribute" target="_blank" rel="noopener">Готовые файлы · 1490 ₽</a>' +
+      "</div></section>"
+    );
+  }
+
+  function profileView() {
+    var tick = (state.flagship && state.flagship.ticker) || "ещё нет";
+    return (
+      '<section class="room">' +
+      '<div class="eyebrow room-label">Профиль</div>' +
+      "<h1>Дверь и <em>тикер</em></h1>" +
+      '<article class="card"><span class="tag">тикер</span><p>' +
+      esc(tick) +
+      "</p></article>" +
+      "<p class='lead'>Три категории Tribute.</p>" +
+      '<article class="card"><h3>Покупка разраба</h3><p>3490 ₽ · $39. Один разработчик: большой бот на весь путь или мелкое ядро на один шаг.</p></article>' +
+      '<article class="card"><h3>Подписка на приватку</h3><p>990 ₽ · $12 в месяц. Тихая комната. Без сигналов и чужих депозитов.</p></article>' +
+      '<article class="card"><h3>Готовые файлы роя</h3><p>1490 ₽ · $19. Файл, который уже собрали рой движков или бот.</p></article>' +
+      '<div class="row"><a class="btn btn-primary" href="https://t.me/tribute" target="_blank" rel="noopener">Tribute</a></div>' +
+      "</section>"
+    );
   }
 
   async function runFlagship() {
@@ -977,7 +1092,11 @@
     }
     var c = state.catalog;
     var html;
-    if (state.view === "store") html = storeView();
+    if (state.view === "consult") html = consultView();
+    else if (state.view === "private") html = privateView();
+    else if (state.view === "work") html = workView();
+    else if (state.view === "profile") html = profileView();
+    else if (state.view === "store") html = storeView();
     else if (state.view === "shift") html = shiftView();
     else if (state.view === "flagship") html = flagshipView();
     else if (state.view === "tariffs") html = tariffsView(c);

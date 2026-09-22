@@ -31,7 +31,7 @@ def test_bot_keyboard_four_rooms():
     assert "m:private" in nav
     assert "m:work" in nav
     assert "m:profile" in nav
-    assert "v=t5" in webapp_open("https://example.test/tg/", "hits")
+    assert "v=t6" in webapp_open("https://example.test/tg/", "consult")
 
 
 def test_hits_and_store_never_debit():
