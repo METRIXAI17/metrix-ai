@@ -149,8 +149,8 @@ def format_skus_telegram(pack: dict[str, Any]) -> str:
     lines.append("")
     lines.append(pack.get("paid_inside") or s.get("gets_ru") or "")
     lines.append("")
-    lines.append(f"<b>$490</b> · Assist. Комбо рекурсивных решений + терминальная посадка процесса.")
-    lines.append("Eval — после оплаты.")
+    lines.append("<b>После оплаты вы получите</b> рекурсивный файл и eval.")
+    lines.append("Комбо рекурсивных решений и терминальная посадка процесса.")
     return "\n".join(lines)
 
 

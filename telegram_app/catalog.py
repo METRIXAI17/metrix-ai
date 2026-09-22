@@ -93,7 +93,9 @@ def consult_intro() -> str:
         "Под капотом четыре шага одного слота: bound, kill, библиотека, понедельник.\n"
         "В результате — файл этой рекурсии.\n"
         f"{price_line('files')}\n\n"
-        "Напишите двумя строками, что ломается и куда это должно сесть. Сначала выберите режим."
+        "Напишите двумя строками, что ломается и куда это должно сесть. Сначала выберите режим.\n\n"
+        "После оплаты вы получите алгоритм флагмана: вопросы своими словами, "
+        "сводку векторов, рекурсивный файл и eval. До оплаты этого файла нет."
     )
 
 
@@ -149,6 +151,26 @@ def work_mode(mode: str) -> str:
     )
 
 
+def after_pay_block(pack: dict[str, Any] | None = None) -> str:
+    """Flagship algorithm, stated as what payment unlocks."""
+    pack = pack or {}
+    qs = pack.get("questions") or []
+    lines = [
+        "<b>После оплаты вы получите</b>",
+        "Алгоритм флагмана на этом тикере:",
+        "1. Вопросы своими словами. Движок добирает контекст, не эссе.",
+    ]
+    for i, q in enumerate(qs[:6], 1):
+        lines.append(f"   {i}. {_esc(q.get('text'))}")
+    if not qs:
+        lines.append("   Пять–десять вопросов: граница, слот, хозяин, цифра, что уже пробовали.")
+    lines.append("2. Сводку векторов: куда сядет результат.")
+    lines.append("3. Рекурсивный файл: bound, kill, библиотека, понедельник и кодовая надстройка того же движка.")
+    lines.append("4. Eval. До оплаты числа нет.")
+    lines.append(price_line("files"))
+    return "\n".join(lines)
+
+
 def format_consult(pack: dict[str, Any], mode: str) -> str:
     variants = pack.get("variants") or []
     lines = [
@@ -190,7 +212,9 @@ def format_consult(pack: dict[str, Any], mode: str) -> str:
             lines.append(_esc(pack.get("section_fix")))
         lines.append("")
         lines.append("<b>В результате</b>")
-        lines.append("Суть, решение и варианты выше. Рекурсивный файл в этом режиме не собирается.")
+        lines.append("Суть, решение и варианты выше.")
+    lines.append("")
+    lines.append(after_pay_block(pack))
     return "\n".join(lines)
 
 

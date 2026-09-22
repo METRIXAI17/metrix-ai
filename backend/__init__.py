@@ -8,4 +8,4 @@ Metrix AI (KARIM METRIX) — Operational Analytical System backend.
 __version__ = "2.0.0"
 __brand__ = "Metrix AI"
 __codename__ = "HEAVY LAUNCH"
-__release__ = "2026-09-18-heavy-launch"
+__release__ = "2026-09-22-consult-pay"

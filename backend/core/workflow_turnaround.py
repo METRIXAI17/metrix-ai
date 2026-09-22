@@ -43,8 +43,8 @@ STEPS: list[dict[str, str]] = [
         "n": "05",
         "title_ru": "Посадка",
         "title_en": "Sit",
-        "do_ru": "$490 — комбо рекурсивных решений и терминальная посадка процесса. Eval — после оплаты.",
-        "do_en": "$490 — a combo of recursive solutions and a terminal process sit. Eval after pay.",
+        "do_ru": "После оплаты: вопросы, сводка векторов, рекурсивный файл и eval.",
+        "do_en": "After pay: questions, vector summary, recursive file, and eval.",
     },
 ]
 
