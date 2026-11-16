@@ -48,20 +48,20 @@ BRIEF_METHOD = (
 
 
 def test_menu_three_sections():
-    assert menu_action("In-Out Chain") == "life"
+    assert menu_action("In-Out Chain") == "consult"
     assert menu_action("AI Teammates") == "craft"
     assert menu_action("Artefacts") == "shop"
-    assert menu_action("Лендинг") == "life"
+    assert menu_action("Лендинг") == "consult"
     assert menu_action("Движок") == "craft"
     assert menu_action("Мейкинг") == "shop"
-    assert menu_action("/landing") == "life"
+    assert menu_action("/landing") == "consult"
     assert menu_action("/engine@karimmetrixbot") == "craft"
     assert menu_action("/making") == "shop"
-    assert menu_action("Демо") == "life"
+    assert menu_action("Демо") == "consult"
     assert menu_action("Стратегии") == "bots"
     assert menu_action("Агенты") == "target"
     assert menu_action("Посты") == "shop"
-    assert menu_action("/demo") == "life"
+    assert menu_action("/demo") == "consult"
     assert menu_action("/start") == "start"
     assert menu_action("SaaS 80 человек без экономики") is None
 

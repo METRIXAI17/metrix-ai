@@ -64,6 +64,7 @@ SKU_LIMITS = {
     "sku_490": {"runs": 40, "days": 31, "tier": "assist", "file": True},
     "sku_1000": {"runs": 80, "days": 90, "tier": "standard", "file": True},
     "sku_10000": {"runs": 200, "days": 180, "tier": "contour", "file": True},
+    "allo_month": {"runs": 40, "days": 31, "tier": "allo", "file": False, "recurse_spec": False},
     "access_month": {"runs": 40, "days": 31, "tier": "access", "file": False},
     "access_year": {"runs": 40, "days": 366, "tier": "access", "file": False},
 }
@@ -300,11 +301,8 @@ def apply_tribute_event(payload: dict[str, Any]) -> dict[str, Any]:
     pname = (
         str(data.get("product_name") or data.get("product") or data.get("name") or payload.get("product_name") or "")
     )
-    sku = map_tribute_amount(amount, pname)
-    if sku == "access_month" and days > 60:
-        sku = "access_year"
-    meta = _sku_meta(sku)
-    days = int(meta.get("days") or days)
+    currency = str(data.get("currency") or payload.get("currency") or "")
+    sku = map_tribute_amount(amount, pname, currency)
     if "cancel" in event:
         if telegram_id:
             rec = _load(_ent_path("sub_" + subject_hash(telegram_id)))
@@ -312,6 +310,19 @@ def apply_tribute_event(payload: dict[str, Any]) -> dict[str, Any]:
             rec["cancelled"] = True
             _save(_ent_path("sub_" + subject_hash(telegram_id)), rec)
         return {"ok": True, "action": "cancel"}
+    if sku in ("", "unknown"):
+        return {"ok": False, "action": "unmapped", "sku": "unknown"}
+    if sku == "directing_fee":
+        from backend.core.pure_vehicle.community import directing
+
+        directing({"text": pname, "sku": sku}, paid=True, choice="direct_next")
+        return {"ok": True, "action": "directing_fee", "sku": sku, "door": False, "allo_month": False}
+    if sku == "game_pack":
+        return {"ok": True, "action": "game_pack", "sku": sku, "door": False, "allo_month": False, "isolated": True, "paper": True}
+    if sku == "access_month" and days > 60:
+        sku = "access_year"
+    meta = _sku_meta(sku)
+    days = int(meta.get("days") or days)
     if telegram_id:
         sub = subject_hash(telegram_id)
         entitle_subject(sub, days=days, sku=sku)

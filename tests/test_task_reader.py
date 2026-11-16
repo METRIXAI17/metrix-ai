@@ -95,10 +95,10 @@ def test_catalog_and_scheme():
     )
     assert len(cat["functions"]) == 4
     nav_ids = [n["id"] for n in cat["nav"]]
-    assert nav_ids == ["life", "bots", "craft", "target", "shop"]
-    assert cat["nav"][0]["title"] == "Идеи для жизни"
-    assert "Торговые" in cat["nav"][1]["title"]
-    assert "ремесл" in cat["nav"][2]["title"].lower()
+    assert nav_ids == ["hits", "flagship", "store", "tariffs"]
+    assert cat["nav"][0]["title"] == "Хиты"
+    assert "Флагман" in cat["nav"][1]["title"]
+    assert "store" in cat["nav"][2]["title"].lower()
     sch = scheme_payload()
     assert sch["rails"]["rf_cards"]["possible"] is True
     assert sch["unit_90d_conservative"]["gmv_rub"] > 0

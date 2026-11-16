@@ -21,7 +21,7 @@ from telegram_app.menu import menu_action
 
 
 def test_version_and_flagship():
-    assert VERSION.startswith("1.9")
+    assert VERSION.startswith("2.")
     assert FLAGSHIP["name"] == "Идеи для жизни"
     assert PRICING["access"]["rub"] == 3290
     assert ACCESS_RUB == 3290
@@ -39,15 +39,15 @@ def test_version_and_flagship():
 
 
 def test_menu_five_formal_tabs():
-    assert menu_action("Идеи для жизни") == "life"
+    assert menu_action("Идеи для жизни") == "consult"
     assert menu_action("Торговые боты") == "bots"
     assert menu_action("Конфиги для ремесла") == "craft"
     assert menu_action("Таргет ИИ-агентов") == "target"
     assert menu_action("Каталог магазина") == "shop"
-    assert menu_action("Лендинг") == "life"
+    assert menu_action("Лендинг") == "consult"
     assert menu_action("Движок") == "craft"
     assert menu_action("Мейкинг") == "shop"
-    assert menu_action("/chain") == "life"
+    assert menu_action("/chain") == "consult"
     assert menu_action("/teammates@karimmetrixbot") == "craft"
 
 

@@ -45,7 +45,10 @@ _CLICHE = (
     "новая линейка",
     "директолог",
 )
-_PHONE = re.compile(r"(?:\+\d|\d[\d\-\s()]{8,}\d)")
+# A phone, not a hex/uuid token glued to letters.
+_PHONE = re.compile(
+    r"(?<![A-Za-z0-9])(?:\+\d[\d\-\s()]{7,}\d|\d[\d\-\s()]{8,}\d)(?![A-Za-z0-9])"
+)
 _ABOVE_ALLO = frozenset({"sku_100", "sku_490", "sku_1000", "sku_10000", "custom_spec_pilot", "game_pack"})
 
 

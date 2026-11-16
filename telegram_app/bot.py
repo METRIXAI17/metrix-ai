@@ -96,7 +96,7 @@ def _webapp() -> str:
 def webapp_open(webapp: str, view: str = "") -> str:
     """Mini App URL with cache buster. Telegram WebView otherwise keeps old HTML."""
     base = (webapp or "").split("?")[0].split("#")[0].rstrip("/") + "/"
-    url = base + "?v=t6"
+    url = base + "?v=allo1"
     if view:
         url += "#" + view.lstrip("#")
     return url
@@ -144,6 +144,7 @@ def nav_inline(webapp: str, *, extra: list | None = None) -> dict:
             {"text": "Боты и ядра", "callback_data": "m:work"},
             {"text": "Профиль", "callback_data": "m:profile"},
         ],
+        [{"text": "Фриланс · изолирован", "callback_data": "m:freelance"}],
         [{"text": "X · @karimmetrix", "url": "https://x.com/karimmetrix"}],
     ]
     if extra:
@@ -573,6 +574,10 @@ def show_tariffs(api: BotAPI, chat_id: int, webapp: str) -> None:
     api.send(chat_id, texts.ASK_TARIFFS, markup=nav_inline(webapp, extra=extra), html=True)
 
 
+def show_freelance(api: BotAPI, chat_id: int, webapp: str) -> None:
+    api.send(chat_id, texts.ASK_FREELANCE, markup=nav_inline(webapp), html=True)
+
+
 def show_life(api: BotAPI, chat_id: int, webapp: str) -> None:
     show_flagship(api, chat_id, webapp)
 
@@ -860,6 +865,9 @@ def dispatch_menu(api: BotAPI, chat_id: int, action: str, webapp: str) -> None:
     if action == "tariffs":
         show_tariffs(api, chat_id, webapp)
         return
+    if action == "freelance":
+        show_freelance(api, chat_id, webapp)
+        return
     if action == "check":
         show_check(api, chat_id, webapp)
         return
@@ -943,6 +951,7 @@ def handle_callback(api: BotAPI, cq: dict, webapp: str) -> None:
             "sub": "sub",
             "private": "private",
             "cross": "cross",
+            "freelance": "freelance",
         }.get(data.split(":", 1)[1])
         if action:
             dispatch_menu(api, chat_id, action, webapp)
