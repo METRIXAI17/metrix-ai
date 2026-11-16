@@ -1,6 +1,6 @@
 # Metrix AI (KARIM METRIX)
 
-**v2.0.0 · HEAVY LAUNCH · 2026-09-18**
+**v2.1.0 · PURE VEHICLE · ALLO · 2026-11-16**
 
 Один код. Дверь и комнаты одного потока. Не чат, не каталог идей.
 
@@ -35,13 +35,19 @@
 
 ## Что продаём
 
+Одна цена двери: **$50 Allo** / месяц. Directing — отдельно, один ход уже открытого контура. Хиты и Store бесплатно. Верхние комнаты остаются для рекурсии и спек. Доходность не обещаем. Ордеров на биржу из ядра нет.
+
 | SKU | Цена | Что входит | Что не входит |
 |---|---|---|---|
-| **Metrix Access** | **3 290 ₽ / мес** | Дверь, Стор, CraftShift, разговор. Eval на каждом прогоне. 40 результатов. | Сигналы, Main без пилота |
-| **Custom spec pilot** | **45 000 ₽** | Именованная дыра, gate, приёмка. Рекурсивные выводы под капотом. | Сигналы, доходность |
-| **Cross assist** | **80 000 ₽** | Поиск среди предложенных + ассистент + упаковка в ключи | Седьмой выдуманный продукт |
+| **Allo** | **$50 / мес** | Дверь, чтение семи операций, грант запросов | Directing, файл рекурсии, сигналы, Main $2490 |
+| **Directing** | отдельно, разово | Один ход из двенадцати следствий | Не директолог и не рекламный кабинет |
+| **$100 / $490 / $1000 / $10 000** | верхние комнаты | Кастом спека, рекурсия, стандарт, автономный контур | Не базовая подписка |
+| **Metrix Access** | **3 290 ₽ / мес** | Прежняя рублёвая дверь | Сигналы |
+| **Custom spec pilot** | **45 000 ₽** | Именованная дыра, gate | Сигналы, доходность |
+| **Cross assist** | **80 000 ₽** | Поиск среди предложенных | Седьмой продукт |
+| **Main** | **$2490** | После названного пилота | Не входит в Allo |
 
-Два бесплатных объекта, потом стена Access. Оплата — Tribute. Имя и телефон не храним.
+Оплата — Tribute. Имя и телефон не храним. Игровой пакет изолирован и не открывает дверь Allo.
 
 ---
 
@@ -101,7 +107,7 @@ POST /api/v1/contours/eval/runs
 
 Бот локально: `TELEGRAM_BOT_TOKEN=… python -m telegram_app.bot`
 
-Тесты: `pytest tests -q` — 235.
+Тесты: `pytest tests -q`
 
 Деплой: push в `main`. Railway — API и бот. Vercel — `public/`. Автор коммита должен мапиться на GitHub-аккаунт `METRIXAI17` (noreply `297400418+METRIXAI17@users.noreply.github.com`), иначе Vercel на private-репо блокирует сборку. Подробности: `DEPLOY.md`.
 
@@ -115,13 +121,16 @@ metrix-ai/
 ├── backend/
 │   ├── main.py
 │   ├── contours/           # C1–C5, Cross, Heavy Launch, spiritual library
-│   ├── core/               # ориентация, store, door, Access, paid highway
-│   ├── paid/               # paid-core (16 шагов, honesty, conceptual engine)
-│   ├── api/routes/         # process, miniapp, store, contours, analytics
-│   └── data/               # JSON store (квоты, двери, eval) — секреты не коммитить
+│   ├── core/
+│   │   ├── pure_vehicle/   # IN → OUT → REALIZE, OPS-7, FREE-12, Allo
+│   │   └── …               # ориентация, store, door, Access
+│   ├── paid/
+│   ├── api/routes/
+│   └── data/               # JSON store — секреты не коммитить
 ├── telegram_app/           # бот
+├── robots/                 # paper по умолчанию: py -3 -m robots scan all
 ├── tests/
-├── docs/                   # HEAVY_LAUNCH_PROMPT.md · CONTOURS_SQL.sql · ценз идей
+├── docs/
 ├── Dockerfile · railway.toml · vercel.json
 └── docker-compose.local.yml
 ```
