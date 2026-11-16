@@ -1,19 +1,40 @@
-"""Public SKUs for four rooms. Hits view + Web3 Store requests are free."""
+"""Public SKUs for four rooms. Hits view + Web3 Store requests are free.
+
+Base subscription is allo_month at 50 USD. Upper rooms stay for recursion and specs.
+"""
 
 from __future__ import annotations
 
 import os
+import re
 from typing import Any
 
 from backend.config import HUMAN_CONTACT_URL, TRIBUTE_ACCESS_URL, TRIBUTE_CUSTOM_URL
 
-# Amount windows used by Tribute webhook mapping (USD cents-ish / whole USD).
+# Exact Tribute amounts. Never a threshold (50 must not become sku_100).
 SKU_BY_USD = {
+    50: "allo_month",
     100: "sku_100",
     490: "sku_490",
     1000: "sku_1000",
+    2490: "full_package",
     10000: "sku_10000",
 }
+
+_EXPLICIT_IDS = (
+    "sku_10000",
+    "sku_1000",
+    "sku_490",
+    "sku_100",
+    "custom_spec_pilot",
+    "cross_assist",
+    "full_package",
+    "directing_fee",
+    "game_pack",
+    "allo_month",
+    "access_year",
+    "access_month",
+)
 
 SKUS: dict[str, dict[str, Any]] = {
     "free_life": {
@@ -31,6 +52,50 @@ SKUS: dict[str, dict[str, Any]] = {
             "5–20 простых вопросов. Eval. Тикер. Цепочка в файл."
         ),
         "gets_en": "Problem one phrase, solution one phrase, 5–20 questions, eval, ticker, chain file.",
+    },
+    "allo_month": {
+        "id": "allo_month",
+        "usd": 50,
+        "rub": 0,
+        "tier": "allo",
+        "file": False,
+        "recurse_spec": False,
+        "automated": True,
+        "requests": 40,
+        "tokens": 40,
+        "days": 31,
+        "name_ru": "$50 · Allo",
+        "name_en": "$50 · Allo",
+        "gets_ru": "Дверь, чтение семи операций, грант запросов на месяц. Не directing, не файл рекурсии, не Main $2490.",
+        "gets_en": "Door, reading of seven operations, monthly request grant. Not directing, not the recursion file, not Main $2490.",
+        "env": "TRIBUTE_ALLO_URL",
+    },
+    "directing_fee": {
+        "id": "directing_fee",
+        "usd": None,
+        "one_time": True,
+        "tier": "directing",
+        "file": False,
+        "automated": False,
+        "name_ru": "Directing · отдельно",
+        "name_en": "Directing · separate",
+        "gets_ru": "Один ход уже открытого контура. Не директолог и не рекламный кабинет.",
+        "gets_en": "One stir of an already-open contour. Not a directologist and not an ad cabinet.",
+        "env": "TRIBUTE_DIRECTING_URL",
+    },
+    "game_pack": {
+        "id": "game_pack",
+        "usd": 50,
+        "tier": "isolated",
+        "isolated": True,
+        "file": False,
+        "recurse_spec": False,
+        "paper": True,
+        "name_ru": "Игровой пакет · изолирован",
+        "name_en": "Game pack · isolated",
+        "gets_ru": "Paper / static. Не Allo. Не recurse_spec. Оффера, внедрения и коммерческого результата нет.",
+        "gets_en": "Paper / static. Not Allo. Not recurse_spec. No offer help, no implementation, no commercial result.",
+        "env": "TRIBUTE_GAME_URL",
     },
     "sku_100": {
         "id": "sku_100",
@@ -135,7 +200,7 @@ PUBLIC_TABS = [
         "title_en": "Tariffs",
         "title_short": "Тарифы",
         "free": True,
-        "one_liner": "Флагман — автономный контур в ваш проект. Хиты и Store бесплатно.",
+        "one_liner": "База $50 Allo. Directing отдельно. Верхние комнаты — рекурсия.",
         "accent": "#fbbf24",
     },
 ]
@@ -147,6 +212,10 @@ def _url_for(sku: str) -> str:
     raw = (os.getenv(env_name, "") if env_name else "").strip().rstrip("/")
     if raw:
         return raw
+    if sku in ("allo_month", "directing_fee", "game_pack"):
+        base = TRIBUTE_ACCESS_URL or TRIBUTE_CUSTOM_URL or "https://t.me/tribute"
+        sep = "&" if "?" in base else "?"
+        return f"{base}{sep}start={sku}"
     if sku in ("sku_490", "sku_1000") and TRIBUTE_CUSTOM_URL:
         return TRIBUTE_CUSTOM_URL
     return TRIBUTE_ACCESS_URL or TRIBUTE_CUSTOM_URL or "https://t.me/tribute"
@@ -158,37 +227,67 @@ def sku_of(sid: str) -> dict[str, Any]:
     return row
 
 
-def map_tribute_amount(amount: Any, name: str = "") -> str:
-    """Map Tribute payload amount / product name onto a SKU."""
-    text = f"{name} {amount}".lower()
-    for needle, sid in (
-        ("10000", "sku_10000"),
-        ("10 000", "sku_10000"),
-        ("10k", "sku_10000"),
-        ("contour", "sku_10000"),
-        ("1000", "sku_1000"),
-        ("standard", "sku_1000"),
-        ("стандарт", "sku_1000"),
-        ("490", "sku_490"),
-        ("assist", "sku_490"),
-        ("120", "sku_100"),
-        ("sku_100", "sku_100"),
-    ):
-        if needle in text:
+def _num(amount: Any) -> float | None:
+    if amount is None or amount == "":
+        return None
+    if isinstance(amount, bool):
+        return None
+    if isinstance(amount, (int, float)):
+        return float(amount)
+    raw = str(amount).lower().replace(" ", "").replace(",", "").replace("$", "").replace("₽", "")
+    raw = raw.replace("usd", "").replace("rub", "").replace("руб", "")
+    match = re.search(r"\d+(?:\.\d+)?", raw)
+    if not match:
+        return None
+    return float(match.group(0))
+
+
+def _rub(amount: Any, name: str, currency: str) -> bool:
+    cur = (currency or "").strip().lower()
+    if cur in {"rub", "rur", "₽"}:
+        return True
+    blob = f"{amount} {name}".lower()
+    return "₽" in str(amount) or "руб" in blob
+
+
+def map_tribute_amount(amount: Any, name: str = "", currency: str = "") -> str:
+    """Exact Tribute map. 50 USD is allo_month. 1000 must not eat 10000. No n >= 50 threshold."""
+    text = str(name or "").lower()
+    compact = re.sub(r"[\s,]", "", text)
+    for sid in _EXPLICIT_IDS:
+        if sid in text:
             return sid
-    try:
-        n = float(str(amount).replace(",", "").replace("$", "").strip() or 0)
-    except ValueError:
-        n = 0.0
-    if n >= 8000:
+    if any(k in text for k in ("game pack", "game_pack", "создание игры", "игровой пакет")):
+        return "game_pack"
+    if "directing_fee" in text or "directing fee" in text:
+        return "directing_fee"
+    if re.search(r"\ballo\b", text):
+        return "allo_month"
+    n = _num(amount)
+    rub = _rub(amount, name, currency)
+    if n == 3290:
+        return "access_month"
+    if rub and n == 45000:
+        return "custom_spec_pilot"
+    if rub and n == 80000:
+        return "cross_assist"
+    if n is not None and not rub:
+        exact = SKU_BY_USD.get(int(n)) if float(n).is_integer() else None
+        if exact:
+            return exact
+    if re.search(r"(?<!\d)10000(?!\d)", compact) or "10k" in text:
         return "sku_10000"
-    if n >= 800:
+    if re.search(r"(?<!\d)1000(?!\d)", compact):
         return "sku_1000"
-    if n >= 300:
+    if re.search(r"(?<!\d)490(?!\d)", compact):
         return "sku_490"
-    if n >= 50:
+    if re.search(r"(?<!\d)100(?!\d)", compact) or re.search(r"(?<!\d)120(?!\d)", compact):
         return "sku_100"
-    return "access_month"
+    if not rub and re.search(r"(?<!\d)50(?!\d)", compact):
+        return "allo_month"
+    if "access" in text or "3290" in compact:
+        return "access_month"
+    return "unknown"
 
 
 def tariff_board(lang: str = "ru") -> dict[str, Any]:
@@ -199,25 +298,28 @@ def tariff_board(lang: str = "ru") -> dict[str, Any]:
         "tabs": PUBLIC_TABS,
         "free_facts": FREE_FACTS_RU if ru else FREE_FACTS_EN,
         "free_life": free,
+        "base": sku_of("allo_month"),
+        "directing": sku_of("directing_fee"),
+        "isolated": [sku_of("game_pack")],
         "paid": paid,
         "human": HUMAN_CONTACT_URL or "https://x.com/karimmetrix",
         "flagship": {
             "usd": 490,
             "role_ru": (
-                "Флагман — автономный контур в ваш проект. "
-                "Плотнее спеки, тот же поток. Комнаты, не новая линейка. "
-                "В боте посадка $490: комбо рекурсивных решений и терминальный процесс."
+                "База — Allo $50: дверь, чтение семи операций, грант запросов. "
+                "Directing отдельно. Хиты и Store бесплатно. "
+                "Верхние комнаты $100 / $490 / $1000 / $10 000 — рекурсия и спеки."
             ),
             "role_en": (
-                "Flagship is an autonomous contour on your project. "
-                "Denser specs, same stream. Rooms, not a new product line. "
-                "In the bot the sit is $490: recursive combo + terminal process."
+                "Base is Allo $50: door, seven operations, request grant. "
+                "Directing is separate. Hits and Store are free. "
+                "Upper rooms $100 / $490 / $1000 / $10000 stay for recursion and specs."
             ),
         },
         "note": (
-            "Флагман в тарифах = контур в ваш проект. В комнате Флагман оплата одна: $490. "
-            "После оплаты файл — кроме $100."
+            "Одна цена двери: $50 Allo. Directing — отдельно. "
+            "После оплаты файл — на верхних комнатах, кроме $100. На $50 файла рекурсии нет."
             if ru
-            else "Flagship in tariffs = contour on your project. In the Flagship room the pay is $490. File after pay except $100."
+            else "One door price: $50 Allo. Directing is separate. Recursion file is an upper room, not $50."
         ),
     }
