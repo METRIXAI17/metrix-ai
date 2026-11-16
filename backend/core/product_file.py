@@ -21,6 +21,7 @@ from backend.core.ticker_registry import bind_ticker, load_ticker
 
 NO_FILE_SKUS = frozenset({"free_life"})
 CUSTOM_SPEC_SKUS = frozenset({"sku_100"})
+NO_RECURSION_FILE = frozenset({"allo_month", "game_pack", "directing_fee"})
 
 
 def _sit(chain: dict[str, Any]) -> dict[str, str]:
@@ -208,6 +209,8 @@ def generate_paid_file(
 ) -> dict[str, Any]:
     if sku_id in NO_FILE_SKUS:
         return {"ok": False, "file": False, "sku": sku_id, "reason": "free_no_file"}
+    if sku_id in NO_RECURSION_FILE:
+        return {"ok": False, "file": False, "sku": sku_id, "reason": "no_recursion_file", "recurse_spec": False}
     chain = load_chain(ticker) or load_ticker(ticker) or {}
     if sku_id in CUSTOM_SPEC_SKUS:
         if not chain.get("ticker"):
