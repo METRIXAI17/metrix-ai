@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from backend.core.freelance_packs.ai_ops.packs import AI_OPS, select_ai_ops
@@ -12,6 +13,16 @@ from backend.core.freelance_packs.type_a_programs import (
     render_pack_prompt,
     select_type_a_pack,
 )
+
+
+def _isolated_pay_url() -> str:
+    own = os.getenv("TRIBUTE_FREELANCE_URL", "").strip()
+    if own:
+        return own
+    base = os.getenv("TRIBUTE_ACCESS_URL", "").strip() or "https://t.me/tribute"
+    sep = "&" if "?" in base else "?"
+    return f"{base}{sep}start=isolated_freelance"
+
 
 ADVANCED_ROLES = {
     "marketplace_lattice",
@@ -68,6 +79,11 @@ def attach_pack(lane: dict[str, Any], brief: str) -> dict[str, Any]:
         "anti": pack.get("anti"),
         "acceptance": pack.get("acceptance"),
         "prompt": render_pack_prompt(pack, brief) if "prompt" in pack else pack.get("prompt"),
+        "isolated": True,
+        "pay_url": _isolated_pay_url(),
+        "grants_allo_month": False,
+        "grants_access": False,
+        "grants_flagship": False,
     }
     if ai:
         lane["ai_ops"] = {"id": ai["id"], "prompt": ai["prompt"].format(brief=brief[:600])}

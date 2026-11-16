@@ -38,6 +38,10 @@ backend/data/entitlements/
 backend/data/quota/
 backend/data/owner_open.json
 backend/data/contours/
+backend/data/pure_vehicle/
+backend/data/doors/
+backend/data/product_files/
+backend/data/tickers/
 backend/data/miniapp/hits.json
 docs/_probe*
 docs/screenshot_*.png
