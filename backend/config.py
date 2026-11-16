@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-# ── Пути ─────────────────────────────────────────────────────────────────────────
+# ── Пути ──────────────────────────────────────────────────────────────────
 BACKEND_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = BACKEND_ROOT.parent
 WORKSPACE_ROOT = BACKEND_ROOT / "workspace"
@@ -20,7 +20,7 @@ LOGS_DIR = PROJECT_ROOT / "logs"
 for _p in (WORKSPACE_ROOT, DATA_DIR, LOGS_DIR):
     _p.mkdir(parents=True, exist_ok=True)
 
-# ── Сервер ──────────────────────────────────────────────────────────────────────
+# ── Сервер ────────────────────────────────────────────────────────────────
 # Railway/Render/Fly inject PORT; local uses METRIX_PORT or 8787.
 HOST = os.getenv("METRIX_HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT") or os.getenv("METRIX_PORT", "8787"))
@@ -319,7 +319,7 @@ def resolve_industry_id(industry_id: str) -> str:
 
 TRACKS = ("product", "models", "promotion")
 
-# ── Зоны архитектуры ─────────────────────────────────────────────────────────────
+# ── Зоны архитектуры ───────────────────────────────────────────────────────────
 ZONES = {
     "infa_sol": "Infa Sol",
     "cloud_sol": "Cloud Sol",
@@ -341,11 +341,11 @@ METRIC_THRESHOLDS = {
     "info_roi_premium": 3.0,
 }
 
-# ── Рекурсия SpecsForge ─────────────────────────────────────────────────────────
+# ── Рекурсия SpecsForge ───────────────────────────────────────────────────────
 SPECS_MAX_DEPTH = 5
 SPECS_IMPROVEMENT_DELTA = 0.04  # минимальный прирост качества за итерацию
 
-# ── Cloud Optimization ──────────────────────────────────────────────────────────
+# ── Cloud Optimization ──────────────────────────────────────────────────────
 CLOUD_DEFAULT_BUDGET_UNITS = 100.0
 CLOUD_PRECISION_WEIGHT = 0.45
 CLOUD_SPEED_WEIGHT = 0.30
@@ -429,6 +429,6 @@ MONETIZATION = {
     },
 }
 
-# ── Self-improvement ────────────────────────────────────────────────────────────
+# ── Self-improvement ─────────────────────────────────────────────────────────
 SELF_IMPROVE_MAX_LOOPS = 3
 SELF_IMPROVE_MIN_GAIN = 0.03
