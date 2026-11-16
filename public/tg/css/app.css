@@ -830,3 +830,20 @@ textarea:focus, input:focus {
   100% { transform: translateX(18%) translateY(8%); }
 }
 .btn-iridescent:active { transform: translateY(1px); }
+
+.freelance-chip {
+  position: fixed;
+  right: 12px;
+  bottom: calc(76px + var(--safe-b));
+  z-index: 31;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(94, 234, 212, 0.55);
+  background: #070a0f;
+  color: #5eead4;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  box-shadow: 0 0 18px rgba(94, 234, 212, 0.28);
+}
