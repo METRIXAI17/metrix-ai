@@ -21,6 +21,7 @@ from backend.core.pure_vehicle import (
 from backend.core.pure_vehicle.catalog import OPS, recurse_status
 from backend.core.pure_vehicle.npodp import run_npodp
 from backend.core.pure_vehicle.sandbox import close_sandbox, release_line
+from backend.core.pure_vehicle.lanes import place as place_lanes
 from backend.core.pure_vehicle.vision import run_vision
 
 router = APIRouter(prefix="/pure", tags=["pure-vehicle"])
@@ -101,6 +102,18 @@ class VisionBody(BaseModel):
 @router.post("/vision")
 def pure_vision(body: VisionBody) -> dict[str, Any]:
     return run_vision(body.model_dump())
+
+
+class LanesBody(BaseModel):
+    autonomy: dict[str, Any] = Field(default_factory=dict)
+    trading: dict[str, Any] = Field(default_factory=dict)
+    ideas: dict[str, Any] = Field(default_factory=dict)
+    eval_floor: float | None = None
+
+
+@router.post("/lanes")
+def pure_lanes(body: LanesBody) -> dict[str, Any]:
+    return place_lanes(body.model_dump())
 
 
 class NpodpBody(BaseModel):
