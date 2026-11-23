@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from backend.core.product_eval import THRESHOLD
+from backend.core.pure_vehicle.traction import pull as traction_pull
 
 VERSION = "2.9.0"
 CODENAME = "VISION"
@@ -169,4 +170,5 @@ def run_vision(payload: dict[str, Any] | None) -> dict[str, Any]:
         "purchase": semi_closed_purchase(
             data.get("purchase") if isinstance(data.get("purchase"), dict) else {}
         ),
+        "traction": traction_pull(data),
     }

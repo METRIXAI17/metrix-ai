@@ -79,7 +79,14 @@ def run_engine(brief: str, *, industry: str | None = None, lang: str = "ru") -> 
         "metrics": metrics if isinstance(metrics, dict) else {},
         "chain": meta.get("chain") if isinstance(meta, dict) else {},
         "engine": "metrix_ai",
+        "traction": _traction(text),
     }
+
+
+def _traction(brief: str) -> dict[str, Any]:
+    from backend.core.pure_vehicle.traction import pull_brief
+
+    return pull_brief(brief)
 
 
 def _slot_name(row: Any) -> str:

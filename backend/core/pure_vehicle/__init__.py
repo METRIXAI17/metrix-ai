@@ -15,6 +15,7 @@ from backend.core.pure_vehicle.community import (
 )
 from backend.core.pure_vehicle.npodp import run_npodp
 from backend.core.pure_vehicle.sandbox import close_sandbox, release_line
+from backend.core.pure_vehicle.traction import pull, pull_brief
 from backend.core.pure_vehicle.vision import run_vision
 from backend.core.pure_vehicle.terminal import constructor
 
@@ -32,6 +33,8 @@ __all__ = [
     "hang_promotion",
     "ops_by_n",
     "purchase_isolated",
+    "pull",
+    "pull_brief",
     "release_line",
     "run_npodp",
     "run_vision",
