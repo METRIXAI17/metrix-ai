@@ -13,6 +13,7 @@ from backend.core.pure_vehicle.community import (
     self_improve,
     separated_circle,
 )
+from backend.core.pure_vehicle.npodp import run_npodp
 from backend.core.pure_vehicle.sandbox import close_sandbox, release_line
 from backend.core.pure_vehicle.terminal import constructor
 
@@ -31,6 +32,7 @@ __all__ = [
     "ops_by_n",
     "purchase_isolated",
     "release_line",
+    "run_npodp",
     "science_base",
     "self_improve",
     "separated_circle",

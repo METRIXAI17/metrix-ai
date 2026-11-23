@@ -19,6 +19,7 @@ from backend.core.pure_vehicle import (
     separated_circle,
 )
 from backend.core.pure_vehicle.catalog import OPS, recurse_status
+from backend.core.pure_vehicle.npodp import run_npodp
 from backend.core.pure_vehicle.sandbox import close_sandbox, release_line
 
 router = APIRouter(prefix="/pure", tags=["pure-vehicle"])
@@ -83,6 +84,21 @@ def pure_line() -> dict[str, Any]:
 @router.post("/sandbox")
 def pure_sandbox(body: SandboxBody) -> dict[str, Any]:
     return close_sandbox({"agents": body.agents, "eval_floor": body.eval_floor})
+
+
+class NpodpBody(BaseModel):
+    children: list[dict[str, Any]] = Field(default_factory=list)
+    zone: dict[str, Any] = Field(default_factory=dict)
+    support: dict[str, Any] = Field(default_factory=dict)
+    book: list[dict[str, Any]] = Field(default_factory=list)
+    exponent: dict[str, Any] = Field(default_factory=dict)
+    radar: dict[str, Any] = Field(default_factory=dict)
+    eval_floor: float | None = None
+
+
+@router.post("/npodp")
+def pure_npodp(body: NpodpBody) -> dict[str, Any]:
+    return run_npodp(body.model_dump())
 
 
 @router.get("/ops")

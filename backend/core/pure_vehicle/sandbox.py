@@ -61,13 +61,13 @@ LINE: list[dict[str, str]] = [
     },
     {
         "version": "2.6.0",
-        "name": "NOT A SKU",
-        "rule": "Karim is not sold. Spirit is not a tariff.",
+        "name": "NOT A SHOW",
+        "rule": "Financial success is not published as an outside contribution. The game is not that score.",
     },
     {
         "version": "2.7.0",
-        "name": "OBJECT",
-        "rule": "The project is a finished object in the portfolio. It does not keep the person.",
+        "name": "NPODP",
+        "rule": "The terminal is the only clock. Intermediate luxury is not addressed. No yield, no exchange order.",
     },
     {
         "version": "2.8.0",
