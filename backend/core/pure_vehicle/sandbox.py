@@ -11,8 +11,8 @@ from typing import Any
 from backend.core.product_eval import THRESHOLD
 
 DOOR_VERSION = "2.1.0"
-RELEASE = "2.8.0"
-CODENAME = "CLOSED SANDBOX"
+RELEASE = "2.9.0"
+CODENAME = "VISION"
 
 # A brief is the only resource an agent may sit on.
 # Money, a person, a body, a spirit, a deposit, an order — not a seat.
@@ -73,6 +73,11 @@ LINE: list[dict[str, str]] = [
         "version": "2.8.0",
         "name": "CLOSED SANDBOX",
         "rule": "An agent that left the contour is returned. It does not fight for the owner.",
+    },
+    {
+        "version": "2.9.0",
+        "name": "VISION",
+        "rule": "No public door price. Concept, real data, a legal cash bridge, engineering, then ideas.",
     },
 ]
 

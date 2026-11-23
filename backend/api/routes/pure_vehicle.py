@@ -21,6 +21,7 @@ from backend.core.pure_vehicle import (
 from backend.core.pure_vehicle.catalog import OPS, recurse_status
 from backend.core.pure_vehicle.npodp import run_npodp
 from backend.core.pure_vehicle.sandbox import close_sandbox, release_line
+from backend.core.pure_vehicle.vision import run_vision
 
 router = APIRouter(prefix="/pure", tags=["pure-vehicle"])
 
@@ -84,6 +85,22 @@ def pure_line() -> dict[str, Any]:
 @router.post("/sandbox")
 def pure_sandbox(body: SandboxBody) -> dict[str, Any]:
     return close_sandbox({"agents": body.agents, "eval_floor": body.eval_floor})
+
+
+class VisionBody(BaseModel):
+    concept: str = ""
+    solution: str = ""
+    ideas: str = ""
+    data: list[dict[str, Any]] = Field(default_factory=list)
+    table: list[dict[str, Any]] = Field(default_factory=list)
+    bridge: dict[str, Any] = Field(default_factory=dict)
+    purchase: dict[str, Any] = Field(default_factory=dict)
+    eval_floor: float | None = None
+
+
+@router.post("/vision")
+def pure_vision(body: VisionBody) -> dict[str, Any]:
+    return run_vision(body.model_dump())
 
 
 class NpodpBody(BaseModel):

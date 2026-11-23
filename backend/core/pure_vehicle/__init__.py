@@ -15,6 +15,7 @@ from backend.core.pure_vehicle.community import (
 )
 from backend.core.pure_vehicle.npodp import run_npodp
 from backend.core.pure_vehicle.sandbox import close_sandbox, release_line
+from backend.core.pure_vehicle.vision import run_vision
 from backend.core.pure_vehicle.terminal import constructor
 
 __all__ = [
@@ -33,6 +34,7 @@ __all__ = [
     "purchase_isolated",
     "release_line",
     "run_npodp",
+    "run_vision",
     "science_base",
     "self_improve",
     "separated_circle",

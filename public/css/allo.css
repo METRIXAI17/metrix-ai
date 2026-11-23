@@ -102,3 +102,15 @@
 @media (max-width: 800px) {
   .pv-rail, .pv-grid, .pv-circle { grid-template-columns: 1fr; }
 }
+
+.vision-rail { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 800px) {
+  .vision-rail { grid-template-columns: 1fr; }
+}
+.vision-rail li {
+  background:
+    linear-gradient(160deg, rgba(250, 204, 21, 0.16), transparent 55%),
+    rgba(16, 34, 28, 0.9);
+  border-color: rgba(250, 204, 21, 0.35);
+}
+.vision-rail b { color: #fde68a; }

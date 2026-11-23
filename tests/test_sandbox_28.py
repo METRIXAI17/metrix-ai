@@ -16,8 +16,9 @@ def test_line_is_eight_steps_and_floor_is_not_lowered():
         "2.6.0",
         "2.7.0",
         "2.8.0",
+        "2.9.0",
     ]
-    assert line["version"] == "2.8.0"
+    assert line["version"] == "2.9.0"
     assert line["door"] == "2.1.0"
     assert line["eval_floor"] == 0.72
     assert line["eval_floor"] == THRESHOLD
