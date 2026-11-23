@@ -77,7 +77,7 @@ LINE: list[dict[str, str]] = [
     {
         "version": "2.9.0",
         "name": "VISION",
-        "rule": "No public door price. Concept, real data, a legal cash bridge, engineering, then ideas.",
+        "rule": "No public door price. Concept, real data, a bridge you can show a friend, a build, then ideas.",
     },
 ]
 

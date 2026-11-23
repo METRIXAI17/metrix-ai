@@ -1,8 +1,8 @@
 """Vision 2.9. Concept, then a solution only where the data is real.
 
-The public order is: a volume purchase as the aim, a person's cash table,
-a legal bridge, engineering closed on that data, ideas after the build.
-A semi-closed contract names the parties. It does not hide the deal.
+The public order is: volume as the aim, your own table,
+a bridge you can show a friend, a build closed on that data, ideas after.
+A purchase names two people and the amount. It is not a lecture.
 Yield is not promised. An exchange order is not placed.
 """
 
@@ -79,46 +79,43 @@ def cash_table(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def legal_bridge(body: dict[str, Any] | None) -> dict[str, Any]:
-    """Contract, invoice, bank, tax. Anything off the book is refused."""
+def bridge(body: dict[str, Any] | None) -> dict[str, Any]:
+    """Who gave, who took, what number. A hidden envelope is not a bridge."""
     row = body or {}
     path = _text(row.get("path")).lower()
     if path in REFUSED_PATHS or bool(row.get("off_book")):
-        return {
-            "open": False,
-            "reason": "only_a_legal_bridge",
-            "path": "refused",
-        }
-    needed = ("contract", "invoice", "bank", "tax")
-    missing = [key for key in needed if not _text(row.get(key))]
-    if missing:
-        return {"open": False, "reason": "bridge_incomplete", "missing": missing}
+        return {"open": False, "reason": "not_a_bridge", "path": "refused"}
+    giver = _text(row.get("from") or row.get("giver"), 80)
+    taker = _text(row.get("to") or row.get("taker"), 80)
+    amount = _text(row.get("amount"), 80)
+    if not giver or not taker or not amount:
+        return {"open": False, "reason": "bridge_incomplete", "missing": [
+            key for key, val in (("from", giver), ("to", taker), ("amount", amount)) if not val
+        ]}
     return {
         "open": True,
-        "path": "contract_invoice_bank_tax",
-        "contract": _text(row.get("contract"), 80),
-        "invoice": _text(row.get("invoice"), 80),
-        "bank": _text(row.get("bank"), 80),
-        "tax_visible": True,
-        "off_book": False,
+        "path": "show_a_friend",
+        "from": giver,
+        "to": taker,
+        "amount": amount,
+        "showable": True,
     }
 
 
 def semi_closed_purchase(body: dict[str, Any] | None) -> dict[str, Any]:
-    """Parties and scope are written. The law still sees the contract."""
+    """Two names and an amount. No stage, no lecture."""
     row = body or {}
     parties = _text(row.get("parties"), 160)
     scope = _text(row.get("scope"), 200)
-    if not parties or not scope or row.get("legal") is not True:
-        return {"open": False, "reason": "contract_not_closed"}
-    if bool(row.get("hidden_from_law")) or bool(row.get("open_auction")):
-        return {"open": False, "reason": "not_a_semi_closed_contract"}
+    if not parties or not scope:
+        return {"open": False, "reason": "names_or_amount_missing"}
+    if bool(row.get("hidden")) or bool(row.get("off_book")):
+        return {"open": False, "reason": "not_showable"}
     return {
         "open": True,
         "parties": parties,
         "scope": scope,
-        "legal": True,
-        "hidden_from_law": False,
+        "showable": True,
     }
 
 
@@ -154,7 +151,7 @@ def run_vision(payload: dict[str, Any] | None) -> dict[str, Any]:
             "aim",
             "volume_purchase",
             "tables",
-            "legal_bridge",
+            "bridge",
             "engineering",
             "ideas",
         ],
@@ -168,7 +165,7 @@ def run_vision(payload: dict[str, Any] | None) -> dict[str, Any]:
         "engineering_closed_on": [row["name"] for row in real],
         "ideas": ideas,
         "table": cash_table(_rows(data.get("table"))),
-        "bridge": legal_bridge(data.get("bridge") if isinstance(data.get("bridge"), dict) else {}),
+        "bridge": bridge(data.get("bridge") if isinstance(data.get("bridge"), dict) else {}),
         "purchase": semi_closed_purchase(
             data.get("purchase") if isinstance(data.get("purchase"), dict) else {}
         ),

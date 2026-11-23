@@ -118,7 +118,7 @@ SCIENCE: list[dict[str, Any]] = [
     {
         "id": "bridge",
         "role": "Легальный мост",
-        "line": "Договор, счёт, банк, налог. Конверт и обход книги мостом не являются.",
+        "line": "Кто отдал, кто принял, какая цифра. Если это нельзя показать другу — это не мост.",
         "consequence": "cut_support",
     },
     {
@@ -130,7 +130,7 @@ SCIENCE: list[dict[str, Any]] = [
     {
         "id": "contract",
         "role": "Полузакрытый контракт",
-        "line": "Стороны и объём названы. Сделка видна закону. Открытый крик цены ей не нужен.",
+        "line": "Двое названы, объём назван. Без сцены и без лекции.",
         "consequence": "isolate_freelance",
     },
     {
@@ -191,11 +191,11 @@ def ensure_stores() -> None:
             },
         )
     science = read_json("science.json", {})
-    if science.get("version") != "2.9.0" or len(science.get("entries") or []) != len(SCIENCE):
+    if science.get("version") != "2.9.1" or len(science.get("entries") or []) != len(SCIENCE):
         write_json(
             "science.json",
             {
-                "version": "2.9.0",
+                "version": "2.9.1",
                 "codename": "VISION",
                 "layer": "scientific_base",
                 "eighth_product": False,

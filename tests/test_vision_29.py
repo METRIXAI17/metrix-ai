@@ -1,31 +1,22 @@
-"""Vision 2.9. A concept, real data, a legal bridge. No door price."""
+"""Vision 2.9. A concept, real data, a bridge you can show. No door price."""
 
 from backend.core.pure_vehicle.vision import run_vision
 
 
-def test_solution_waits_for_real_data_and_the_bridge_stays_legal():
+def test_solution_waits_for_real_data_and_the_bridge_is_showable():
     out = run_vision(
         {
             "eval_floor": 0.2,
-            "concept": "Объём, который можно принять",
-            "solution": "Закупка тремя партиями",
-            "ideas": "Следующая партия короче",
+            "concept": "Объём, который можно забрать",
+            "solution": "Закупка тремя пачками",
+            "ideas": "Следующая пачка короче",
             "data": [
-                {"name": "партия", "value": "400 единиц", "real": True},
+                {"name": "пачка", "value": "400 штук", "real": True},
                 {"name": "слух", "value": "кажется много", "real": False},
             ],
-            "table": [{"label": "человек", "in": 100, "due": 40, "payable": 60}],
-            "bridge": {
-                "contract": "договор 14",
-                "invoice": "счёт 14",
-                "bank": "расчётный счёт",
-                "tax": "в книге",
-            },
-            "purchase": {
-                "parties": "две названные стороны",
-                "scope": "партия 400",
-                "legal": True,
-            },
+            "table": [{"label": "я", "in": 100, "due": 40, "payable": 60}],
+            "bridge": {"from": "я", "to": "друг", "amount": "400"},
+            "purchase": {"parties": "я и друг", "scope": "пачка 400"},
         }
     )
     assert out["version"] == "2.9.0"
@@ -37,15 +28,15 @@ def test_solution_waits_for_real_data_and_the_bridge_stays_legal():
     assert out["exchange_orders"] is False
     assert out["orders_placed"] == 0
     assert out["solution_admitted"] is True
-    assert out["engineering_closed_on"] == ["партия"]
-    assert out["ideas"] == "Следующая партия короче"
+    assert out["engineering_closed_on"] == ["пачка"]
+    assert out["ideas"] == "Следующая пачка короче"
     assert out["table"]["yield_column"] is False
     assert out["bridge"]["open"] is True
-    assert out["bridge"]["tax_visible"] is True
+    assert out["bridge"]["showable"] is True
     assert out["purchase"]["open"] is True
 
 
-def test_off_book_cash_and_empty_data_do_not_open():
+def test_hidden_cash_and_empty_data_do_not_open():
     out = run_vision(
         {
             "concept": "Просто идея",
@@ -53,7 +44,7 @@ def test_off_book_cash_and_empty_data_do_not_open():
             "ideas": "Ещё идея",
             "data": [],
             "bridge": {"path": "obnal", "off_book": True},
-            "purchase": {"parties": "скрытые", "scope": "пакет", "legal": True, "hidden_from_law": True},
+            "purchase": {"parties": "скрытые", "scope": "пакет", "hidden": True},
         }
     )
     assert out["solution_admitted"] is False
