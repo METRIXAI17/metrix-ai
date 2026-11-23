@@ -19,7 +19,7 @@ from backend.core.pure_vehicle import (
     separated_circle,
 )
 from backend.core.pure_vehicle.catalog import OPS, recurse_status
-from backend.core.pure_vehicle.community import game_pack, public_contributions, purchase_isolated
+from backend.core.pure_vehicle.sandbox import close_sandbox, release_line
 
 router = APIRouter(prefix="/pure", tags=["pure-vehicle"])
 
@@ -68,6 +68,21 @@ class CircleBody(BaseModel):
 
 class AliceBody(BaseModel):
     rank: dict[str, Any] = Field(default_factory=dict)
+
+
+class SandboxBody(BaseModel):
+    agents: list[dict[str, Any]] = Field(default_factory=list)
+    eval_floor: float | None = None
+
+
+@router.get("/line")
+def pure_line() -> dict[str, Any]:
+    return release_line()
+
+
+@router.post("/sandbox")
+def pure_sandbox(body: SandboxBody) -> dict[str, Any]:
+    return close_sandbox({"agents": body.agents, "eval_floor": body.eval_floor})
 
 
 @router.get("/ops")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from backend import __brand__, __codename__, __release__, __version__
+from backend import __brand__, __codename__, __door__, __release__, __version__
 from backend.config import (
     CLIENT_NICHE_LIST_RU,
     DECISION_SUPPORT_PRODUCT,
@@ -30,6 +30,10 @@ def health() -> dict:
         "brand": __brand__,
         "codename": __codename__,
         "version": __version__,
+        "door": __door__,
+        "door_version": "2.1.0",
+        "person_inside": False,
+        "yield_promised": False,
         "env": ENV_NAME,
         "service": "metrix-ai-backend",
         "public_niches": PUBLIC_INDUSTRY_IDS,

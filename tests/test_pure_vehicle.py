@@ -28,8 +28,8 @@ from robots.config import is_live
 
 
 def test_version_and_policy():
-    assert __version__ == "2.1.0"
-    assert __codename__ == "PURE VEHICLE"
+    assert __version__ == "2.8.0"
+    assert __codename__ == "CLOSED SANDBOX"
     policy = MONETIZATION["policy"]
     assert policy.get("no_subscriptions") is not True
     assert "no_subscriptions" not in policy
